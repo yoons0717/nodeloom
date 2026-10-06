@@ -70,7 +70,7 @@ nodeloom/
 ├─ apps/
 │  ├─ web/      Next.js: 목록·실행 기록(서버 컴포넌트), 에디터(클라이언트), 커맨드 스택
 │  ├─ api/      NestJS: auth, workflows, runs, executor(pg-boss), mock, SSRF, 마스킹
-│  └─ e2e/      Playwright: e2e 시나리오 + 성능 벤치
+│  └─ browser-tests/  Playwright: e2e 시나리오 + 성능 벤치
 ├─ packages/
 │  └─ core/     그래프 타입, 노드 zod 스키마, 검증, 위상 정렬, 템플릿 (순수 TS, tsc로 ESM 출력)
 ├─ docs/        DECISIONS.md(ADR), BACKLOG.md, PROJECT_PLAN.md, CONVENTIONS.md, milestones/(마일스톤별 상세 계획)
