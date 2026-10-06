@@ -1,0 +1,13 @@
+packages:
+  - apps/*
+  - packages/*
+
+# 설치 스크립트 실행을 막을 패키지(pnpm 기본 정책을 명시). Prisma 엔진은 마이그레이션이 필요한 M3에서 다시 판단한다.
+allowBuilds:
+  sharp: false
+  unrs-resolver: false
+  '@prisma/engines': false
+  prisma: false
+  cpu-features: false
+  protobufjs: false
+  ssh2: false

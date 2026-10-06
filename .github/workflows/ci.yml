@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # 통합 테스트는 GitHub 기본 Ubuntu 실행 환경의 Docker로 Postgres 18을 띄운다(Testcontainers).
+      - run: pnpm turbo run lint typecheck test build
+        env:
+          API_URL: http://localhost:4000
