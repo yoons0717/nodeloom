@@ -172,3 +172,42 @@ describe('tryConnect', () => {
     expect(store.getState().past).toHaveLength(pastBefore);
   });
 });
+
+describe('deleteSelection', () => {
+  it('선택한 노드와 연결을 한 번에 지우고, Undo 한 번에 모두 되돌린다', () => {
+    const { store, trigger, http } = setup();
+    store.getState().tryConnect({
+      id: 'e1',
+      from: { node: trigger.id, port: 'out' },
+      to: { node: http.id, port: 'in' },
+    });
+    store.getState().setSelection({ nodeIds: [http.id], edgeIds: ['e1'] });
+    store.getState().deleteSelection();
+    expect(store.getState().graph.nodes).toHaveLength(1);
+    expect(store.getState().graph.edges).toHaveLength(0);
+    expect(store.getState().selection).toEqual({ nodeIds: [], edgeIds: [] });
+    store.getState().undo();
+    expect(store.getState().graph.nodes).toHaveLength(2);
+    expect(store.getState().graph.edges).toHaveLength(1);
+  });
+
+  it('선택한 것이 없으면 기록하지 않는다', () => {
+    const { store } = setup();
+    store.getState().deleteSelection();
+    expect(store.getState().past).toHaveLength(1);
+  });
+});
+
+describe('updateSelection', () => {
+  it('같은 순간에 노드와 연결 선택이 따로 바뀌어도 서로 덮어쓰지 않는다', () => {
+    const { store, http } = setup();
+    store.getState().setSelection({ nodeIds: [http.id], edgeIds: [] });
+    // 연결선을 클릭하면 React Flow는 노드 선택 해제와 연결 선택을 따로 알린다.
+    store.getState().updateSelection((s) => ({ ...s, nodeIds: [] }));
+    store.getState().updateSelection((s) => ({ ...s, edgeIds: ['e1'] }));
+    expect(store.getState().selection).toEqual({
+      nodeIds: [],
+      edgeIds: ['e1'],
+    });
+  });
+});

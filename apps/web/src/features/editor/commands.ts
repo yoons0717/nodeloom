@@ -6,6 +6,7 @@ import {
   type NodeType,
   nextNodeKey,
 } from '@nodeloom/core';
+import { NODE_META } from './node-meta';
 
 // 그래프 변경 하나. apply로 바꾸고 revert로 정확히 되돌린다(DECISIONS 4-4).
 // 되돌리는 데 필요한 값(지운 노드, 이전 값 등)은 커맨드를 만들 때 미리 담아 둔다.
@@ -43,7 +44,8 @@ export function newNode(
     id: crypto.randomUUID(),
     key,
     type,
-    title: key,
+    // 제목 기본값은 노드 종류 이름. 참조 키는 카드에 따로 보인다.
+    title: NODE_META[type].label,
     position,
     config: {},
   };
@@ -97,30 +99,34 @@ function collect<T>(list: T[], pick: (item: T) => boolean) {
 }
 
 export function deleteEdges(graph: Graph, edgeIds: string[]): Command {
-  const ids = new Set(edgeIds);
-  const removed = collect(graph.edges, (e) => ids.has(e.id));
-  return {
-    label: '연결 삭제',
-    apply: (g) => ({ ...g, edges: g.edges.filter((e) => !ids.has(e.id)) }),
-    revert: (g) => ({ ...g, edges: reinsert(g.edges, removed) }),
-  };
+  return deleteElements(graph, [], edgeIds);
 }
 
-// 노드를 지우면 붙어 있던 연결도 함께 지운다. 되돌릴 때 둘 다 원래 자리로 복원한다.
 export function deleteNodes(graph: Graph, nodeIds: string[]): Command {
-  const ids = new Set(nodeIds);
-  const removedNodes = collect(graph.nodes, (n) => ids.has(n.id));
+  return deleteElements(graph, nodeIds, []);
+}
+
+// 선택한 노드와 연결을 한 번에 지운다(Undo 한 번에 되돌아감). 노드를 지우면 붙어 있던 연결도 함께 지운다.
+// 되돌릴 때 노드와 연결을 원래 자리로 복원한다.
+export function deleteElements(
+  graph: Graph,
+  nodeIds: string[],
+  edgeIds: string[],
+): Command {
+  const nodes = new Set(nodeIds);
+  const edges = new Set(edgeIds);
+  const removedNodes = collect(graph.nodes, (n) => nodes.has(n.id));
   const removedEdges = collect(
     graph.edges,
-    (e) => ids.has(e.from.node) || ids.has(e.to.node),
+    (e) => edges.has(e.id) || nodes.has(e.from.node) || nodes.has(e.to.node),
   );
-  const edgeIds = new Set(removedEdges.map((r) => r.item.id));
+  const removedEdgeIds = new Set(removedEdges.map((r) => r.item.id));
   return {
-    label: '노드 삭제',
+    label: nodeIds.length ? '노드 삭제' : '연결 삭제',
     apply: (g) => ({
       ...g,
-      nodes: g.nodes.filter((n) => !ids.has(n.id)),
-      edges: g.edges.filter((e) => !edgeIds.has(e.id)),
+      nodes: g.nodes.filter((n) => !nodes.has(n.id)),
+      edges: g.edges.filter((e) => !removedEdgeIds.has(e.id)),
     }),
     revert: (g) => ({
       ...g,

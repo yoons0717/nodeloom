@@ -9,6 +9,7 @@ import { createStore } from 'zustand/vanilla';
 import {
   type Command,
   connect,
+  deleteElements,
   createInitialGraph,
   mergeCommands,
   moveNodes,
@@ -18,6 +19,8 @@ import {
 // 같은 칸을 이 시간 안에 이어서 입력하면 Undo 한 번에 되돌아간다(M2 작은 결정 ⑤).
 export const TYPING_MERGE_MS = 500;
 
+export type Selection = { nodeIds: string[]; edgeIds: string[] };
+
 type HistoryEntry = { command: Command; at: number };
 
 export type EditorState = {
@@ -25,6 +28,12 @@ export type EditorState = {
   past: HistoryEntry[];
   future: HistoryEntry[];
   dragStart: Map<string, GraphNode['position']> | null;
+  // 선택은 그래프 변경이 아니므로 Undo 기록에 남기지 않는다.
+  selection: Selection;
+  setSelection: (selection: Selection) => void;
+  // 현재 선택을 기준으로 바꾼다. 같은 순간에 여러 선택 알림이 와도 앞의 변경을 덮어쓰지 않는다.
+  updateSelection: (update: (current: Selection) => Selection) => void;
+  deleteSelection: () => void;
   execute: (command: Command, now?: number) => void;
   undo: () => void;
   redo: () => void;
@@ -42,6 +51,30 @@ export function createEditorStore(initial: Graph = createInitialGraph()) {
     past: [],
     future: [],
     dragStart: null,
+    selection: { nodeIds: [], edgeIds: [] },
+
+    // 내용이 같으면 그대로 둔다. React Flow는 선택을 넘겨받을 때마다 선택 변경 이벤트를 다시 보내므로,
+    // 매번 새 객체를 저장하면 서로 갱신을 주고받으며 멈추지 않는다.
+    setSelection: (selection) => {
+      const current = get().selection;
+      const same = (a: string[], b: string[]) =>
+        a.length === b.length && a.every((id, i) => id === b[i]);
+      if (
+        same(current.nodeIds, selection.nodeIds) &&
+        same(current.edgeIds, selection.edgeIds)
+      )
+        return;
+      set({ selection });
+    },
+
+    updateSelection: (update) => get().setSelection(update(get().selection)),
+
+    deleteSelection: () => {
+      const { graph, selection, execute } = get();
+      if (!selection.nodeIds.length && !selection.edgeIds.length) return;
+      execute(deleteElements(graph, selection.nodeIds, selection.edgeIds));
+      set({ selection: { nodeIds: [], edgeIds: [] } });
+    },
 
     execute: (command, now = Date.now()) => {
       const { graph, past } = get();
