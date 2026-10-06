@@ -8,9 +8,9 @@
 
 > README 한 줄 소개: "Nodeloom — 노드를 이어 반복 작업을 자동화하는 워크플로우 도구 (Node-based workflow automation)"
 
-- **1순위: 풀스택 포트폴리오.** 인터랙티브 에디터, 측정 가능한 렌더링 최적화, 모노레포, 가벼운 NestJS 백엔드와 실행 엔진을 보여준다.
+- **1순위: 기술적 완성도.** 인터랙티브 에디터, 측정 가능한 렌더링 최적화, 모노레포, 가벼운 NestJS 백엔드와 실행 엔진.
 - **2순위: 실제 사용.** MVP 완료 시점에 실사용 흐름 1개가 매일 스케줄로 돌아간다.
-- 공개 데모는 채용 담당자가 에디터를 직접 만져 보는 제한 모드(mock 실행만)다. 실제 외부 호출은 개인 서버에서만 한다.
+- 공개 데모는 방문자가 에디터를 직접 만져 보는 제한 모드(mock 실행만)다. 실제 외부 호출은 개인 서버에서만 한다.
 
 ## 2. MVP 범위
 
@@ -50,7 +50,7 @@ MVP는 두 단계로 나눈다. 각 단계에는 막혔을 때 먼저 공개할 
 | 영역 | 선택 | 이유 (한 줄) |
 |---|---|---|
 | 모노레포 | pnpm workspace + Turborepo | 프론트와 서버가 같은 검증 코드를 공유 |
-| 프론트 | Next.js 16 App Router | 공고 키워드 + 서버 컴포넌트(읽기 화면)와 클라이언트(에디터) 경계 경험 |
+| 프론트 | Next.js 16 App Router | 읽기 화면은 서버 컴포넌트, 에디터는 클라이언트로 화면 성격에 맞게 분리 |
 | 캔버스 | React Flow 12(제어 모드) | 에디터를 빨리 완성하고 실무형 성능 개선에 집중 |
 | 상태 | Zustand v5(에디터, 인스턴스별 스토어) + TanStack Query(서버 상태) | 노드 단위 구독, 검증된 조합 |
 | 스타일 | Tailwind v4 + shadcn/ui | 서버 컴포넌트 호환, 접근성 부품 |
@@ -73,7 +73,7 @@ nodeloom/
 │  └─ e2e/      Playwright: e2e 시나리오 + 성능 벤치
 ├─ packages/
 │  └─ core/     그래프 타입, 노드 zod 스키마, 검증, 위상 정렬, 템플릿 (순수 TS, tsc로 ESM 출력)
-├─ docs/        spec.html, DECISIONS.md(ADR), BACKLOG.md, PROJECT_PLAN.md, milestones/(마일스톤별 상세 계획)
+├─ docs/        DECISIONS.md(ADR), BACKLOG.md, PROJECT_PLAN.md, milestones/(마일스톤별 상세 계획)
 ├─ docker-compose.yml   postgres (+ 운영 시 web, api)
 └─ .github/workflows/ci.yml
 ```
