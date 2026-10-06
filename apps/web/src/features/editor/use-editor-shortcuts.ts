@@ -12,6 +12,14 @@ function isTyping(target: EventTarget | null) {
   );
 }
 
+// 삭제는 캔버스를 보고 있을 때만. 설정 패널의 버튼·스위치에 포커스가 있을 때 Backspace로 노드가 지워지면 안 된다.
+function onCanvas(target: EventTarget | null) {
+  return (
+    target === document.body ||
+    (target instanceof Element && target.closest('.react-flow') !== null)
+  );
+}
+
 export function useEditorShortcuts() {
   const undo = useEditorStore((s) => s.undo);
   const redo = useEditorStore((s) => s.redo);
@@ -25,7 +33,10 @@ export function useEditorShortcuts() {
         e.preventDefault();
         if (e.shiftKey) redo();
         else undo();
-      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      } else if (
+        (e.key === 'Delete' || e.key === 'Backspace') &&
+        onCanvas(e.target)
+      ) {
         e.preventDefault();
         deleteSelection();
       }

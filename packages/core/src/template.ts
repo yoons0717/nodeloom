@@ -28,6 +28,34 @@ export function extractNodeRefs(expression: string): string[] {
 
 export type ExpressionSyntaxError = { message: string; position?: number };
 
+type JsonataError = {
+  code?: string;
+  message?: string;
+  position?: number;
+  token?: string;
+  value?: string;
+};
+
+// 자주 나는 JSONata 문법 오류만 한국어로 바꾸고, 나머지는 원문을 보여 준다.
+function koreanSyntaxMessage(err: JsonataError): string | undefined {
+  switch (err.code) {
+    case 'S0101':
+      return '문자열의 따옴표가 닫히지 않았습니다';
+    case 'S0201':
+      return `"${err.token}" 근처의 문법이 잘못되었습니다`;
+    case 'S0202':
+      return `"${err.value}"가 와야 하는데 "${err.token}"가 왔습니다`;
+    case 'S0203':
+      return `"${err.value}"가 빠졌습니다`;
+    case 'S0204':
+      return `알 수 없는 연산자 "${err.token}"입니다`;
+    case 'S0207':
+      return '식이 중간에 끝났습니다';
+    case 'S0211':
+      return `"${err.token}"는 이 자리에 올 수 없습니다`;
+  }
+}
+
 export function checkExpressionSyntax(
   expression: string,
 ): ExpressionSyntaxError | null {
@@ -35,33 +63,44 @@ export function checkExpressionSyntax(
     jsonata(expression);
     return null;
   } catch (e) {
-    const err = e as { message?: string; position?: number };
-    return { message: err.message ?? String(e), position: err.position };
+    const err = e as JsonataError;
+    const text = koreanSyntaxMessage(err) ?? err.message ?? String(e);
+    return {
+      message:
+        err.position === undefined ? text : `${text} (위치 ${err.position})`,
+      position: err.position,
+    };
   }
 }
 
-// 노드 설정에서 JSONata 식을 모두 꺼낸다. 문자열 칸은 `{{ }}` 안쪽만.
-export function nodeExpressions(node: GraphNode): string[] {
+export type FieldExpression = { field: string; expression: string };
+
+// 노드 설정에서 JSONata 식을 칸 이름과 함께 모두 꺼낸다. 문자열 칸은 `{{ }}` 안쪽만.
+export function nodeExpressions(node: GraphNode): FieldExpression[] {
   const c = node.config;
   const str = (v: unknown) => (typeof v === 'string' ? v : '');
-  const templated = (v: unknown) =>
-    parseTemplate(str(v)).flatMap((p) => (p.kind === 'expr' ? [p.value] : []));
+  const templated = (field: string, v: unknown) =>
+    parseTemplate(str(v)).flatMap((p) =>
+      p.kind === 'expr' ? [{ field, expression: p.value }] : [],
+    );
   const recordValues = (v: unknown) =>
     v && typeof v === 'object'
       ? Object.values(v as Record<string, unknown>)
       : [];
+  const whole = (field: string) =>
+    str(c[field]).trim() ? [{ field, expression: str(c[field]) }] : [];
 
   switch (node.type) {
     case 'http':
       return [
-        ...templated(c.url),
-        ...recordValues(c.query).flatMap(templated),
-        ...recordValues(c.headers).flatMap(templated),
-        ...(str(c.body).trim() ? [str(c.body)] : []),
+        ...templated('url', c.url),
+        ...recordValues(c.query).flatMap((v) => templated('query', v)),
+        ...recordValues(c.headers).flatMap((v) => templated('headers', v)),
+        ...whole('body'),
       ];
     case 'transform':
     case 'condition':
-      return str(c.expression).trim() ? [str(c.expression)] : [];
+      return whole('expression');
     case 'trigger':
       return [];
   }

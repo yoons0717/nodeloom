@@ -31,6 +31,8 @@ export type Issue = {
   message: string;
   nodeId?: string;
   edgeId?: string;
+  // 노드의 어느 칸 문제인지. 설정 패널이 칸 아래에 오류를 보여 줄 때 쓴다('title', 'key' 또는 설정 이름).
+  field?: string;
 };
 
 const isOutput = (node: GraphNode, port: string) =>
@@ -55,24 +57,32 @@ export function validateGraph(graph: Graph): Issue[] {
   for (const node of graph.nodes) {
     const parsed = NODE_SPECS[node.type].config.safeParse(node.config);
     if (!parsed.success) {
-      const first = parsed.error.issues[0];
-      issues.push({
-        code: 'invalid_config',
-        nodeId: node.id,
-        message:
-          `설정 오류: ${first?.path.join('.') || '(전체)'} ${first?.message ?? ''}`.trim(),
-      });
+      // 칸마다 첫 오류 하나만 보고한다.
+      const seen = new Set<string>();
+      for (const issue of parsed.error.issues) {
+        const field = String(issue.path[0] ?? '');
+        if (seen.has(field)) continue;
+        seen.add(field);
+        issues.push({
+          code: 'invalid_config',
+          nodeId: node.id,
+          field: field || undefined,
+          message: issue.message,
+        });
+      }
     }
     if (!NODE_KEY_PATTERN.test(node.key)) {
       issues.push({
         code: 'invalid_key',
         nodeId: node.id,
+        field: 'key',
         message: `참조 키 "${node.key}"는 영어 소문자로 시작하고 소문자, 숫자, _만 쓸 수 있습니다`,
       });
     } else if (keys.has(node.key)) {
       issues.push({
         code: 'duplicate_key',
         nodeId: node.id,
+        field: 'key',
         message: `참조 키 "${node.key}"가 중복됩니다`,
       });
     }
@@ -144,21 +154,23 @@ export function validateGraph(graph: Graph): Issue[] {
   }
 
   for (const node of graph.nodes) {
-    for (const expr of nodeExpressions(node)) {
-      const syntax = checkExpressionSyntax(expr);
+    for (const { field, expression } of nodeExpressions(node)) {
+      const syntax = checkExpressionSyntax(expression);
       if (syntax) {
         issues.push({
           code: 'expression_syntax',
           nodeId: node.id,
+          field,
           message: `식 문법 오류: ${syntax.message}`,
         });
         continue;
       }
-      for (const ref of extractNodeRefs(expr)) {
+      for (const ref of extractNodeRefs(expression)) {
         if (!keys.has(ref)) {
           issues.push({
             code: 'unknown_ref',
             nodeId: node.id,
+            field,
             message: `없는 노드 "${ref}"를 참조합니다`,
           });
         }

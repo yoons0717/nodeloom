@@ -44,6 +44,12 @@ describe('checkExpressionSyntax', () => {
       position: 11,
     });
   });
+
+  it('자주 나는 문법 오류는 한국어로 알려준다', () => {
+    expect(checkExpressionSyntax('body.rain >')?.message).toBe(
+      '식이 중간에 끝났습니다 (위치 11)',
+    );
+  });
 });
 
 describe('nodeExpressions', () => {
@@ -53,6 +59,10 @@ describe('nodeExpressions', () => {
       headers: { Authorization: 'Bearer {{ $secrets.TOKEN }}' },
       body: '{ "x": b }',
     });
-    expect(nodeExpressions(n)).toEqual(['a', '$secrets.TOKEN', '{ "x": b }']);
+    expect(nodeExpressions(n)).toEqual([
+      { field: 'url', expression: 'a' },
+      { field: 'headers', expression: '$secrets.TOKEN' },
+      { field: 'body', expression: '{ "x": b }' },
+    ]);
   });
 });

@@ -7,6 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Canvas } from './canvas';
 import { getGraphIssues } from './graph-issues';
 import { Palette } from './palette';
+import { SettingsPanel } from './settings-panel';
 import { EditorStoreProvider, useEditorStore } from './store-context';
 import { useEditorShortcuts } from './use-editor-shortcuts';
 
@@ -30,7 +31,7 @@ function EditorLayout() {
       <div className="flex min-h-0 flex-1">
         <Palette />
         <Canvas />
-        {/* 설정 패널은 2-c에서 추가 */}
+        <SettingsPanel />
       </div>
     </div>
   );

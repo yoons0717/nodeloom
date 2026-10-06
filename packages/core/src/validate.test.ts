@@ -10,10 +10,14 @@ describe('validateGraph', () => {
     expect(validateGraph(rainFlow())).toEqual([]);
   });
 
-  it('잘못된 노드 설정을 보고한다', () => {
+  it('잘못된 노드 설정을 칸 이름과 함께 칸마다 보고한다', () => {
     const g = rainFlow();
-    g.nodes[1]!.config = {};
-    expect(codes(g)).toContain('invalid_config');
+    g.nodes[1]!.config = { timeoutSec: 99 };
+    expect(
+      validateGraph(g)
+        .filter((i) => i.code === 'invalid_config')
+        .map((i) => i.field),
+    ).toEqual(['url', 'timeoutSec']);
   });
 
   it('잘못된 참조 키와 중복 키를 보고한다', () => {
@@ -76,7 +80,13 @@ describe('validateGraph', () => {
   it('식 문법 오류를 보고한다', () => {
     const g = rainFlow();
     g.nodes[2]!.config = { expression: 'body.rain >' };
-    expect(codes(g)).toContain('expression_syntax');
+    expect(validateGraph(g)).toContainEqual(
+      expect.objectContaining({
+        code: 'expression_syntax',
+        nodeId: 'cond_1',
+        field: 'expression',
+      }),
+    );
   });
 });
 

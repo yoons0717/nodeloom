@@ -36,7 +36,7 @@
   --secondary: var(--raised);
   --secondary-foreground: var(--foreground);
   --muted: var(--raised);
-  --accent: var(--raised);
+  --accent: var(--border);
   --accent-foreground: var(--foreground);
   --input: var(--border);
   --ring: var(--primary);
