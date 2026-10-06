@@ -1,5 +1,16 @@
 import type { Metadata } from 'next';
+import { JetBrains_Mono, Noto_Sans_KR } from 'next/font/google';
 import './globals.css';
+
+// 한글 글꼴은 next/font에 한국어 subset이 없어 미리 불러오지 않는다(preload: false). 쓰는 글자 범위만 내려받는다.
+const notoSansKr = Noto_Sans_KR({
+  preload: false,
+  variable: '--font-noto-sans-kr',
+});
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+});
 
 export const metadata: Metadata = {
   title: 'Nodeloom',
@@ -8,7 +19,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="ko" className="h-full antialiased">
+    <html
+      lang="ko"
+      className={`h-full antialiased ${notoSansKr.variable} ${jetBrainsMono.variable}`}
+    >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

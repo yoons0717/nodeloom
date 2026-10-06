@@ -2,6 +2,11 @@
 
 import { type GraphNode, type Issue, NODE_SPECS } from '@nodeloom/core';
 import { Handle, type Node, type NodeProps, Position } from '@xyflow/react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { NODE_META, PORT_LABEL } from './node-meta';
 
 export type CanvasNode = Node<{ node: GraphNode; issues: Issue[] }>;
@@ -14,33 +19,43 @@ export function NodeCard({ data, selected }: NodeProps<CanvasNode>) {
 
   return (
     <div
-      className={`min-w-44 rounded-md border bg-white px-3 py-2 text-sm shadow-sm dark:bg-zinc-900 ${
+      // 선택 테두리를 2px로 바꾸면 카드 크기가 변하므로, 1px 테두리 + 그림자 두 겹으로 2px 테두리와 4px 바깥 빛을 그린다.
+      className={`min-w-[150px] rounded-lg border bg-raised px-3 py-2.5 ${
         selected
-          ? 'border-sky-600 ring-2 ring-sky-600/30'
-          : 'border-zinc-300 dark:border-zinc-700'
+          ? 'border-primary shadow-[0_0_0_1px_var(--primary),0_0_0_5px_var(--primary-ring)]'
+          : 'border-border'
       }`}
     >
       {spec.inputs.length > 0 && (
         <Handle type="target" position={Position.Left} id="in" />
       )}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] font-semibold tracking-wide text-sky-700 uppercase dark:text-sky-400">
+        <span className="text-[11px] font-bold tracking-[0.06em] text-primary uppercase">
           {NODE_META[node.type].label}
         </span>
         {issues.length > 0 && (
-          <span
-            className="rounded-full bg-red-100 px-1.5 text-[11px] font-semibold text-red-700 dark:bg-red-950 dark:text-red-300"
-            title={issues.map((i) => i.message).join('\n')}
-          >
-            오류 {issues.length}
-          </span>
+          <Tooltip>
+            <TooltipTrigger
+              render={<span />}
+              className="cursor-help rounded-full bg-destructive-soft px-1.5 text-[11px] font-bold text-destructive-text"
+            >
+              오류 {issues.length}
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="flex-col items-start">
+              {issues.map((i) => (
+                <div key={i.code + i.message}>{i.message}</div>
+              ))}
+            </TooltipContent>
+          </Tooltip>
         )}
       </div>
       {/* 제목을 바꾸지 않았으면 종류 이름과 같으므로 한 번만 보인다. */}
       {node.title !== NODE_META[node.type].label && (
-        <div className="mt-0.5 font-medium">{node.title}</div>
+        <div className="mt-0.5 font-bold">{node.title}</div>
       )}
-      <div className="font-mono text-[11px] text-zinc-500">{node.key}</div>
+      <div className="font-mono text-[11px] text-muted-foreground">
+        {node.key}
+      </div>
       {outputs.map((port, i) => (
         <Handle
           key={port}
@@ -54,7 +69,7 @@ export function NodeCard({ data, selected }: NodeProps<CanvasNode>) {
           }
         >
           {PORT_LABEL[port] && (
-            <span className="pointer-events-none absolute left-3 -translate-y-1/2 text-[10px] text-zinc-500">
+            <span className="pointer-events-none absolute left-3 -translate-y-1/2 text-[10px] whitespace-nowrap text-muted-foreground">
               {PORT_LABEL[port]}
             </span>
           )}

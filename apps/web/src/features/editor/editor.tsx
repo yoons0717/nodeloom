@@ -2,6 +2,8 @@
 
 import { ReactFlowProvider } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { Button } from '@/components/ui/button';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { Canvas } from './canvas';
 import { getGraphIssues } from './graph-issues';
 import { Palette } from './palette';
@@ -12,7 +14,9 @@ export function Editor() {
   return (
     <EditorStoreProvider>
       <ReactFlowProvider>
-        <EditorLayout />
+        <TooltipProvider>
+          <EditorLayout />
+        </TooltipProvider>
       </ReactFlowProvider>
     </EditorStoreProvider>
   );
@@ -42,34 +46,28 @@ function TopBar() {
   // 셀렉터가 매번 새 배열을 돌려주면 Zustand가 계속 바뀐 것으로 보고 무한히 다시 그린다. 그래프만 구독하고 계산은 밖에서 한다.
   const graphIssues = getGraphIssues(graph).graphLevel;
 
-  const button =
-    'rounded-md border border-zinc-300 px-3 py-1 text-sm disabled:opacity-40 dark:border-zinc-700';
   return (
-    <header className="flex items-center gap-3 border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
-      <h1 className="font-semibold">새 워크플로우</h1>
+    <header className="flex flex-wrap items-center gap-3 border-b border-divider bg-surface px-5 py-2.5">
+      <h1 className="text-base font-bold">새 워크플로우</h1>
       <div className="flex gap-2">
-        <button
-          type="button"
-          className={button}
-          onClick={undo}
-          disabled={!canUndo}
-        >
+        <Button variant="outline" onClick={undo} disabled={!canUndo}>
           되돌리기
-        </button>
-        <button
-          type="button"
-          className={button}
-          onClick={redo}
-          disabled={!canRedo}
-        >
+        </Button>
+        <Button variant="outline" onClick={redo} disabled={!canRedo}>
           다시 실행
-        </button>
+        </Button>
       </div>
-      {graphIssues.map((i) => (
-        <span key={i.code} role="status" className="text-sm text-red-600">
-          {i.message}
-        </span>
-      ))}
+      <div className="ml-auto flex flex-wrap gap-2">
+        {graphIssues.map((i) => (
+          <span
+            key={i.code}
+            role="status"
+            className="rounded-full bg-destructive-soft px-2.5 py-1 text-xs font-bold text-destructive-text"
+          >
+            {i.message}
+          </span>
+        ))}
+      </div>
     </header>
   );
 }
