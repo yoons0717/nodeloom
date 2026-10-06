@@ -73,7 +73,7 @@ nodeloom/
 │  └─ e2e/      Playwright: e2e 시나리오 + 성능 벤치
 ├─ packages/
 │  └─ core/     그래프 타입, 노드 zod 스키마, 검증, 위상 정렬, 템플릿 (순수 TS, tsc로 ESM 출력)
-├─ docs/        DECISIONS.md(ADR), BACKLOG.md, PROJECT_PLAN.md, milestones/(마일스톤별 상세 계획)
+├─ docs/        DECISIONS.md(ADR), BACKLOG.md, PROJECT_PLAN.md, CONVENTIONS.md, milestones/(마일스톤별 상세 계획)
 ├─ docker-compose.yml   postgres (+ 운영 시 web, api)
 └─ .github/workflows/ci.yml
 ```

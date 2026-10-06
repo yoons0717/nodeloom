@@ -28,12 +28,12 @@ describe('GET /health', () => {
     await container?.stop();
   });
 
-  it('returns ok when the database is reachable', async () => {
+  it('DB에 연결되면 ok를 반환한다', async () => {
     const res = await request(app.getHttpServer()).get('/health').expect(200);
     expect(res.body).toEqual({ status: 'ok', db: 'ok', graphSchemaVersion: 1 });
   });
 
-  it('returns 503 when the database is down', async () => {
+  it('DB가 내려가면 503을 반환한다', async () => {
     await container.stop();
     await request(app.getHttpServer()).get('/health').expect(503);
   });

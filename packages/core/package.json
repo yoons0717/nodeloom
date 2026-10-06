@@ -18,5 +18,9 @@
   },
   "devDependencies": {
     "vitest": "^4.1.11"
+  },
+  "dependencies": {
+    "jsonata": "2.2.2",
+    "zod": "^4.6.5"
   }
 }

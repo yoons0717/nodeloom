@@ -39,4 +39,5 @@ export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 - [프로젝트 계획](docs/PROJECT_PLAN.md)
 - [결정 기록(ADR)](docs/DECISIONS.md)
 - [백로그](docs/BACKLOG.md)
+- [코드 컨벤션](docs/CONVENTIONS.md)
 - [마일스톤별 계획](docs/milestones)
