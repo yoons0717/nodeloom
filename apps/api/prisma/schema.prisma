@@ -6,3 +6,15 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// 워크플로우 하나. 저장은 덮어쓰기이고 버전을 남기지 않는다(DECISIONS 2-4).
+// graph는 core의 graphSchema 형식(schemaVersion 포함)이며, 검증 오류가 있는 초안도 그대로 저장한다(DECISIONS 7-5).
+model Workflow {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  graph     Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("workflows")
+}
