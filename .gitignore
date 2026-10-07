@@ -11,3 +11,6 @@ coverage/
 next-env.d.ts
 docs/spec.html
 docs/DECISIONS.md
+test-results/
+playwright-report/
+.serena/

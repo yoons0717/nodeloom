@@ -21,7 +21,7 @@ import {
   useReactFlow,
   ViewportPortal,
 } from '@xyflow/react';
-import { type DragEvent, useCallback, useState } from 'react';
+import { type DragEvent, type ReactNode, useCallback, useState } from 'react';
 import { addNode, newNode } from './commands';
 import { getGraphIssues } from './graph-issues';
 import { type CanvasNode, NodeCard } from './node-card';
@@ -63,7 +63,8 @@ function applySelect(
   return [...ids];
 }
 
-export function Canvas() {
+// children: 캔버스 위에 겹쳐 그릴 것(성능 HUD 등).
+export function Canvas({ children }: { children?: ReactNode }) {
   const graph = useEditorStore((s) => s.graph);
   const selection = useEditorStore((s) => s.selection);
   const execute = useEditorStore((s) => s.execute);
@@ -183,6 +184,7 @@ export function Canvas() {
         <Background gap={GRID[0]} />
         <Controls showInteractive={false} />
         <ConnectionFeedback graph={graph} />
+        {children}
       </ReactFlow>
     </div>
   );

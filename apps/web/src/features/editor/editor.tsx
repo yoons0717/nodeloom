@@ -1,36 +1,54 @@
 'use client';
 
+import type { Graph } from '@nodeloom/core';
 import { ReactFlowProvider } from '@xyflow/react';
+import { Profiler } from 'react';
 import '@xyflow/react/dist/style.css';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { onEditorRender } from './bench';
 import { Canvas } from './canvas';
 import { getGraphIssues } from './graph-issues';
 import { Palette } from './palette';
+import { PerfHud } from './perf-hud';
 import { SettingsPanel } from './settings-panel';
 import { EditorStoreProvider, useEditorStore } from './store-context';
 import { useEditorShortcuts } from './use-editor-shortcuts';
 
-export function Editor() {
-  return (
-    <EditorStoreProvider>
+// bench: 성능 HUD를 보이고 측정값을 모은다(/bench 전용).
+export function Editor({
+  initial,
+  bench = false,
+}: {
+  initial?: Graph;
+  bench?: boolean;
+}) {
+  const editor = (
+    <EditorStoreProvider initial={initial}>
       <ReactFlowProvider>
         <TooltipProvider>
-          <EditorLayout />
+          <EditorLayout bench={bench} />
         </TooltipProvider>
       </ReactFlowProvider>
     </EditorStoreProvider>
   );
+  return bench ? (
+    <Profiler id="editor" onRender={onEditorRender}>
+      {editor}
+    </Profiler>
+  ) : (
+    editor
+  );
 }
 
-function EditorLayout() {
+function EditorLayout({ bench }: { bench: boolean }) {
   useEditorShortcuts();
   return (
     <div className="flex h-dvh flex-col">
       <TopBar />
       <div className="flex min-h-0 flex-1">
         <Palette />
-        <Canvas />
+        <Canvas>{bench && <PerfHud />}</Canvas>
         <SettingsPanel />
       </div>
     </div>

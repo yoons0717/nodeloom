@@ -1,0 +1,14 @@
+{
+  "name": "@nodeloom/browser-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bench": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "^24"
+  }
+}
