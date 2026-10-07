@@ -1,10 +1,9 @@
 import type { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
 import { GRAPH_SCHEMA_VERSION, type Graph } from '@nodeloom/core';
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
-import { startTestDatabase } from '../test-database.test-util.js';
+import { startTestApp, TEST_PASSWORD } from '../test-app.test-util.js';
 
 const node = (id: string, type: 'trigger' | 'transform', config = {}) => ({
   id,
@@ -28,7 +27,9 @@ const graph = (nodes: Graph['nodes'], edges: Graph['edges'] = []): Graph => ({
 describe('/workflows', () => {
   let container: StartedPostgreSqlContainer;
   let app: INestApplication<App>;
-  const api = () => request(app.getHttpServer());
+  // 로그인 쿠키를 들고 다니는 요청 도구
+  let agent: ReturnType<typeof request.agent>;
+  const api = () => agent;
   // 만들고 새 id를 돌려준다.
   const create = async (name: string, g: Graph) =>
     (
@@ -42,13 +43,12 @@ describe('/workflows', () => {
     }[];
 
   beforeAll(async () => {
-    container = await startTestDatabase();
-    const { AppModule } = await import('../app.module.js');
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    app = moduleRef.createNestApplication();
-    await app.init();
+    ({ app, container } = await startTestApp());
+    agent = request.agent(app.getHttpServer());
+    await agent
+      .post('/auth/login')
+      .send({ password: TEST_PASSWORD })
+      .expect(204);
   }, 120_000);
 
   afterAll(async () => {

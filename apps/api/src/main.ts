@@ -1,7 +1,9 @@
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
+import { setupApp } from './app.setup.js';
 import { env } from './env.js';
 
-const app = await NestFactory.create(AppModule);
-app.enableShutdownHooks();
+const app = await NestFactory.create<NestExpressApplication>(AppModule);
+setupApp(app);
 await app.listen(env.PORT);

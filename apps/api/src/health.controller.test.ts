@@ -1,11 +1,8 @@
-import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
-import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import type { INestApplication } from '@nestjs/common';
+import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
+import { startTestApp } from './test-app.test-util.js';
 
 // 실제 Postgres 18 컨테이너로 /health가 DB 연결까지 확인하는지 검증한다(DECISIONS 10-2).
 describe('GET /health', () => {
@@ -13,14 +10,7 @@ describe('GET /health', () => {
   let app: INestApplication<App>;
 
   beforeAll(async () => {
-    container = await new PostgreSqlContainer('postgres:18').start();
-    process.env.DATABASE_URL = container.getConnectionUri();
-    const { AppModule } = await import('./app.module.js');
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    app = moduleRef.createNestApplication();
-    await app.init();
+    ({ app, container } = await startTestApp());
   }, 120_000);
 
   afterAll(async () => {
@@ -28,7 +18,7 @@ describe('GET /health', () => {
     await container?.stop();
   });
 
-  it('DB에 연결되면 ok를 반환한다', async () => {
+  it('로그인 없이 DB에 연결되면 ok를 반환한다', async () => {
     const res = await request(app.getHttpServer()).get('/health').expect(200);
     expect(res.body).toEqual({ status: 'ok', db: 'ok', graphSchemaVersion: 1 });
   });

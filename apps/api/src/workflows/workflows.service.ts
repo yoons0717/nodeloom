@@ -1,5 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { type Graph, graphSchema } from '@nodeloom/core';
+import { DEMO_LIMITS } from '../demo-limits.js';
+import { env } from '../env.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma.service.js';
 import type { WorkflowBody } from './workflows.schemas.js';
@@ -32,12 +38,21 @@ export class WorkflowsService {
   }
 
   async create(body: WorkflowBody) {
+    if (env.DEMO_MODE) {
+      const count = await this.prisma.workflow.count();
+      if (count >= DEMO_LIMITS.workflows)
+        throw new ForbiddenException(
+          `데모에서는 워크플로우를 ${DEMO_LIMITS.workflows}개까지 만들 수 있습니다`,
+        );
+    }
+    checkDemoGraph(body);
     const w = await this.prisma.workflow.create({ data: toRow(body) });
     return { id: w.id };
   }
 
   // 덮어쓰기 저장. 버전 비교(409)는 하지 않는다(DECISIONS 2-4).
   async update(id: string, body: WorkflowBody) {
+    checkDemoGraph(body);
     const { count } = await this.prisma.workflow.updateMany({
       where: { id },
       data: toRow(body),
@@ -49,6 +64,13 @@ export class WorkflowsService {
     const { count } = await this.prisma.workflow.deleteMany({ where: { id } });
     if (count === 0) throw notFound();
   }
+}
+
+function checkDemoGraph(body: WorkflowBody) {
+  if (env.DEMO_MODE && body.graph.nodes.length > DEMO_LIMITS.nodesPerGraph)
+    throw new ForbiddenException(
+      `데모에서는 노드를 ${DEMO_LIMITS.nodesPerGraph}개까지 놓을 수 있습니다`,
+    );
 }
 
 // 그래프는 JSON 요청 본문을 zod로 검사한 값이라 JSON으로 저장할 수 있다. config가 unknown이라 Prisma 타입과만 맞춰 준다.
