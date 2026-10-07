@@ -87,6 +87,23 @@ describe('SaveControls', () => {
     expect(status()).toBe('저장됨');
   });
 
+  it('저장 중 로그인이 만료되면 페이지를 떠나지 않고 다른 탭에서 로그인하라고 안내한다', async () => {
+    renderControls();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ message: '로그인이 필요합니다' }), {
+            status: 401,
+          }),
+        ),
+      ),
+    );
+    fireEvent.click(screen.getByText('노드 추가'));
+    fireEvent.click(screen.getByRole('button', { name: '저장' }));
+    await waitFor(() => expect(status()).toMatch(/다른 탭에서 로그인/));
+  });
+
   it('이름을 비우면 저장할 수 없고 이유를 보여 준다', () => {
     renderControls();
     fireEvent.change(screen.getByLabelText('워크플로우 이름'), {

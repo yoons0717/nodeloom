@@ -7,11 +7,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useEditorStore } from '@/features/editor/store-context';
-import { clientApi } from '@/lib/client-api';
+import { ApiError, clientApi } from '@/lib/client-api';
 
 type Saved = { name: string; graph: Graph; json: string };
 
-const LEAVE_MESSAGE = '저장하지 않은 변경이 있습니다. 나갈까요?';
+const LEAVE_MESSAGE =
+  '저장하지 않은 변경이 있습니다. 나갈까요?';
 
 // 이름 편집, 저장 버튼, ⌘S, 저장 안 된 변경 표시(M3 작은 결정 ③④). 저장은 덮어쓰기다(DECISIONS 2-4).
 export function SaveControls({
@@ -82,7 +83,10 @@ export function SaveControls({
   const status = save.isPending
     ? '저장 중…'
     : save.error
-      ? save.error.message
+      ? // 여기서 로그인 화면으로 가면 편집 중인 그래프를 잃는다. 쿠키는 탭끼리 같이 쓰므로 다른 탭에서 로그인하면 된다.
+        save.error instanceof ApiError && save.error.status === 401
+        ? '로그인이 만료되었습니다. 다른 탭에서 로그인한 뒤 다시 저장하세요'
+        : save.error.message
       : dirty
         ? '저장 안 된 변경'
         : '저장됨';
