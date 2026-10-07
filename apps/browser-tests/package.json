@@ -5,10 +5,13 @@
   "scripts": {
     "bench": "playwright test",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "e2e": "E2E_MODE=admin playwright test -c playwright.e2e.config.ts && E2E_MODE=demo playwright test -c playwright.e2e.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
-    "@types/node": "^24"
+    "@testcontainers/postgresql": "^12.2.0",
+    "@types/node": "^24",
+    "bcryptjs": "^3.0.3"
   }
 }

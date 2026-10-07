@@ -26,13 +26,14 @@ pnpm dev
 
 ## 명령
 
-| 명령                                          | 내용                                       |
-| --------------------------------------------- | ------------------------------------------ |
-| `pnpm dev`                                    | web, api, core를 함께 실행                 |
-| `pnpm db:migrate`                             | DB 마이그레이션 적용                       |
-| `pnpm admin:hash`                             | 관리자 비밀번호 해시 만들기                |
-| `pnpm test`                                   | 전체 테스트(api 통합 테스트는 Docker 필요) |
-| `pnpm lint` / `pnpm typecheck` / `pnpm build` | 검사와 빌드                                |
+| 명령                                          | 내용                                                                                                                        |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                                    | web, api, core를 함께 실행                                                                                                  |
+| `pnpm db:migrate`                             | DB 마이그레이션 적용                                                                                                        |
+| `pnpm admin:hash`                             | 관리자 비밀번호 해시 만들기                                                                                                 |
+| `pnpm e2e`                                    | 브라우저로 핵심 흐름 확인(Docker 필요, 처음 한 번 `pnpm --filter @nodeloom/browser-tests exec playwright install chromium`) |
+| `pnpm test`                                   | 전체 테스트(api 통합 테스트는 Docker 필요)                                                                                  |
+| `pnpm lint` / `pnpm typecheck` / `pnpm build` | 검사와 빌드                                                                                                                 |
 
 Colima를 쓴다면 테스트 전에 다음 환경 변수가 필요합니다.
 
