@@ -3,12 +3,14 @@
 // E2E_MODE=demo면 api를 데모 모드로 띄운다. api는 시작할 때 모드를 한 번 읽으므로 모드마다 따로 띄운다.
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import bcrypt from 'bcryptjs';
 import { API_PORT, E2E_PASSWORD, WEB_PORT } from './config.ts';
 
 const demo = process.env.E2E_MODE === 'demo';
-const root = new URL('../../../', import.meta.url).pathname;
+// pathname은 공백·한글을 %로 인코딩한 채 돌려주므로 파일 경로로 바꿔서 쓴다.
+const root = fileURLToPath(new URL('../../../', import.meta.url));
 
 const container = await new PostgreSqlContainer('postgres:18').start();
 const env = {
@@ -60,14 +62,15 @@ const children: ChildProcess[] = [
   ),
 ];
 
+// Playwright가 끝내라고 신호를 보내면 정상 종료(0), api나 web이 스스로 죽었으면 실패(1)로 끝낸다.
 let stopping = false;
-async function stop() {
+async function stop(code: number) {
   if (stopping) return;
   stopping = true;
   for (const child of children) child.kill('SIGTERM');
   await container.stop();
-  process.exit(0);
+  process.exit(code);
 }
-process.on('SIGTERM', () => void stop());
-process.on('SIGINT', () => void stop());
-for (const child of children) child.on('exit', () => void stop());
+process.on('SIGTERM', () => void stop(0));
+process.on('SIGINT', () => void stop(0));
+for (const child of children) child.on('exit', () => void stop(1));
