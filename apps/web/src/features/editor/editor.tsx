@@ -2,7 +2,7 @@
 
 import type { Graph } from '@nodeloom/core';
 import { ReactFlowProvider } from '@xyflow/react';
-import { Profiler } from 'react';
+import { Profiler, type ReactNode } from 'react';
 import '@xyflow/react/dist/style.css';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -16,18 +16,21 @@ import { EditorStoreProvider, useEditorStore } from './store-context';
 import { useEditorShortcuts } from './use-editor-shortcuts';
 
 // bench: 성능 HUD를 보이고 측정값을 모은다(/bench 전용).
+// toolbar: 상단 바 왼쪽에 들어갈 것(저장 버튼 등). 스토어 안에서 그려지므로 스토어를 읽을 수 있다.
 export function Editor({
   initial,
   bench = false,
+  toolbar,
 }: {
   initial?: Graph;
   bench?: boolean;
+  toolbar?: ReactNode;
 }) {
   const editor = (
     <EditorStoreProvider initial={initial}>
       <ReactFlowProvider>
         <TooltipProvider>
-          <EditorLayout bench={bench} />
+          <EditorLayout bench={bench} toolbar={toolbar} />
         </TooltipProvider>
       </ReactFlowProvider>
     </EditorStoreProvider>
@@ -41,11 +44,17 @@ export function Editor({
   );
 }
 
-function EditorLayout({ bench }: { bench: boolean }) {
+function EditorLayout({
+  bench,
+  toolbar,
+}: {
+  bench: boolean;
+  toolbar?: ReactNode;
+}) {
   useEditorShortcuts();
   return (
     <div className="flex h-dvh flex-col">
-      <TopBar />
+      <TopBar toolbar={toolbar} />
       <div className="flex min-h-0 flex-1">
         <Palette />
         <Canvas>{bench && <PerfHud />}</Canvas>
@@ -55,7 +64,7 @@ function EditorLayout({ bench }: { bench: boolean }) {
   );
 }
 
-function TopBar() {
+function TopBar({ toolbar }: { toolbar?: ReactNode }) {
   const canUndo = useEditorStore((s) => s.past.length > 0);
   const canRedo = useEditorStore((s) => s.future.length > 0);
   const undo = useEditorStore((s) => s.undo);
@@ -67,7 +76,7 @@ function TopBar() {
 
   return (
     <header className="flex flex-wrap items-center gap-3 border-b border-divider bg-surface px-5 py-2.5">
-      <h1 className="text-base font-bold">새 워크플로우</h1>
+      {toolbar ?? <h1 className="text-base font-bold">새 워크플로우</h1>}
       <div className="flex gap-2">
         <Button variant="outline" onClick={undo} disabled={!canUndo}>
           되돌리기

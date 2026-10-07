@@ -1,0 +1,27 @@
+'use client';
+
+import { Editor } from '@/features/editor/editor';
+import { SaveControls } from './save-controls';
+import type { Workflow } from './schemas';
+
+export function WorkflowEditor({ workflow }: { workflow: Workflow }) {
+  return (
+    <>
+      {/* 좁은 화면에서는 편집 대신 안내만 보여 준다(DECISIONS B-11). */}
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center md:hidden">
+        <p className="font-bold">{workflow.name}</p>
+        <p className="text-sm text-muted-foreground">
+          에디터는 데스크톱처럼 넓은 화면에서 열어 주세요.
+        </p>
+      </div>
+      <div className="hidden md:contents">
+        <Editor
+          initial={workflow.graph}
+          toolbar={
+            <SaveControls id={workflow.id} initialName={workflow.name} />
+          }
+        />
+      </div>
+    </>
+  );
+}
