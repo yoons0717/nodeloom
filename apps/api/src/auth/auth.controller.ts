@@ -45,6 +45,8 @@ export class AuthController {
     });
   }
 
+  // 토큰이 만료됐거나 서명 키가 바뀐 상태에서도 쿠키를 지울 수 있어야 하므로 로그인 없이 받는다.
+  @Public()
   @Post('logout')
   @HttpCode(204)
   logout(@Res({ passthrough: true }) res: Response) {

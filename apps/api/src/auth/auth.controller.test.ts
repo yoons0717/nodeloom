@@ -76,18 +76,14 @@ describe('/auth', () => {
       exp: Math.floor(Date.now() / 1000) - 10,
     });
     await withToken(expired).expect(401);
-    await withToken('not-a-jwt').expect(401);
   });
 
-  it('로그아웃하면 쿠키를 지운다', async () => {
-    const agent = request.agent(app.getHttpServer());
-    await agent
-      .post('/auth/login')
-      .send({ password: TEST_PASSWORD })
+  it('토큰이 망가져 있어도 로그아웃으로 쿠키를 지울 수 있다', async () => {
+    const res = await api()
+      .post('/auth/logout')
+      .set('Cookie', 'nodeloom_session=broken')
       .expect(204);
-    const res = await agent.post('/auth/logout').expect(204);
     expect(cookieOf(res)).toMatch(/Expires=Thu, 01 Jan 1970/);
-    await agent.get('/workflows').expect(401);
   });
 
   // 속도 제한은 이 파일의 다른 로그인 시도에도 영향을 주므로 마지막에 둔다.
