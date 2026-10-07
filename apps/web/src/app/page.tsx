@@ -49,7 +49,7 @@ export default async function WorkflowListPage() {
                 노드 {w.nodeCount}개
               </span>
               <span className="text-xs text-muted-foreground">
-                {formatDateTime(w.updatedAt)} 수정
+                마지막 수정 {formatDateTime(w.updatedAt)}
               </span>
               <DeleteWorkflowButton id={w.id} name={w.name} />
             </li>

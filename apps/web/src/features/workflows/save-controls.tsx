@@ -12,9 +12,9 @@ import { ApiError, clientApi } from '@/lib/client-api';
 type Saved = { name: string; graph: Graph; json: string };
 
 const LEAVE_MESSAGE =
-  '저장하지 않은 변경이 있습니다. 나갈까요?';
+  '저장하지 않은 변경 사항이 있습니다. 이 페이지를 나갈까요?';
 
-// 이름 편집, 저장 버튼, ⌘S, 저장 안 된 변경 표시(M3 작은 결정 ③④). 저장은 덮어쓰기다(DECISIONS 2-4).
+// 이름 편집, 저장 버튼, ⌘S, 저장 여부 표시(M3 작은 결정 ③④). 저장은 덮어쓰기다(DECISIONS 2-4).
 export function SaveControls({
   id,
   initialName,
@@ -88,7 +88,7 @@ export function SaveControls({
         ? '로그인이 만료되었습니다. 다른 탭에서 로그인한 뒤 다시 저장하세요'
         : save.error.message
       : dirty
-        ? '저장 안 된 변경'
+        ? '저장되지 않음'
         : '저장됨';
 
   return (

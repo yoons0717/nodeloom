@@ -60,12 +60,12 @@ function renderControls() {
 const status = () => screen.getByRole('status').textContent;
 
 describe('SaveControls', () => {
-  it('그래프를 바꾸면 저장 안 된 변경으로 표시하고, 저장하면 덮어쓰기 요청 후 저장됨으로 돌아간다', async () => {
+  it('그래프를 바꾸면 저장되지 않음으로 표시하고, 저장하면 덮어쓰기 요청 후 저장됨으로 돌아간다', async () => {
     const fetchMock = renderControls();
     expect(status()).toBe('저장됨');
 
     fireEvent.click(screen.getByText('노드 추가'));
-    expect(status()).toBe('저장 안 된 변경');
+    expect(status()).toBe('저장되지 않음');
 
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
     await waitFor(() => expect(status()).toBe('저장됨'));

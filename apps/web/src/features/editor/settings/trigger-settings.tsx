@@ -10,7 +10,7 @@ export function TriggerSettings({ node, errors, set }: SettingsProps) {
     <>
       <Field
         label="스케줄 (cron)"
-        hint="비워 두면 수동 실행만 합니다. 예: 0 7 * * *"
+        hint="비워 두면 직접 실행할 때만 동작합니다. 예: 0 7 * * *(매일 7시)"
         error={errors.cron}
       >
         {(control) => (
@@ -28,7 +28,7 @@ export function TriggerSettings({ node, errors, set }: SettingsProps) {
       </Field>
       <JsonField
         label="테스트 입력 (JSON)"
-        hint="수동 실행 때 Trigger가 내보내는 값"
+        hint="직접 실행할 때 Trigger가 다음 노드로 넘겨주는 값"
         value={configValue(node, 'testInput')}
         error={errors.testInput}
         onChange={(v) => set('testInput', v)}

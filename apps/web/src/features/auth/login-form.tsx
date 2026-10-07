@@ -77,7 +77,7 @@ export function LoginForm() {
         )}
       </div>
       <Button type="submit" disabled={pending}>
-        {pending ? '확인 중…' : '로그인'}
+        {pending ? '로그인 중…' : '로그인'}
       </Button>
     </form>
   );

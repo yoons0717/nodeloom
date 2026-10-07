@@ -7,11 +7,11 @@ export const NODE_META: Record<
 > = {
   trigger: {
     label: 'Trigger',
-    description: '흐름의 시작. 수동 실행이나 스케줄',
+    description: '흐름 시작(직접 실행 또는 정해진 시각)',
   },
-  http: { label: 'HTTP 요청', description: '주소를 호출하고 응답을 받음' },
+  http: { label: 'HTTP 요청', description: '주소를 호출해 응답 받기' },
   transform: { label: 'Transform', description: 'JSONata 식으로 데이터 가공' },
-  condition: { label: 'Condition', description: '참·거짓에 따라 다른 길로' },
+  condition: { label: 'Condition', description: '참·거짓에 따라 갈래 나누기' },
 };
 
 export const PORT_LABEL: Record<string, string> = { true: '참', false: '거짓' };

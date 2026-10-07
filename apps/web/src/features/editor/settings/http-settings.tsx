@@ -57,7 +57,7 @@ export function HttpSettings({ node, errors, set }: SettingsProps) {
             </Select>
           )}
         </Field>
-        <Field label="타임아웃(초)" error={errors.timeoutSec}>
+        <Field label="제한 시간(초)" error={errors.timeoutSec}>
           {(control) => <Input {...control} {...numberInput('timeoutSec')} />}
         </Field>
       </div>
@@ -123,7 +123,7 @@ export function HttpSettings({ node, errors, set }: SettingsProps) {
           checked={configValue(node, 'continueOnNon2xx') === true}
           onCheckedChange={(v) => set('continueOnNon2xx', v)}
         />
-        2xx가 아니어도 계속
+        응답 코드가 2xx가 아니어도 다음 노드로 진행
       </label>
     </>
   );
