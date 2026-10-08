@@ -10,6 +10,7 @@ import type { Prisma } from '../generated/prisma/client.js';
 // env.ts를 읽는 모듈은 startTestApp이 환경 변수를 넣은 뒤에 import한다(값은 beforeAll에서).
 import type { PrismaService } from '../prisma.service.js';
 import { startTestApp } from '../test-app.test-util.js';
+import { createHttpGuard } from './nodes/ssrf.js';
 import type { RunExecutor } from './run-executor.js';
 
 const n = (
@@ -48,6 +49,7 @@ describe('실행 엔진', () => {
     ({ app, container } = await startTestApp({
       RUN_TIMEOUT: '3',
       NODELOOM_SECRET_TOKEN: 'secret-token-1234',
+      NODELOOM_SECRET_SPACED: 's3cret value/1',
     }));
     await app.listen(0);
     base = (await app.getUrl()).replace('[::1]', 'localhost');
@@ -56,6 +58,12 @@ describe('실행 엔진', () => {
     prisma = app.get(PrismaService);
     executor = app.get(RunExecutor);
     executor.retryBaseMs = 5;
+    // 테스트 앱은 임의 포트에서 뜨므로 연습용 응답 주소를 맞춘다.
+    executor.httpGuard = createHttpGuard({
+      mockBase: `${base}/mock`,
+      demo: false,
+      allowPrivate: [],
+    });
   }, 120_000);
 
   afterAll(async () => {
@@ -131,8 +139,41 @@ describe('실행 엔진', () => {
     });
     const send = run.nodeRuns.find((r) => r.nodeKey === 'send');
     expect(send?.output).toMatchObject({
-      headers: { authorization: 'secret-token-1234' },
+      // 실행 기록에는 가려서 저장된다.
+      headers: { authorization: '***' },
       body: { city: 'Busan', run: run.id },
+    });
+  });
+
+  it('입력·출력·오류에 비밀값(원래 값과 URL 인코딩 값)을 남기지 않는다', async () => {
+    const { run } = await execute(
+      g(
+        [
+          trigger(),
+          n('t', 'transform', { expression: '{ "s": $secrets.SPACED }' }),
+          http(
+            'echo',
+            '/mock/echo?q={{ $encodeUrlComponent($secrets.SPACED) }}',
+          ),
+          n('c', 'condition', { expression: '$secrets.TOKEN' }),
+        ],
+        [e('trigger', 't'), e('t', 'echo'), e('echo', 'c')],
+      ),
+    );
+    const stored = JSON.stringify(run);
+    for (const leaked of [
+      'secret-token-1234',
+      's3cret value/1',
+      's3cret%20value%2F1',
+    ]) {
+      expect(stored).not.toContain(leaked);
+    }
+    expect(run.nodeRuns.find((r) => r.nodeKey === 'echo')).toMatchObject({
+      input: { s: '***' },
+      output: { url: '/mock/echo?q=***', query: { q: '***' } },
+    });
+    expect(run.error).toMatchObject({
+      message: '조건 결과가 참·거짓이 아닙니다: "***"',
     });
   });
 

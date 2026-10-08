@@ -4,6 +4,7 @@ import type { EvalContext, GraphNode, NodeType } from '@nodeloom/core';
 import { MockModule } from '../../mock/mock.module.js';
 import { NodeError } from './node-error.js';
 import { runNode } from './run-node.js';
+import { createHttpGuard, type HttpGuard } from './ssrf.js';
 
 const node = (type: NodeType, config: Record<string, unknown>): GraphNode => ({
   id: 'n1',
@@ -31,10 +32,12 @@ const failure = (p: Promise<unknown>) =>
 describe('노드 실행기', () => {
   let app: INestApplication;
   let base: string;
+  let guard: HttpGuard;
   const http = (config: Record<string, unknown>) =>
     runNode(
       node('http', { ...config, url: `${base}${String(config.url)}` }),
       ctx,
+      { guard },
     );
 
   // DB 없이 연습용 응답만 띄운다.
@@ -45,6 +48,11 @@ describe('노드 실행기', () => {
     app = moduleRef.createNestApplication();
     await app.listen(0);
     base = (await app.getUrl()).replace('[::1]', 'localhost');
+    guard = createHttpGuard({
+      mockBase: `${base}/mock`,
+      demo: false,
+      allowPrivate: [],
+    });
   });
 
   afterAll(async () => {
@@ -52,30 +60,34 @@ describe('노드 실행기', () => {
   });
 
   it('Trigger는 입력을, Transform은 식 결과를 내보낸다', async () => {
-    expect(await runNode(node('trigger', {}), ctx)).toEqual({
+    expect(await runNode(node('trigger', {}), ctx, { guard })).toEqual({
       output: ctx.input,
     });
     expect(
-      await runNode(node('transform', { expression: '{ "c": city }' }), ctx),
+      await runNode(node('transform', { expression: '{ "c": city }' }), ctx, {
+        guard,
+      }),
     ).toEqual({ output: { c: 'Busan' } });
   });
 
   it('Condition은 참·거짓 포트로 나가고, 결과가 불리언이 아니면 실패', async () => {
-    expect(await runNode(node('condition', { expression: 'ok' }), ctx)).toEqual(
-      { output: ctx.input, port: 'true' },
-    );
     expect(
-      await runNode(node('condition', { expression: 'city = "Seoul"' }), ctx),
+      await runNode(node('condition', { expression: 'ok' }), ctx, { guard }),
+    ).toEqual({ output: ctx.input, port: 'true' });
+    expect(
+      await runNode(node('condition', { expression: 'city = "Seoul"' }), ctx, {
+        guard,
+      }),
     ).toMatchObject({ port: 'false' });
     const e = await failure(
-      runNode(node('condition', { expression: 'city' }), ctx),
+      runNode(node('condition', { expression: 'city' }), ctx, { guard }),
     );
     expect(e.message).toContain('참·거짓이 아닙니다');
   });
 
   it('식 오류는 재시도하지 않는 실패', async () => {
     const e = await failure(
-      runNode(node('transform', { expression: 'city + 1' }), ctx),
+      runNode(node('transform', { expression: 'city + 1' }), ctx, { guard }),
     );
     expect(e.retryable).toBe(false);
   });
@@ -124,7 +136,16 @@ describe('노드 실행기', () => {
       await failure(http({ url: '/mock/slow?ms=1500', timeoutSec: 1 })),
     ).toMatchObject({ retryable: true, message: '1초 안에 응답이 없습니다' });
     expect(
-      await failure(runNode(node('http', { url: 'http://localhost:1' }), ctx)),
+      await failure(
+        // 연결 실패를 보려고 loopback을 허용한 검사를 쓴다.
+        runNode(node('http', { url: 'http://localhost:1' }), ctx, {
+          guard: createHttpGuard({
+            mockBase: `${base}/mock`,
+            demo: false,
+            allowPrivate: ['127.0.0.1', '::1'],
+          }),
+        }),
+      ),
     ).toMatchObject({ retryable: true });
   });
 

@@ -13,15 +13,15 @@ import {
   type NodeRunState,
   validateGraph,
 } from '@nodeloom/core';
-import { env } from '../env.js';
+import { env, secrets } from '../env.js';
 import { Prisma, type Run } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma.service.js';
+import { createMasker } from './mask.js';
 import { NodeError } from './nodes/node-error.js';
 import { runNode } from './nodes/run-node.js';
+import { createHttpGuard } from './nodes/ssrf.js';
 import { QueueService, RUN_QUEUE, type RunJob } from './queue.js';
 
-// `$secrets.<이름>`은 이 접두어가 붙은 환경 변수만 읽는다(DECISIONS 2-3).
-const SECRET_PREFIX = 'NODELOOM_SECRET_';
 // 동시에 실행하는 흐름 수. 같은 흐름은 인덱스가 하나로 막는다(DECISIONS 7-5).
 const CONCURRENT_RUNS = 5;
 
@@ -32,6 +32,13 @@ export class RunExecutor implements OnApplicationBootstrap {
   private readonly logger = new Logger(RunExecutor.name);
   // 재시도 대기의 첫 간격(1·2·4초…, DECISIONS 7-3). 테스트에서 줄인다.
   retryBaseMs = 1000;
+  // HTTP 노드가 보낼 수 있는 곳(DECISIONS 8-1). 테스트에서 연습용 응답 주소를 바꾼다.
+  httpGuard = createHttpGuard({
+    mockBase: env.MOCK_BASE_URL,
+    demo: env.DEMO_MODE,
+    allowPrivate: env.HTTP_ALLOW_PRIVATE,
+  });
+  private readonly masker = createMasker(Object.values(secrets));
 
   constructor(
     private readonly prisma: PrismaService,
@@ -85,7 +92,8 @@ export class RunExecutor implements OnApplicationBootstrap {
       return a;
     };
 
-    const secrets = readSecrets();
+    // 실행 기록에는 비밀값을 가려서 저장한다(DECISIONS 8-2).
+    const store = (value: unknown) => toJson(this.masker.value(value));
     const runInfo = {
       id: run.id,
       workflowId: run.workflowId,
@@ -130,20 +138,20 @@ export class RunExecutor implements OnApplicationBootstrap {
             nodeKey: node.key,
             attempt: takeAttempt(node.id),
             status: 'RUNNING',
-            input: toJson(input),
+            input: store(input),
           },
         });
         try {
           const result = await runNode(
             node,
             { input, nodes: nodesByKey(), run: runInfo, secrets },
-            deadline.signal,
+            { signal: deadline.signal, guard: this.httpGuard },
           );
           await this.prisma.nodeRun.update({
             where: { id: row.id },
             data: {
               status: 'SUCCESS',
-              output: toJson(result.output),
+              output: store(result.output),
               port: result.port,
               finishedAt: new Date(),
             },
@@ -160,7 +168,7 @@ export class RunExecutor implements OnApplicationBootstrap {
             where: { id: row.id },
             data: {
               status: 'FAILED',
-              error: toJson({ message: err.message, details: err.details }),
+              error: store({ message: err.message, details: err.details }),
               finishedAt: new Date(),
             },
           });
@@ -174,7 +182,7 @@ export class RunExecutor implements OnApplicationBootstrap {
           failure ??= {
             code: 'NODE_FAILED',
             nodeKey: node.key,
-            message: err.message,
+            message: this.masker.text(err.message),
           };
           return;
         }
@@ -231,7 +239,7 @@ export class RunExecutor implements OnApplicationBootstrap {
       where: { id: runId },
       data: {
         status: error ? 'FAILED' : 'SUCCESS',
-        error: error ? toJson(error) : Prisma.DbNull,
+        error: error ? store(error) : Prisma.DbNull,
         finishedAt: new Date(),
       },
     });
@@ -293,16 +301,6 @@ export class RunExecutor implements OnApplicationBootstrap {
       triggerInput,
     });
   }
-}
-
-function readSecrets() {
-  return Object.fromEntries(
-    Object.entries(process.env).flatMap(([k, v]) =>
-      k.startsWith(SECRET_PREFIX) && v
-        ? [[k.slice(SECRET_PREFIX.length), v]]
-        : [],
-    ),
-  );
 }
 
 // DB의 JSON 칸에 넣을 수 있는 값으로 바꾼다. 식 결과에 undefined나 함수가 섞여 있어도 저장되게 JSON을 한 번 거친다.

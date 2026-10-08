@@ -60,7 +60,7 @@ MVP는 두 단계로 나눈다. 각 단계에는 막혔을 때 먼저 공개할 
 | 큐 | pg-boss | Redis 없음, Run 생성과 job 등록을 한 트랜잭션으로 |
 | 인증 | 관리자 1명, bcrypt 해시(환경 변수), JWT 7일, httpOnly·Secure·Lax 쿠키 | 1인 도구에 맞춘 최소 구성 |
 | 테스트 | Vitest(전체) + Testcontainers(통합) + Playwright(e2e, 벤치) | 러너 통일, 실제 DB로 엔진 규칙 검증 |
-| 운영 | pino(`runId`), `/health`, Swagger, GitHub Actions | 기본기 |
+| 운영 | 로그(`runId`, 비밀값 가리기), `/health`, Swagger, GitHub Actions | 기본기 |
 
 ## 5. 구조
 

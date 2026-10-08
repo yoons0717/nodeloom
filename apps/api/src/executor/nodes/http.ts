@@ -4,8 +4,9 @@ import {
   fillTemplate,
   type NodeConfig,
 } from '@nodeloom/core';
+import type { Dispatcher } from 'undici';
 import { NodeError } from './node-error.js';
-import type { NodeResult } from './run-node.js';
+import type { NodeResult, RunNodeOptions } from './run-node.js';
 
 // 응답 본문 상한(DECISIONS 8-1)
 export const MAX_RESPONSE_BYTES = 1024 * 1024;
@@ -17,24 +18,31 @@ const isRetryableStatus = (s: number) => s >= 500 || s === 408 || s === 429;
 export async function runHttp(
   config: NodeConfig<'http'>,
   ctx: EvalContext,
-  signal?: AbortSignal,
+  { signal, guard }: RunNodeOptions,
 ): Promise<NodeResult> {
   const request = await buildRequest(config, ctx);
+  // 보내기 전에 주소를 검사하고, 연결 직전 IP 검사를 하는 연결을 받는다(DECISIONS 8-1).
+  const dispatcher = guard.check(new URL(request.url));
 
   let res: Response;
   let body: unknown;
   try {
-    res = await fetch(request, {
+    // Node 내장 fetch는 undici의 dispatcher를 받지만 RequestInit 타입에는 없다.
+    const init: RequestInit & { dispatcher?: Dispatcher } = {
+      dispatcher,
       // 리다이렉트는 따라가지 않는다. 3xx는 2xx가 아니므로 실패(DECISIONS 8-1)
       redirect: 'manual',
       signal: AbortSignal.any([
         AbortSignal.timeout(config.timeoutSec * 1000),
         ...(signal ? [signal] : []),
       ]),
-    });
+    };
+    res = await fetch(request, init);
     body = parseBody(await readLimited(res), res.headers.get('content-type'));
   } catch (e) {
     if (e instanceof NodeError) throw e;
+    const blocked = guard.blockedMessage(e);
+    if (blocked) throw new NodeError(blocked);
     if (e instanceof DOMException && e.name === 'TimeoutError') {
       throw new NodeError(`${config.timeoutSec}초 안에 응답이 없습니다`, true);
     }

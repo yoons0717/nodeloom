@@ -27,6 +27,7 @@ export class MockController {
   echo(@Req() req: Request): Record<string, unknown> {
     return {
       method: req.method,
+      url: req.originalUrl,
       query: req.query,
       headers: req.headers,
       body: req.body as unknown,
@@ -36,6 +37,12 @@ export class MockController {
   @All('status/:code')
   status(@Param('code', ParseIntPipe) code: number, @Res() res: Response) {
     res.status(Math.min(Math.max(code, 200), 599)).json({ status: code });
+  }
+
+  // 리다이렉트를 따라가지 않는지 시험용(DECISIONS 8-1)
+  @Get('redirect')
+  redirect(@Query('to') to: string, @Res() res: Response) {
+    res.redirect(302, to);
   }
 
   // 시간 제한 시험용. 최대 30초
