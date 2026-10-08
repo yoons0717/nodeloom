@@ -6,6 +6,7 @@ import { DEMO_LIMITS } from './demo-limits.js';
 import { env } from './env.js';
 import { ExecutorModule } from './executor/executor.module.js';
 import { HealthController } from './health.controller.js';
+import { MockModule } from './mock/mock.module.js';
 import { PrismaModule } from './prisma.module.js';
 import { WorkflowsModule } from './workflows/workflows.module.js';
 
@@ -24,6 +25,7 @@ import { WorkflowsModule } from './workflows/workflows.module.js';
     AuthModule,
     WorkflowsModule,
     ExecutorModule,
+    MockModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
