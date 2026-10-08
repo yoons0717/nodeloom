@@ -26,6 +26,13 @@ export async function startTestApp(overrides: Record<string, string> = {}) {
   });
 
   const { AppModule } = await import('./app.module.js');
+  // 테스트 파일이 env.ts를 읽는 모듈을 맨 위에서 import하면 env.ts가 위 값을 넣기 전에 로컬 .env로 굳는다.
+  const { env } = await import('./env.js');
+  if (env.DATABASE_URL !== url) {
+    throw new Error(
+      'env.ts가 startTestApp보다 먼저 로드됐습니다. 테스트 파일에서는 import type을 쓰고 값은 앱을 띄운 뒤 import하세요',
+    );
+  }
   const { setupApp } = await import('./app.setup.js');
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],

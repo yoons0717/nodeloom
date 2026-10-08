@@ -25,6 +25,8 @@ const schema = z
     JWT_SECRET: optional(
       z.string().min(32, { error: 'JWT_SECRET은 32자 이상이어야 합니다' }),
     ),
+    // 실행 한 번의 전체 시간 제한, 초(DECISIONS 7-3, B-13)
+    RUN_TIMEOUT: z.coerce.number().int().positive().default(300),
   })
   .refine((e) => e.DEMO_MODE || (e.ADMIN_PASSWORD_HASH && e.JWT_SECRET), {
     error: '데모 모드가 아니면 ADMIN_PASSWORD_HASH와 JWT_SECRET이 필요합니다',

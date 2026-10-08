@@ -13,9 +13,11 @@ export type NodeResult = { output: unknown; port?: string };
 
 // 노드 하나를 한 번 실행한다. 재시도와 기록은 실행 엔진이 한다.
 // Trigger의 입력(ctx.input)은 실행 엔진이 실행 종류에 따라 넣는다(DECISIONS B-10).
+// signal: 실행 전체 시간 제한에 걸리면 진행 중인 요청을 끊는다.
 export async function runNode(
   node: GraphNode,
   ctx: EvalContext,
+  signal?: AbortSignal,
 ): Promise<NodeResult> {
   try {
     switch (node.type) {
@@ -38,7 +40,11 @@ export async function runNode(
         return { output: ctx.input, port: String(result) };
       }
       case 'http':
-        return await runHttp(NODE_SPECS.http.config.parse(node.config), ctx);
+        return await runHttp(
+          NODE_SPECS.http.config.parse(node.config),
+          ctx,
+          signal,
+        );
     }
   } catch (e) {
     if (e instanceof ExpressionError) throw new NodeError(e.message);

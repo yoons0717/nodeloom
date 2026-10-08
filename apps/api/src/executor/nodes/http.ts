@@ -17,6 +17,7 @@ const isRetryableStatus = (s: number) => s >= 500 || s === 408 || s === 429;
 export async function runHttp(
   config: NodeConfig<'http'>,
   ctx: EvalContext,
+  signal?: AbortSignal,
 ): Promise<NodeResult> {
   const request = await buildRequest(config, ctx);
 
@@ -26,7 +27,10 @@ export async function runHttp(
     res = await fetch(request, {
       // 리다이렉트는 따라가지 않는다. 3xx는 2xx가 아니므로 실패(DECISIONS 8-1)
       redirect: 'manual',
-      signal: AbortSignal.timeout(config.timeoutSec * 1000),
+      signal: AbortSignal.any([
+        AbortSignal.timeout(config.timeoutSec * 1000),
+        ...(signal ? [signal] : []),
+      ]),
     });
     body = parseBody(await readLimited(res), res.headers.get('content-type'));
   } catch (e) {

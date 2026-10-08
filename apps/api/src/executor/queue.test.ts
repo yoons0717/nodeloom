@@ -1,9 +1,10 @@
 import type { INestApplication } from '@nestjs/common';
 import { GRAPH_SCHEMA_VERSION, type Graph } from '@nodeloom/core';
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
-import { PrismaService } from '../prisma.service.js';
+import type { PrismaService } from '../prisma.service.js';
 import { startTestApp } from '../test-app.test-util.js';
-import { QueueService, RUN_QUEUE, type RunJob } from './queue.js';
+// env.ts를 읽는 모듈은 startTestApp이 환경 변수를 넣은 뒤에 import한다(값은 beforeAll에서).
+import type { QueueService, RunJob } from './queue.js';
 
 const graph: Graph = {
   schemaVersion: GRAPH_SCHEMA_VERSION,
@@ -17,12 +18,16 @@ describe('실행 대기열', () => {
   let queue: QueueService;
   let prisma: PrismaService;
   let workflowId: string;
+  let RUN_QUEUE: string;
   const enqueue = (kind: 'MANUAL' | 'SCHEDULE' | 'FAILURE') =>
     queue.enqueueRun({ workflowId, kind, graph, triggerInput: {} });
   const jobs = () => queue.boss.fetch<RunJob>(RUN_QUEUE, { batchSize: 10 });
 
   beforeAll(async () => {
     ({ app, container } = await startTestApp());
+    const { QueueService } = await import('./queue.js');
+    ({ RUN_QUEUE } = await import('./queue.js'));
+    const { PrismaService } = await import('../prisma.service.js');
     queue = app.get(QueueService);
     prisma = app.get(PrismaService);
   }, 120_000);

@@ -14,6 +14,7 @@ import { PrismaService } from '../prisma.service.js';
 // job 하나 = 실행 하나(DECISIONS 7-1)
 export const RUN_QUEUE = 'run';
 export type RunJob = { runId: string };
+const HEARTBEAT_SECONDS = 30;
 
 // pg-boss는 앱과 같은 DB의 pgboss 스키마에 대기열 테이블을 만든다(DECISIONS 6-3). 워커도 같은 프로세스에서 돈다(7-6).
 @Injectable()
@@ -52,6 +53,9 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
         });
         await this.boss.send(RUN_QUEUE, { runId: run.id } satisfies RunJob, {
           db: fromPrisma(tx),
+          // 워커가 죽으면 heartbeat가 끊기고, pg-boss가 job을 다시 꺼내 이어서 실행한다(M4 작은 결정 ③).
+          heartbeatSeconds: HEARTBEAT_SECONDS,
+          expireInSeconds: env.RUN_TIMEOUT + 60,
         });
         return run.id;
       });
