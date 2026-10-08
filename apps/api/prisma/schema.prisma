@@ -16,5 +16,76 @@ model Workflow {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  // 실패하면 실행할 워크플로우. 그 워크플로우를 지우면 비운다(DECISIONS B-4).
+  failureWorkflowId String?    @map("failure_workflow_id") @db.Uuid
+  failureWorkflow   Workflow?  @relation("FailureWorkflow", fields: [failureWorkflowId], references: [id], onDelete: SetNull)
+  failureFor        Workflow[] @relation("FailureWorkflow")
+  runs              Run[]
+
   @@map("workflows")
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+// FAILURE는 다른 실행이 실패해서 시작된 실패 알림 실행이다(DECISIONS A-1).
+enum RunKind {
+  MANUAL
+  SCHEDULE
+  FAILURE
+}
+
+// 실행 한 번. 같은 워크플로우에서 PENDING·RUNNING은 하나만 있을 수 있다(실패 알림 실행은 제외, DECISIONS 7-5).
+// 이 규칙은 부분 유니크 인덱스라 Prisma 스키마로 쓸 수 없어서 마이그레이션 SQL에 직접 있다.
+model Run {
+  id           String    @id @default(uuid()) @db.Uuid
+  workflowId   String    @map("workflow_id") @db.Uuid
+  workflow     Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  status       RunStatus @default(PENDING)
+  kind         RunKind
+  // 실행할 때의 그래프. 실행과 재개는 저장된 워크플로우가 아니라 이것만 읽는다(DECISIONS 2-4, B-9).
+  graph        Json
+  // Trigger가 내보낼 값(DECISIONS B-10)
+  triggerInput Json      @map("trigger_input")
+  error        Json?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  startedAt    DateTime? @map("started_at")
+  finishedAt   DateTime? @map("finished_at")
+  nodeRuns     NodeRun[]
+
+  @@index([workflowId, createdAt])
+  @@map("runs")
+}
+
+enum NodeRunStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+  SKIPPED
+}
+
+// 노드 실행 한 번(재시도마다 attempt가 늘어난다, DECISIONS 7-1).
+// input·output·error는 저장 직전에 비밀값을 ***로 바꾼다(DECISIONS 8-2).
+model NodeRun {
+  id         String        @id @default(uuid()) @db.Uuid
+  runId      String        @map("run_id") @db.Uuid
+  run        Run           @relation(fields: [runId], references: [id], onDelete: Cascade)
+  nodeId     String        @map("node_id")
+  nodeKey    String        @map("node_key")
+  attempt    Int
+  status     NodeRunStatus
+  // Condition이 나간 포트
+  port       String?
+  input      Json?
+  output     Json?
+  error      Json?
+  startedAt  DateTime      @default(now()) @map("started_at")
+  finishedAt DateTime?     @map("finished_at")
+
+  @@unique([runId, nodeKey, attempt])
+  @@map("node_runs")
 }

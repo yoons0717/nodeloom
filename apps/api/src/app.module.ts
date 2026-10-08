@@ -4,6 +4,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module.js';
 import { DEMO_LIMITS } from './demo-limits.js';
 import { env } from './env.js';
+import { ExecutorModule } from './executor/executor.module.js';
 import { HealthController } from './health.controller.js';
 import { PrismaModule } from './prisma.module.js';
 import { WorkflowsModule } from './workflows/workflows.module.js';
@@ -22,6 +23,7 @@ import { WorkflowsModule } from './workflows/workflows.module.js';
     PrismaModule,
     AuthModule,
     WorkflowsModule,
+    ExecutorModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
