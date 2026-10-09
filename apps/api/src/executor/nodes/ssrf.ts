@@ -22,6 +22,8 @@ metadata.addAddress('100.100.100.200');
 metadata.addAddress('fd00:ec2::254', 'ipv6');
 
 // 내부 주소: loopback, 사설, 링크 로컬(DECISIONS 8-1)
+// IPv4를 IPv6로 감싼 형태(::ffff:127.0.0.1)는 BlockList가 IPv4 규칙으로 함께 검사한다.
+// 반대로 ::ffff:0:0/96 같은 IPv6 규칙을 넣으면 BlockList가 모든 IPv4를 그 규칙에 맞춰 봐서 바깥 주소까지 막힌다.
 const internal = new BlockList();
 for (const [net, prefix] of [
   ['0.0.0.0', 8], // 0.0.0.0으로 연결하면 서버 자신으로 간다
@@ -36,7 +38,6 @@ for (const [net, prefix] of [
 }
 for (const [net, prefix] of [
   ['::', 127], // ::, ::1
-  ['::ffff:0:0', 96], // IPv4 주소를 IPv6로 감싼 형태(::ffff:127.0.0.1)
   ['fc00::', 7],
   ['fe80::', 10],
 ] as const) {

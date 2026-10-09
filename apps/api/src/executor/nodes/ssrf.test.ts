@@ -73,6 +73,17 @@ describe('외부 요청 보안(SSRF)', () => {
     }
   });
 
+  it('바깥 주소는 막지 않는다', () => {
+    const guard = createHttpGuard(policy());
+    for (const url of [
+      'http://8.8.8.8/',
+      'https://162.159.135.232/', // discord.com
+      'http://[2606:4700:4700::1111]/',
+    ]) {
+      expect(() => guard.check(new URL(url)), url).not.toThrow();
+    }
+  });
+
   it('이름을 IP로 바꾼 결과가 내부 주소면 연결하지 않는다', async () => {
     expect(
       await send(`http://localhost:${port}/mock/weather`, {
