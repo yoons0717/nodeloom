@@ -5,12 +5,18 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   ParseUUIDPipe,
   Post,
   Put,
 } from '@nestjs/common';
 import { ZodValidationPipe } from '../zod-validation.pipe.js';
-import { type WorkflowBody, workflowBodySchema } from './workflows.schemas.js';
+import {
+  type FailureWorkflowBody,
+  failureWorkflowBodySchema,
+  type WorkflowBody,
+  workflowBodySchema,
+} from './workflows.schemas.js';
 import { WorkflowsService } from './workflows.service.js';
 
 const body = new ZodValidationPipe(workflowBodySchema);
@@ -40,6 +46,16 @@ export class WorkflowsController {
   @HttpCode(204)
   update(@Param('id', id) workflowId: string, @Body(body) input: WorkflowBody) {
     return this.workflows.update(workflowId, input);
+  }
+
+  @Patch(':id/failure-workflow')
+  @HttpCode(204)
+  setFailureWorkflow(
+    @Param('id', id) workflowId: string,
+    @Body(new ZodValidationPipe(failureWorkflowBodySchema))
+    input: FailureWorkflowBody,
+  ) {
+    return this.workflows.setFailureWorkflow(workflowId, input);
   }
 
   @Delete(':id')

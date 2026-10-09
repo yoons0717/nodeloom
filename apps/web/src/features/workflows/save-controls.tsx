@@ -3,7 +3,7 @@
 import { useMutation } from '@tanstack/react-query';
 import type { Graph } from '@nodeloom/core';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useEditorStore } from '@/features/editor/store-context';
@@ -15,12 +15,15 @@ const LEAVE_MESSAGE =
   '저장하지 않은 변경 사항이 있습니다. 이 페이지를 나갈까요?';
 
 // 이름 편집, 저장 버튼, ⌘S, 저장 여부 표시(M3 작은 결정 ③④). 저장은 덮어쓰기다(DECISIONS 2-4).
+// after: 저장 컨트롤 뒤에 붙일 것(실행 버튼). 실행 전에 저장하도록 ensureSaved를 넘긴다.
 export function SaveControls({
   id,
   initialName,
+  after,
 }: {
   id: string;
   initialName: string;
+  after?: (ensureSaved: () => Promise<boolean>) => ReactNode;
 }) {
   const graph = useEditorStore((s) => s.graph);
   const [name, setName] = useState(initialName);
@@ -58,6 +61,17 @@ export function SaveControls({
   const canSave = dirty && !nameError && !save.isPending;
   const submit = () => {
     if (canSave) save.mutate({ name: trimmed, graph });
+  };
+  // 저장할 것이 없으면 바로 true. 저장에 실패하면 false이고 사유는 저장 상태 칸에 나온다.
+  const ensureSaved = async () => {
+    if (!dirty) return true;
+    if (nameError) return false;
+    try {
+      await save.mutateAsync({ name: trimmed, graph });
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   // ⌘S / Ctrl+S. 입력 칸 안에서도 저장한다(브라우저의 "페이지 저장"을 막음).
@@ -120,6 +134,7 @@ export function SaveControls({
       >
         {nameError ?? status}
       </span>
+      {after?.(ensureSaved)}
     </div>
   );
 }

@@ -82,7 +82,7 @@ function TopBar({ toolbar }: { toolbar?: ReactNode }) {
           되돌리기
         </Button>
         <Button variant="outline" onClick={redo} disabled={!canRedo}>
-          다시 실행
+          다시 하기
         </Button>
       </div>
       <div className="ml-auto flex flex-wrap gap-2">

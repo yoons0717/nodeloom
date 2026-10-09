@@ -1,6 +1,8 @@
 'use client';
 
 import { Editor } from '@/features/editor/editor';
+import { RunControls } from '@/features/runs/run-controls';
+import { FailureWorkflowSelect } from './failure-workflow-select';
 import { SaveControls } from './save-controls';
 import type { Workflow } from './schemas';
 
@@ -18,7 +20,22 @@ export function WorkflowEditor({ workflow }: { workflow: Workflow }) {
         <Editor
           initial={workflow.graph}
           toolbar={
-            <SaveControls id={workflow.id} initialName={workflow.name} />
+            <>
+              <SaveControls
+                id={workflow.id}
+                initialName={workflow.name}
+                after={(ensureSaved) => (
+                  <RunControls
+                    workflowId={workflow.id}
+                    ensureSaved={ensureSaved}
+                  />
+                )}
+              />
+              <FailureWorkflowSelect
+                workflowId={workflow.id}
+                initial={workflow.failureWorkflowId}
+              />
+            </>
           }
         />
       </div>

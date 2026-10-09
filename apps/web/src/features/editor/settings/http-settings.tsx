@@ -16,6 +16,14 @@ import { configDefault, configValue, Field, type SettingsProps } from './field';
 
 const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
+// 응답이 계속 없을 때 이 노드가 걸리는 최대 시간(초, DECISIONS B-13).
+// 실행기와 같은 규칙: 재시도 대기는 1·2·4초…(최대 30초)에 흔들림이 최대 25% 붙는다(7-3).
+export function worstCaseSeconds(timeoutSec: number, retry: number) {
+  let wait = 0;
+  for (let i = 1; i <= retry; i++) wait += Math.min(2 ** (i - 1), 30) * 1.25;
+  return Math.ceil(timeoutSec * (retry + 1) + wait);
+}
+
 export function HttpSettings({ node, errors, set }: SettingsProps) {
   const text = (field: string) => {
     const v = configValue(node, field);
@@ -33,6 +41,13 @@ export function HttpSettings({ node, errors, set }: SettingsProps) {
         set(field, e.target.value === '' ? undefined : Number(e.target.value)),
     };
   };
+
+  const timeoutSec = configValue(node, 'timeoutSec');
+  const retry = configValue(node, 'retry');
+  const worst =
+    Number.isInteger(timeoutSec) && Number.isInteger(retry)
+      ? worstCaseSeconds(timeoutSec as number, retry as number)
+      : undefined;
 
   return (
     <>
@@ -115,7 +130,15 @@ export function HttpSettings({ node, errors, set }: SettingsProps) {
           />
         )}
       </Field>
-      <Field label="재시도 횟수" error={errors.retry}>
+      <Field
+        label="재시도 횟수"
+        hint={
+          worst === undefined
+            ? undefined
+            : `응답이 계속 없으면 최대 약 ${worst}초 걸립니다(제한 시간 × 시도 ${Number(retry) + 1}번 + 재시도 대기). 실행 전체 제한은 기본 5분입니다`
+        }
+        error={errors.retry}
+      >
         {(control) => <Input {...control} {...numberInput('retry')} />}
       </Field>
       <label className="flex min-h-11 items-center gap-2.5 text-[13px]">

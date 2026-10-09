@@ -8,6 +8,7 @@ import { ExecutorModule } from './executor/executor.module.js';
 import { HealthController } from './health.controller.js';
 import { MockModule } from './mock/mock.module.js';
 import { PrismaModule } from './prisma.module.js';
+import { RunsModule } from './runs/runs.module.js';
 import { WorkflowsModule } from './workflows/workflows.module.js';
 
 @Module({
@@ -26,6 +27,7 @@ import { WorkflowsModule } from './workflows/workflows.module.js';
     WorkflowsModule,
     ExecutorModule,
     MockModule,
+    RunsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

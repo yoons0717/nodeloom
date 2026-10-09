@@ -12,3 +12,10 @@ export const workflowBodySchema = z.object({
 });
 
 export type WorkflowBody = z.output<typeof workflowBodySchema>;
+
+// 실패하면 실행할 워크플로우(DECISIONS 7-4). null이면 해제
+export const failureWorkflowBodySchema = z.object({
+  failureWorkflowId: z.uuid({ error: '워크플로우 id가 아닙니다' }).nullable(),
+});
+
+export type FailureWorkflowBody = z.output<typeof failureWorkflowBodySchema>;

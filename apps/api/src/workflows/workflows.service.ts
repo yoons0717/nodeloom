@@ -1,14 +1,16 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { type Graph, graphSchema } from '@nodeloom/core';
 import { DEMO_LIMITS } from '../demo-limits.js';
 import { env } from '../env.js';
-import type { Prisma } from '../generated/prisma/client.js';
+import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma.service.js';
-import type { WorkflowBody } from './workflows.schemas.js';
+import type { FailureWorkflowBody, WorkflowBody } from './workflows.schemas.js';
 
 @Injectable()
 export class WorkflowsService {
@@ -33,6 +35,7 @@ export class WorkflowsService {
       id: w.id,
       name: w.name,
       graph: toGraph(w.graph),
+      failureWorkflowId: w.failureWorkflowId,
       updatedAt: w.updatedAt,
     };
   }
@@ -60,7 +63,35 @@ export class WorkflowsService {
     if (count === 0) throw notFound();
   }
 
+  async setFailureWorkflow(id: string, body: FailureWorkflowBody) {
+    try {
+      const { count } = await this.prisma.workflow.updateMany({
+        where: { id },
+        data: { failureWorkflowId: body.failureWorkflowId },
+      });
+      if (count === 0) throw notFound();
+    } catch (e) {
+      // 지정한 워크플로우가 없음(외래 키 위반)
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2003'
+      ) {
+        throw new UnprocessableEntityException(
+          '실패 알림으로 지정할 워크플로우를 찾을 수 없습니다',
+        );
+      }
+      throw e;
+    }
+  }
+
+  // 실행 중이면 지우지 않는다. 지우면 실행 기록도 함께 지워지고, 이 워크플로우를 실패 알림으로 지정한 설정은 비워진다(DECISIONS B-4, 외래 키 규칙).
+  // ponytail: 확인과 삭제 사이에 실행이 시작될 수 있다. 그 실행은 기록이 지워져 실행기가 오류로 멈추고, 다시 시도할 때 기록이 없어 끝난다.
   async remove(id: string) {
+    const running = await this.prisma.run.count({
+      where: { workflowId: id, status: { in: ['PENDING', 'RUNNING'] } },
+    });
+    if (running > 0)
+      throw new ConflictException('실행 중인 워크플로우는 삭제할 수 없습니다');
     const { count } = await this.prisma.workflow.deleteMany({ where: { id } });
     if (count === 0) throw notFound();
   }
