@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { clientApi } from '@/lib/client-api';
 import { type RunStatus, runStartSchema, runStatusSchema } from './schemas';
@@ -23,7 +23,7 @@ function label(s: RunStatus) {
   }
 }
 
-// 실행 버튼과 상단 바의 실행 상태(M4 작은 결정 ⑥). 저장되지 않은 변경이 있으면 먼저 저장한다(⑦).
+// 실행 버튼과 실행 결과 토스트(M4 작은 결정 ⑥, M6). 저장되지 않은 변경이 있으면 먼저 저장한다(M4 ⑦).
 export function RunControls({
   workflowId,
   ensureSaved,
@@ -32,6 +32,7 @@ export function RunControls({
   ensureSaved: () => Promise<boolean>;
 }) {
   const [runId, setRunId] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState(false);
 
   const start = useMutation({
     mutationFn: async () => {
@@ -41,7 +42,10 @@ export function RunControls({
         await clientApi(`/workflows/${workflowId}/runs`, { method: 'POST' }),
       ).runId;
     },
-    onMutate: () => setRunId(null),
+    onMutate: () => {
+      setRunId(null);
+      setDismissed(false);
+    },
     onSuccess: setRunId,
   });
 
@@ -67,27 +71,56 @@ export function RunControls({
         : runId
           ? '실행 대기 중…'
           : '';
-  const failed = error || status.data?.status === 'FAILED';
+  const failed = Boolean(error) || status.data?.status === 'FAILED';
+  const succeeded = status.data?.status === 'SUCCESS';
+
+  // 성공은 잠시 뒤 저절로 닫고, 실패는 직접 닫을 때까지 남긴다(M6 작은 결정 ⑥).
+  useEffect(() => {
+    if (!succeeded) return;
+    const t = setTimeout(() => setDismissed(true), 4000);
+    return () => clearTimeout(t);
+  }, [succeeded]);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="relative">
       <Button onClick={() => start.mutate()} disabled={busy}>
-        실행
+        {busy ? (
+          '실행 중…'
+        ) : (
+          <>
+            <span aria-hidden>▶</span>실행
+          </>
+        )}
       </Button>
-      <span
-        role="status"
-        className={`text-xs ${failed ? 'text-danger-text' : 'text-muted-foreground'}`}
-      >
-        {text}
-      </span>
-      {/* 시작하자마자 보여 준다. 끝난 뒤에만 보이면 실행이 멈췄을 때 볼 방법이 없다. */}
-      {runId && (
-        <Link
-          href={`/w/${workflowId}/runs/${runId}`}
-          className="text-xs text-primary hover:underline"
-        >
-          결과 보기
-        </Link>
+      {text && !dismissed && (
+        <div className="absolute top-full right-0 z-50 mt-2 flex w-max max-w-80 items-start gap-3 rounded-md border border-border bg-overlay px-3 py-2 text-xs shadow-md">
+          <span
+            role="status"
+            className={failed ? 'text-danger-text' : 'text-foreground'}
+          >
+            {failed && <span aria-hidden>! </span>}
+            {text}
+          </span>
+          {/* 시작하자마자 보여 준다. 끝난 뒤에만 보이면 실행이 멈췄을 때 볼 방법이 없다. */}
+          {runId && (
+            <Link
+              href={`/w/${workflowId}/runs/${runId}`}
+              className="shrink-0 text-accent hover:underline"
+            >
+              결과 보기
+            </Link>
+          )}
+          {failed && (
+            <button
+              type="button"
+              aria-label="닫기"
+              className="shrink-0 text-muted-foreground hover:text-foreground"
+              onClick={() => setDismissed(true)}
+            >
+              ×
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

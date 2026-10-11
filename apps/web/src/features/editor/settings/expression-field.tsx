@@ -13,13 +13,23 @@ export function ExpressionField({
 }: SettingsProps & { label: string; hint: string }) {
   const value = configValue(node, 'expression');
   return (
-    <Field label={label} hint={hint} error={errors.expression}>
+    <Field
+      label={label}
+      labelNote="JSONata"
+      hint={hint}
+      error={errors.expression}
+      ok={
+        typeof value === 'string' && value.trim()
+          ? '식이 올바릅니다'
+          : undefined
+      }
+    >
       {(control) => (
         <Textarea
           {...control}
           rows={5}
           spellCheck={false}
-          className="font-mono text-xs"
+          className="min-h-[72px] font-mono text-body-sm"
           value={typeof value === 'string' ? value : ''}
           onChange={(e) => set('expression', e.target.value)}
         />

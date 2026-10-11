@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 import {
   formatDuration,
   RUN_KIND_LABEL,
-  RUN_STATUS_CLASS,
   RUN_STATUS_LABEL,
+  RUN_STATUS_TONE,
 } from '@/features/runs/format';
 import { runListSchema } from '@/features/runs/schemas';
 import { formatDateTime } from '@/features/workflows/format';
@@ -31,7 +32,7 @@ export default async function RunListPage({
         </h1>
         <Link
           href={`/w/${id}`}
-          className="text-sm text-muted-foreground hover:text-primary"
+          className="text-sm text-muted-foreground hover:text-foreground"
         >
           에디터로
         </Link>
@@ -49,11 +50,9 @@ export default async function RunListPage({
                 href={`/w/${id}/runs/${r.id}`}
                 className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 hover:bg-raised"
               >
-                <span
-                  className={`w-14 font-bold ${RUN_STATUS_CLASS[r.status]}`}
-                >
+                <Badge tone={RUN_STATUS_TONE[r.status]}>
                   {RUN_STATUS_LABEL[r.status]}
-                </span>
+                </Badge>
                 <span className="text-xs text-muted-foreground">
                   {RUN_KIND_LABEL[r.kind]}
                 </span>

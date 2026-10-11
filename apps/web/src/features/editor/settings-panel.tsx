@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { renameNode, updateConfig } from './commands';
 import { getGraphIssues } from './graph-issues';
-import { NODE_META } from './node-meta';
+import { NodeGlyph } from './node-glyph';
+import { NODE_META, PORT_LABEL } from './node-meta';
 import { ConditionSettings } from './settings/condition-settings';
 import { Field, type SettingsProps } from './settings/field';
 import { HttpSettings } from './settings/http-settings';
@@ -62,58 +63,121 @@ function NodeSettings({ node }: { node: GraphNode }) {
   const nodeIssues = issues.filter((i) => !i.field);
 
   const Settings = SETTINGS[node.type];
+  const meta = NODE_META[node.type];
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <h2 className="text-xs font-bold text-muted-foreground">
-        {NODE_META[node.type].label} 설정
-      </h2>
-      {nodeIssues.length > 0 && (
-        <ul role="status" className="flex flex-col items-start gap-1">
-          {nodeIssues.map((i) => (
-            <li key={i.code}>
-              {/* 문구가 길어 패널 너비를 넘으면 줄을 바꾼다. */}
-              <Badge tone="danger" className="h-auto py-0.5 whitespace-normal">
-                {i.message}
-              </Badge>
-            </li>
-          ))}
-        </ul>
-      )}
-      <Field label="제목" error={errors.title}>
-        {(control) => (
-          <Input
-            {...control}
-            value={node.title}
-            onChange={(e) =>
-              execute(renameNode(graph, node.id, 'title', e.target.value))
-            }
-          />
+    <>
+      {/* 머리: 종류, 제목, 다른 노드에서 읽는 이름. 참조 키는 카드 대신 여기에 보인다. */}
+      <div className="flex flex-col gap-2 border-b border-border-subtle p-4">
+        <span
+          className={`flex h-6 w-fit items-center gap-1.5 rounded-md pr-2 pl-1 text-xs font-medium ${meta.chipClass}`}
+        >
+          <span aria-hidden className="w-4 text-center">
+            {meta.glyph}
+          </span>
+          {meta.label}
+        </span>
+        <h2 className="truncate text-base font-bold">{node.title}</h2>
+        <p className="font-mono text-xs text-muted-foreground">
+          $nodes.{node.key}
+        </p>
+      </div>
+      <div className="flex flex-col gap-4 p-4">
+        {nodeIssues.length > 0 && (
+          <ul role="status" className="flex flex-col items-start gap-1">
+            {nodeIssues.map((i) => (
+              <li key={i.code}>
+                {/* 문구가 길어 패널 너비를 넘으면 줄을 바꾼다. */}
+                <Badge
+                  tone="danger"
+                  className="h-auto py-0.5 whitespace-normal"
+                >
+                  {i.message}
+                </Badge>
+              </li>
+            ))}
+          </ul>
         )}
-      </Field>
-      <Field
-        label="참조 키"
-        hint="다른 노드의 식에서 $nodes.<참조 키>로 이 노드의 결과를 읽습니다"
-        error={errors.key}
-      >
-        {(control) => (
-          <Input
-            {...control}
-            spellCheck={false}
-            className="font-mono text-body-sm"
-            value={node.key}
-            onChange={(e) =>
-              execute(renameNode(graph, node.id, 'key', e.target.value))
-            }
-          />
-        )}
-      </Field>
-      <Settings
-        node={node}
-        errors={errors}
-        set={(field, value) =>
-          execute(updateConfig(graph, node.id, field, value))
-        }
-      />
+        <Field label="제목" error={errors.title}>
+          {(control) => (
+            <Input
+              {...control}
+              value={node.title}
+              onChange={(e) =>
+                execute(renameNode(graph, node.id, 'title', e.target.value))
+              }
+            />
+          )}
+        </Field>
+        <Field
+          label="참조 키"
+          hint="다른 노드의 식에서 이 이름으로 결과를 읽습니다"
+          error={errors.key}
+        >
+          {(control) => (
+            <Input
+              {...control}
+              spellCheck={false}
+              className="font-mono text-body-sm"
+              value={node.key}
+              onChange={(e) =>
+                execute(renameNode(graph, node.id, 'key', e.target.value))
+              }
+            />
+          )}
+        </Field>
+        <Settings
+          node={node}
+          errors={errors}
+          set={(field, value) =>
+            execute(updateConfig(graph, node.id, field, value))
+          }
+        />
+        {node.type === 'condition' && <Branches node={node} />}
+      </div>
+    </>
+  );
+}
+
+// Condition의 참·거짓 포트가 어느 노드로 이어지는지. 캔버스를 따라가지 않고도 갈래를 확인한다.
+function Branches({ node }: { node: GraphNode }) {
+  const graph = useEditorStore((s) => s.graph);
+  const targets = (port: string) =>
+    graph.edges
+      .filter((e) => e.from.node === node.id && e.from.port === port)
+      .map((e) => graph.nodes.find((n) => n.id === e.to.node))
+      .filter((n) => n !== undefined);
+
+  return (
+    <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
+      <span className="text-xs font-medium text-label">분기</span>
+      {(['true', 'false'] as const).map((port) => {
+        const list = targets(port);
+        return (
+          <div
+            key={port}
+            className="flex min-h-9 items-center gap-2 rounded-md bg-raised px-3 py-2 text-body-sm"
+          >
+            <span className="w-8 shrink-0 text-muted-foreground">
+              {PORT_LABEL[port]}
+            </span>
+            <span aria-hidden className="text-muted-foreground">
+              →
+            </span>
+            {list.length === 0 ? (
+              <span className="text-muted-foreground">연결 안 됨</span>
+            ) : (
+              <span className="flex min-w-0 flex-col gap-1">
+                {list.map((t) => (
+                  <span key={t.id} className="flex min-w-0 items-center gap-2">
+                    <NodeGlyph type={t.type} />
+                    <span className="truncate">{t.title}</span>
+                  </span>
+                ))}
+              </span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

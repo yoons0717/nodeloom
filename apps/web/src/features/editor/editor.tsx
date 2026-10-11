@@ -4,6 +4,7 @@ import type { Graph } from '@nodeloom/core';
 import { ReactFlowProvider } from '@xyflow/react';
 import { Profiler, type ReactNode } from 'react';
 import '@xyflow/react/dist/style.css';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { onEditorRender } from './bench';
@@ -64,38 +65,59 @@ function EditorLayout({
   );
 }
 
+// 상단 바: 높이 56, 한 줄(데모). toolbar가 없으면(벤치) 제목과 편집 도구만 둔다.
 function TopBar({ toolbar }: { toolbar?: ReactNode }) {
+  return (
+    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border-subtle bg-surface px-4">
+      {toolbar ?? (
+        <>
+          <h1 className="text-base font-bold">새 워크플로우</h1>
+          <TopBarDivider />
+          <UndoRedo />
+          <div className="ml-auto">
+            <GraphIssueBadge />
+          </div>
+        </>
+      )}
+    </header>
+  );
+}
+
+export function TopBarDivider() {
+  return <span aria-hidden className="h-5 w-px shrink-0 bg-border" />;
+}
+
+export function UndoRedo() {
   const canUndo = useEditorStore((s) => s.past.length > 0);
   const canRedo = useEditorStore((s) => s.future.length > 0);
   const undo = useEditorStore((s) => s.undo);
   const redo = useEditorStore((s) => s.redo);
-  // 특정 노드에 붙지 않는 문제(예: Trigger 개수)는 상단에 보여 준다.
-  const graph = useEditorStore((s) => s.graph);
-  // 셀렉터가 매번 새 배열을 돌려주면 Zustand가 계속 바뀐 것으로 보고 무한히 다시 그린다. 그래프만 구독하고 계산은 밖에서 한다.
-  const graphIssues = getGraphIssues(graph).graphLevel;
-
   return (
-    <header className="flex flex-wrap items-center gap-3 border-b border-border-subtle bg-surface px-5 py-2.5">
-      {toolbar ?? <h1 className="text-base font-bold">새 워크플로우</h1>}
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={undo} disabled={!canUndo}>
-          되돌리기
-        </Button>
-        <Button variant="outline" onClick={redo} disabled={!canRedo}>
-          다시 하기
-        </Button>
-      </div>
-      <div className="ml-auto flex flex-wrap gap-2">
-        {graphIssues.map((i) => (
-          <span
-            key={i.code}
-            role="status"
-            className="rounded-full bg-danger-soft px-2.5 py-1 text-xs font-bold text-danger-text"
-          >
-            {i.message}
-          </span>
-        ))}
-      </div>
-    </header>
+    <div className="flex gap-1">
+      <Button variant="ghost" onClick={undo} disabled={!canUndo}>
+        되돌리기
+        <kbd className="font-mono text-caption text-muted-foreground">⌘Z</kbd>
+      </Button>
+      <Button variant="ghost" onClick={redo} disabled={!canRedo}>
+        다시 하기
+      </Button>
+    </div>
+  );
+}
+
+// 특정 노드에 붙지 않는 문제(예: Trigger 개수)의 개수. 마우스를 올리면 문구를 보여 준다.
+export function GraphIssueBadge() {
+  // 셀렉터가 매번 새 배열을 돌려주면 Zustand가 계속 바뀐 것으로 보고 무한히 다시 그린다. 그래프만 구독하고 계산은 밖에서 한다.
+  const graph = useEditorStore((s) => s.graph);
+  const issues = getGraphIssues(graph).graphLevel;
+  if (issues.length === 0) return null;
+  return (
+    <Badge
+      tone="danger"
+      title={issues.map((i) => i.message).join('\n')}
+      aria-label={`문제 ${issues.length}개: ${issues.map((i) => i.message).join(', ')}`}
+    >
+      문제 {issues.length}
+    </Badge>
   );
 }

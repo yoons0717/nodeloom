@@ -1,6 +1,13 @@
 import { expect, test } from '@playwright/test';
 import { API_PORT } from './config.ts';
-import { addNode, connect, nodes, save, selectNode } from './editor.ts';
+import {
+  addNode,
+  connect,
+  nodeByKey,
+  nodes,
+  save,
+  selectNode,
+} from './editor.ts';
 
 // 데모 모드: 로그인 없이 목록 → 새로 만들기 → 편집 → 저장 → 실행(DECISIONS H-1, 6-5)
 // 데모에서는 연습용 주소(/mock)로만 요청할 수 있다(DECISIONS 1-3).
@@ -16,7 +23,7 @@ test('데모 모드에서는 로그인 없이 편집하고 저장할 수 있다'
 
   await page.getByRole('button', { name: '새로 만들기' }).click();
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]+$/);
-  await addNode(page, 'HTTP 요청', 500, 250);
+  await addNode(page, 'HTTP', 500, 250);
   await connect(page, 'trigger_1', 'http_1');
   await selectNode(page, 'http_1');
   await page
@@ -40,7 +47,7 @@ test('실행하면 상세 화면에서 노드별 상태와 입출력을 볼 수 
   await page.goto('/');
   await page.getByRole('button', { name: '새로 만들기' }).click();
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]+$/);
-  await addNode(page, 'HTTP 요청', 500, 250);
+  await addNode(page, 'HTTP', 500, 250);
   await connect(page, 'trigger_1', 'http_1');
   await selectNode(page, 'http_1');
   await page
@@ -55,8 +62,9 @@ test('실행하면 상세 화면에서 노드별 상태와 입출력을 볼 수 
   await expect(
     page.getByRole('status').filter({ hasText: '성공' }),
   ).toBeVisible({ timeout: 15_000 });
-  await expect(nodes(page).filter({ hasText: '성공' })).toHaveCount(2);
+  // 성공한 노드는 ✓와 걸린 시간을 보여 준다.
+  await expect(nodes(page).filter({ hasText: '✓' })).toHaveCount(2);
 
-  await nodes(page).filter({ hasText: 'http_1' }).click();
+  await nodeByKey(page, 'http_1').click();
   await expect(page.getByText('출력', { exact: true })).toBeVisible();
 });

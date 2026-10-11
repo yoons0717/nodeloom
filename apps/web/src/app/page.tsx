@@ -1,5 +1,6 @@
 import { isValidCron, nextCronRuns } from '@nodeloom/core';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 import {
   describeSchedule,
   parseSchedule,
@@ -23,9 +24,7 @@ export default async function WorkflowListPage() {
       <header className="flex flex-wrap items-center gap-3">
         <h1 className="text-xl font-bold">Nodeloom</h1>
         {me.role === 'demo' && (
-          <span className="rounded-full border border-primary px-2.5 py-0.5 text-xs text-primary">
-            데모 · 로그인 없이 누구나 편집할 수 있습니다
-          </span>
+          <Badge>데모 · 로그인 없이 누구나 편집할 수 있습니다</Badge>
         )}
         <div className="ml-auto flex items-center gap-2">
           {me.role === 'admin' && <LogoutButton />}
@@ -73,7 +72,7 @@ function ScheduleText({ cron, demo }: { cron: string | null; demo: boolean }) {
     return <span className="text-xs text-danger-text">스케줄 오류</span>;
   const next = demo ? null : nextCronRuns(cron, TIMEZONE, 1)[0];
   return (
-    <span className="text-xs text-primary">
+    <span className="text-xs text-muted-foreground">
       {describeSchedule(parseSchedule(cron))}
       {next && ` · 다음 ${formatDateTime(next.toISOString())}`}
     </span>

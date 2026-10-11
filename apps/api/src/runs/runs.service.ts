@@ -109,7 +109,17 @@ export class RunsService {
         startedAt: true,
         finishedAt: true,
         nodeRuns: {
-          select: { nodeId: true, nodeKey: true, status: true, attempt: true },
+          // 노드 카드에 걸린 시간을 보여 주려고 시작·끝 시각도 함께(M6 작은 결정 ④).
+          select: {
+            nodeId: true,
+            nodeKey: true,
+            status: true,
+            attempt: true,
+            // Condition이 고른 포트. 실행 상세에서 지나간 연결선을 칠한다.
+            port: true,
+            startedAt: true,
+            finishedAt: true,
+          },
           orderBy: { attempt: 'asc' },
         },
       },

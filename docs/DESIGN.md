@@ -108,4 +108,9 @@
 | Badge | `tone` = neutral·running·success·warning·danger. 높이 22, 좌우 8, 글리프와 글자 사이 4, pill, 12px 500. 바탕은 각 `-soft`(neutral은 `--raised-hover`), 글자는 각 `-text`(running은 `--accent`, neutral은 `--text-label`). 글리프 ● ✓ ▲ !는 부품이 붙인다 |
 | Input·Textarea·Select | 높이 36, `--border-control` 1px, `--bg` 바탕, 좌우 12, 14px, 모서리 6. 포커스는 2px `--accent` + 3px `--accent-ring`, 오류는 2px `--danger`. 두꺼워진 테두리만큼 안쪽 여백을 1px 줄여 크기를 유지한다 |
 | Field | 라벨 12/16 500 `--text-label`, 라벨과 칸 사이 4, 칸 사이 16. 설명은 12px `--text-muted`, 오류는 12px `--danger-text`에 "! "를 붙인다. 칸이 여럿인 묶음(쿼리·헤더)은 `group`으로 같은 모양을 쓴다 |
+| 노드 카드 | 136×84 고정(Condition 136×108), 모서리 8, 안쪽 10/12, 줄 사이 4. 1줄: 글리프 칩 18px + 종류 이름 11px + 오른쪽 상태, 2줄: 제목 13/20 700, 3줄: 설정 요약 고정폭 11px(Condition은 참·거짓 라벨). hover는 `--raised-hover` + `--border-control`, 선택은 2px `--accent` + 4px `--accent-ring`, 오류는 `--danger` 테두리와 "! n", 실행 중은 `--accent` 테두리와 막대, 성공은 기본 테두리와 "✓ 걸린 시간", 건너뜀은 점선·`--surface`·60% |
+| 포트 | 12px 원(`--bg` 바탕, 2px `--text-muted`), 누르는 영역 24px. hover는 `--text` 테두리 + `--text-ring`. 선을 끄는 동안 입력 포트는 14px `--accent` + `--accent-glow`, 연결할 수 없는 포트 위에서는 `--danger` 테두리 |
+| 상단 바 | 높이 56, 좌우 16, 한 줄. 왼쪽 ← · 이름(글자처럼 보이다 눌러서 편집) · 저장 상태 · 구분선 · 되돌리기/다시 하기(ghost), 오른쪽 문제 배지 · 실행 기록 · 설정(팝오버) · 구분선 · 저장(outline) · 실행(default). 실행 상세도 같은 바를 쓴다 |
+| 토스트 | 실행 버튼 아래, `--overlay` 바탕 + 그림자, 12px. 성공은 4초 뒤 저절로 닫히고 실패는 닫기 전까지 남는다 |
+| 캔버스 도구 | 왼쪽 아래, 높이 36, `--surface` 바탕, `--border` 테두리. − 배율 + │ 맞춤 보기 |
 

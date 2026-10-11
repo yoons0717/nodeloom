@@ -85,4 +85,45 @@ describe('RunControls', () => {
       screen.getByRole('link', { name: '결과 보기' }).getAttribute('href'),
     ).toBe('/w/wf-1/runs/r1');
   });
+  it('성공 토스트는 잠시 뒤 저절로 닫히고, 실패 토스트는 닫기 전까지 남는다', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const respond = (status: string) =>
+      vi.fn((_url: string, init?: RequestInit) =>
+        init?.method === 'POST'
+          ? json({ runId: 'r1' }, 202)
+          : json({
+              status,
+              error: status === 'FAILED' ? { message: '응답 코드 500' } : null,
+            }),
+      );
+    const renderRun = () =>
+      render(
+        <QueryClientProvider client={new QueryClient()}>
+          <EditorStoreProvider initial={createInitialGraph()}>
+            <RunControls
+              workflowId="wf-1"
+              ensureSaved={() => Promise.resolve(true)}
+            />
+          </EditorStoreProvider>
+        </QueryClientProvider>,
+      );
+
+    vi.stubGlobal('fetch', respond('SUCCESS'));
+    renderRun();
+    fireEvent.click(screen.getByRole('button', { name: '실행' }));
+    await screen.findByText('실행 성공');
+    await vi.advanceTimersByTimeAsync(4000);
+    await waitFor(() => expect(screen.queryByText('실행 성공')).toBeNull());
+    cleanup();
+
+    vi.stubGlobal('fetch', respond('FAILED'));
+    renderRun();
+    fireEvent.click(screen.getByRole('button', { name: '실행' }));
+    await screen.findByText('실행 실패: 응답 코드 500');
+    await vi.advanceTimersByTimeAsync(4000);
+    expect(screen.getByText('실행 실패: 응답 코드 500')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '닫기' }));
+    expect(screen.queryByText('실행 실패: 응답 코드 500')).toBeNull();
+    vi.useRealTimers();
+  });
 });

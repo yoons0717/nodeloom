@@ -10,7 +10,6 @@ import {
 import {
   Background,
   type Connection,
-  Controls,
   type Edge,
   type EdgeChange,
   type IsValidConnection,
@@ -22,6 +21,7 @@ import {
   ViewportPortal,
 } from '@xyflow/react';
 import { type DragEvent, type ReactNode, useCallback, useState } from 'react';
+import { CanvasControls } from './canvas-controls';
 import { addNode, newNode } from './commands';
 import { getGraphIssues } from './graph-issues';
 import { type CanvasNode, NodeCard } from './node-card';
@@ -182,7 +182,7 @@ export function Canvas({ children }: { children?: ReactNode }) {
         fitViewOptions={{ maxZoom: 1 }}
       >
         <Background gap={GRID[0]} />
-        <Controls showInteractive={false} />
+        <CanvasControls />
         <ConnectionFeedback graph={graph} />
         {children}
       </ReactFlow>
@@ -219,7 +219,7 @@ function ConnectionFeedback({ graph }: { graph: Graph }) {
     <ViewportPortal>
       <div
         role="alert"
-        className="pointer-events-none absolute z-[2000] rounded-lg bg-danger-strong px-2.5 py-1.5 text-xs whitespace-nowrap text-white"
+        className="pointer-events-none absolute z-[2000] rounded-md bg-danger-strong px-2 py-1 text-xs whitespace-nowrap text-foreground"
         style={{
           transform: `translate(${connection.to.x + 12}px, ${connection.to.y + 12}px)`,
         }}

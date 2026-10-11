@@ -4,11 +4,13 @@ import { expect, type Page } from '@playwright/test';
 
 export const nodes = (page: Page) => page.locator('.react-flow__node');
 export const edges = (page: Page) => page.locator('.react-flow__edge');
-const nodeByKey = (page: Page, key: string) =>
-  page.locator('.react-flow__node', { hasText: key });
+// 카드에는 참조 키를 보여 주지 않으므로 카드의 data-key로 찾는다.
+export const nodeByKey = (page: Page, key: string) =>
+  page.locator(`.react-flow__node:has([data-key="${key}"])`);
 
 export async function addNode(page: Page, label: string, x: number, y: number) {
   await page
+    .getByRole('complementary', { name: '노드 목록' })
     .getByText(label, { exact: true })
     .dragTo(page.locator('.react-flow__pane'), { targetPosition: { x, y } });
 }

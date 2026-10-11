@@ -16,7 +16,7 @@ test('로그인해서 만든 흐름은 저장 후 새로고침해도 그대로 �
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]+$/);
   await expect(nodes(page)).toHaveCount(1);
 
-  await addNode(page, 'HTTP 요청', 300, 250);
+  await addNode(page, 'HTTP', 300, 250);
   await addNode(page, 'Transform', 550, 250);
   await connect(page, 'trigger_1', 'http_1');
   await connect(page, 'http_1', 'transform_1');

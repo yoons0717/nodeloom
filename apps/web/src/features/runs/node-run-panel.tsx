@@ -3,7 +3,7 @@
 import type { GraphNode } from '@nodeloom/core';
 import { useQuery } from '@tanstack/react-query';
 import { ApiError, clientApi } from '@/lib/client-api';
-import { NODE_RUN_STATUS } from './format';
+import { NODE_RUN_LABEL } from './format';
 import { type NodeRunStatus, nodeAttemptsSchema } from './schemas';
 
 function Json({ label, value }: { label: string; value: unknown }) {
@@ -61,7 +61,7 @@ export function NodeRunPanel({
           <section key={a.attempt} className="flex flex-col gap-2">
             {attempts.data.length > 1 && (
               <p className="text-xs font-bold">
-                {a.attempt}번째 시도 · {NODE_RUN_STATUS[a.status].label}
+                {a.attempt}번째 시도 · {NODE_RUN_LABEL[a.status]}
               </p>
             )}
             {a.error && (

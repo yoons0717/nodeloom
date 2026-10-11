@@ -51,6 +51,9 @@ export const runProgressSchema = runStatusSchema.extend({
       nodeId: z.string(),
       status: nodeRunStatusSchema,
       attempt: z.number(),
+      port: z.string().nullable(),
+      startedAt: z.string().nullable(),
+      finishedAt: z.string().nullable(),
     }),
   ),
 });

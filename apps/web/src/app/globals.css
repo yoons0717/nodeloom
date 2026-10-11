@@ -27,11 +27,15 @@
   --text-label: #c9d0d9;
   --text-muted: #97a3b1;
   --text-disabled: #6b7684;
+  /* 포트에 마우스를 올렸을 때 바깥 빛 */
+  --text-ring: rgb(228 232 238 / 0.16);
   /* 강조: 선택·포커스·주요 버튼·실행 중·지나간 연결선에만 쓴다 */
   --accent: #5fd4c7;
   --accent-hover: #8fe3da;
   --accent-soft: rgb(95 212 199 / 0.16);
   --accent-ring: rgb(95 212 199 / 0.22);
+  /* 선을 끄는 동안 연결할 수 있는 포트의 바깥 빛 */
+  --accent-glow: rgb(95 212 199 / 0.25);
   /* 상태. 실행 중은 강조색을 쓴다 */
   --success: oklch(0.78 0.14 155);
   --success-text: oklch(0.8 0.14 155);
@@ -90,21 +94,55 @@
   --xy-connectionline-stroke: var(--edge);
   --xy-handle-background-color: var(--raised);
   --xy-handle-border-color: var(--text-muted);
-  --xy-controls-button-background-color: var(--surface);
-  --xy-controls-button-background-color-hover: var(--raised);
-  --xy-controls-button-color: var(--text);
-  --xy-controls-button-color-hover: var(--text);
-  --xy-controls-button-border-color: var(--border);
-  --xy-controls-box-shadow: none;
   --xy-attribution-background-color: transparent;
   --xy-edge-stroke-width: 2;
   --xy-connectionline-stroke-width: 2;
 }
 
-/* 확대·축소 버튼은 아이콘만 있으므로 44px(DESIGN.md). */
-.react-flow .react-flow__controls-button {
-  width: 44px;
-  height: 44px;
+/* 포트: 12px 원, 누르는 영역은 24px(데모). 크기 고정이라 위치는 카드 높이 기준으로 맞춘다. */
+.react-flow .react-flow__handle {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--text-muted);
+  background: var(--bg);
+}
+.react-flow .react-flow__handle::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+.react-flow .react-flow__handle:hover {
+  border-color: var(--text);
+  box-shadow: 0 0 0 3px var(--text-ring);
+}
+/* 선을 끄는 동안에는 입력 포트를 모두 강조한다. 연결할 수 없는 곳은 그 위에 올렸을 때 빨간 점선과 사유로 알린다.
+   ponytail: 포트마다 연결 가능 여부를 계산하면 끄는 동안 모든 카드가 다시 그려진다. 입력 포트 전체 강조로 대신한다. */
+.react-flow:has(.react-flow__connection) .react-flow__handle.target {
+  width: 14px;
+  height: 14px;
+  border: none;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-glow);
+}
+
+/* 연결할 수 없는 입력 포트 위에 올리면 빨간 테두리로 되돌린다(사유 말풍선은 canvas.tsx). */
+.react-flow:has(.react-flow__connection)
+  .react-flow__handle.target.connectingto:not(.valid) {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--danger);
+  background: var(--bg);
+  box-shadow: none;
+}
+
+/* 실행 중 노드 카드의 막대. 진행률을 모르므로 왕복한다. */
+@keyframes run-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
 }
 
 /* 연결할 수 없는 포트 위에서는 미리보기 선을 빨간 점선으로. */

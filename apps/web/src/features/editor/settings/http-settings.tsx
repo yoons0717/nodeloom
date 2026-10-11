@@ -113,9 +113,11 @@ export function HttpSettings({ node, errors, set }: SettingsProps) {
         )}
       </Field>
       <Field
-        label="본문 (JSONata 식)"
+        label="본문"
+        labelNote="JSONata"
         hint="객체를 만드는 식. 비워 두면 본문 없이 보냅니다"
         error={errors.body}
+        ok={text('body').trim() ? '식이 올바릅니다' : undefined}
       >
         {(control) => (
           <Textarea

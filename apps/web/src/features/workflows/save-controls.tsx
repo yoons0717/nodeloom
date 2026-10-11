@@ -15,14 +15,20 @@ const LEAVE_MESSAGE =
   '저장하지 않은 변경 사항이 있습니다. 이 페이지를 나갈까요?';
 
 // 이름 편집, 저장 버튼, ⌘S, 저장 여부 표시(M3 작은 결정 ③④). 저장은 덮어쓰기다(DECISIONS 2-4).
-// after: 저장 컨트롤 뒤에 붙일 것(실행 버튼). 실행 전에 저장하도록 ensureSaved를 넘긴다.
+// 상단 바 한 줄을 이룬다: 왼쪽(← · 이름 · 저장 상태 · middle), 오른쪽(actions · 저장 · after).
+// middle: 편집 도구(되돌리기). actions: 저장 앞 버튼들(문제, 실행 기록, 설정).
+// after: 저장 뒤에 붙일 것(실행 버튼). 실행 전에 저장하도록 ensureSaved를 넘긴다.
 export function SaveControls({
   id,
   initialName,
+  middle,
+  actions,
   after,
 }: {
   id: string;
   initialName: string;
+  middle?: ReactNode;
+  actions?: ReactNode;
   after?: (ensureSaved: () => Promise<boolean>) => ReactNode;
 }) {
   const graph = useEditorStore((s) => s.graph);
@@ -106,35 +112,42 @@ export function SaveControls({
         : '저장됨';
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <>
       <Link
         href="/"
-        className="text-sm text-muted-foreground hover:text-foreground"
+        aria-label="목록으로"
+        title="목록"
+        className="-ml-2 flex size-9 shrink-0 items-center justify-center rounded-md text-base text-muted-foreground hover:bg-raised-hover hover:text-foreground"
         // 앱 안 이동은 beforeunload가 불리지 않아서 직접 묻는다.
         onClick={(e) => {
           if (dirty && !window.confirm(LEAVE_MESSAGE)) e.preventDefault();
         }}
       >
-        ← 목록
+        ←
       </Link>
+      {/* 글자처럼 보이다가 누르면 편집한다(M6 작은 결정 ⑩). */}
       <Input
         aria-label="워크플로우 이름"
         aria-invalid={nameError ? true : undefined}
         title={nameError}
-        className="h-9 w-56 font-bold"
+        className="h-9 w-56 border-transparent bg-transparent text-base font-bold hover:border-border-control"
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
-      <Button onClick={submit} disabled={!canSave}>
-        저장
-      </Button>
       <span
         role="status"
-        className={`text-xs ${save.error ? 'text-danger-text' : 'text-muted-foreground'}`}
+        className={`shrink-0 text-xs ${save.error || nameError ? 'text-danger-text' : 'text-muted-foreground'}`}
       >
         {nameError ?? status}
       </span>
-      {after?.(ensureSaved)}
-    </div>
+      {middle}
+      <div className="ml-auto flex shrink-0 items-center gap-2">
+        {actions}
+        <Button variant="outline" onClick={submit} disabled={!canSave}>
+          저장
+        </Button>
+        {after?.(ensureSaved)}
+      </div>
+    </>
   );
 }
