@@ -7,6 +7,9 @@ export type Schedule =
   | { kind: 'hourly'; minute: number }
   | { kind: 'custom'; cron: string };
 
+export const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+export const pad = (n: number) => String(n).padStart(2, '0');
+
 const num = (s: string, max: number) =>
   /^\d{1,2}$/.test(s) && Number(s) <= max ? Number(s) : undefined;
 
@@ -42,5 +45,24 @@ export function toCron(s: Schedule): string | null {
     case 'custom':
       // 빈 칸은 스케줄 없음으로 저장한다. 검사 오류로 남기지 않는다.
       return s.cron.trim() ? s.cron : null;
+  }
+}
+
+// 목록 같은 곳에 한 줄로 보여 줄 말. 반복 안 함이면 null.
+export function describeSchedule(s: Schedule): string | null {
+  const time = 'hour' in s ? `${pad(s.hour)}:${pad(s.minute)}` : '';
+  switch (s.kind) {
+    case 'none':
+      return null;
+    case 'daily':
+      return `매일 ${time}`;
+    case 'weekdays':
+      return `평일 ${time}`;
+    case 'weekly':
+      return `매주 ${DAY_NAMES[s.day]}요일 ${time}`;
+    case 'hourly':
+      return `매시간 ${s.minute}분`;
+    case 'custom':
+      return s.cron;
   }
 }

@@ -24,12 +24,18 @@ export class WorkflowsService {
     const rows = await this.prisma.workflow.findMany({
       orderBy: { updatedAt: 'desc' },
     });
-    return rows.map((w) => ({
-      id: w.id,
-      name: w.name,
-      nodeCount: toGraph(w.graph).nodes.length,
-      updatedAt: w.updatedAt,
-    }));
+    return rows.map((w) => {
+      const graph = toGraph(w.graph);
+      const cron = graph.nodes.find((n) => n.type === 'trigger')?.config.cron;
+      return {
+        id: w.id,
+        name: w.name,
+        nodeCount: graph.nodes.length,
+        // 목록에 스케줄을 보여 준다. 틀린 cron도 그대로 내보내 화면이 오류로 표시한다.
+        cron: typeof cron === 'string' ? cron : null,
+        updatedAt: w.updatedAt,
+      };
+    });
   }
 
   async get(id: string) {

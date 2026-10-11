@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseSchedule, toCron } from './schedule';
+import { describeSchedule, parseSchedule, toCron } from './schedule';
 
 describe('반복 선택 ↔ cron', () => {
   it('선택지에 맞는 cron은 그 선택지로 읽고, 다시 같은 cron으로 만든다', () => {
@@ -22,5 +22,26 @@ describe('반복 선택 ↔ cron', () => {
       expect(parseSchedule(cron)).toEqual({ kind: 'custom', cron });
     }
     expect(toCron({ kind: 'custom', cron: ' ' })).toBeNull();
+  });
+});
+
+describe('describeSchedule', () => {
+  it('선택지는 사람이 읽는 말로, 직접 입력은 cron 그대로 보여 준다', () => {
+    expect(describeSchedule({ kind: 'daily', hour: 7, minute: 0 })).toBe(
+      '매일 07:00',
+    );
+    expect(describeSchedule({ kind: 'weekdays', hour: 8, minute: 30 })).toBe(
+      '평일 08:30',
+    );
+    expect(
+      describeSchedule({ kind: 'weekly', day: 6, hour: 7, minute: 5 }),
+    ).toBe('매주 토요일 07:05');
+    expect(describeSchedule({ kind: 'hourly', minute: 15 })).toBe(
+      '매시간 15분',
+    );
+    expect(describeSchedule({ kind: 'custom', cron: '*/15 * * * *' })).toBe(
+      '*/15 * * * *',
+    );
+    expect(describeSchedule({ kind: 'none' })).toBeNull();
   });
 });

@@ -1,7 +1,12 @@
+import { isValidCron, nextCronRuns } from '@nodeloom/core';
 import Link from 'next/link';
+import {
+  describeSchedule,
+  parseSchedule,
+} from '@/features/editor/settings/schedule';
 import { LogoutButton } from '@/features/auth/logout-button';
 import { DeleteWorkflowButton } from '@/features/workflows/delete-workflow-button';
-import { formatDateTime } from '@/features/workflows/format';
+import { formatDateTime, TIMEZONE } from '@/features/workflows/format';
 import { NewWorkflowButton } from '@/features/workflows/new-workflow-button';
 import { meSchema, workflowListSchema } from '@/features/workflows/schemas';
 import { serverApi } from '@/lib/server-api';
@@ -45,6 +50,7 @@ export default async function WorkflowListPage() {
               >
                 {w.name}
               </Link>
+              <ScheduleText cron={w.cron} demo={me.role === 'demo'} />
               <span className="text-xs text-muted-foreground">
                 노드 {w.nodeCount}개
               </span>
@@ -57,5 +63,19 @@ export default async function WorkflowListPage() {
         </ul>
       )}
     </main>
+  );
+}
+
+// 스케줄이 있는 워크플로우만 반복과 다음 실행 시각을 보여 준다. 데모에서는 스케줄이 돌지 않아 다음 실행은 뺀다(DECISIONS D-3).
+function ScheduleText({ cron, demo }: { cron: string | null; demo: boolean }) {
+  if (cron === null) return null;
+  if (!isValidCron(cron))
+    return <span className="text-xs text-destructive-text">스케줄 오류</span>;
+  const next = demo ? null : nextCronRuns(cron, TIMEZONE, 1)[0];
+  return (
+    <span className="text-xs text-primary">
+      {describeSchedule(parseSchedule(cron))}
+      {next && ` · 다음 ${formatDateTime(next.toISOString())}`}
+    </span>
   );
 }

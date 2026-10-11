@@ -16,7 +16,13 @@ import { meSchema } from '@/features/workflows/schemas';
 import { clientApi } from '@/lib/client-api';
 import { JsonField } from './draft-fields';
 import { configValue, Field, type SettingsProps } from './field';
-import { parseSchedule, type Schedule, toCron } from './schedule';
+import {
+  DAY_NAMES,
+  pad,
+  parseSchedule,
+  type Schedule,
+  toCron,
+} from './schedule';
 
 type Kind = Schedule['kind'];
 const KINDS: { value: Kind; label: string }[] = [
@@ -27,11 +33,10 @@ const KINDS: { value: Kind; label: string }[] = [
   { value: 'hourly', label: '매시간' },
   { value: 'custom', label: '직접 입력 (cron)' },
 ];
-const DAYS = ['일', '월', '화', '수', '목', '금', '토'].map((d, i) => ({
+const DAYS = DAY_NAMES.map((d, i) => ({
   value: String(i),
   label: `${d}요일`,
 }));
-const pad = (n: number) => String(n).padStart(2, '0');
 
 // 반복 종류를 바꿀 때 지금 고른 시각·요일은 그대로 둔다. 없으면 월요일 09:00.
 function withKind(

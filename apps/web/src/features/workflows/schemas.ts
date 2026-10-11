@@ -8,6 +8,7 @@ export const workflowListSchema = z.array(
     id: z.string(),
     name: z.string(),
     nodeCount: z.number(),
+    cron: z.string().nullable(),
     updatedAt: z.string(),
   }),
 );

@@ -136,7 +136,8 @@ describe('/workflows', () => {
   describe('스케줄', () => {
     const withCron = (cron: string | null) =>
       graph([node('trigger_1', 'trigger', { cron })]);
-    const schedules = (id: string) => queue.boss.getSchedules(SCHEDULE_QUEUE, id);
+    const schedules = (id: string) =>
+      queue.boss.getSchedules(SCHEDULE_QUEUE, id);
     const save = (id: string, g: Graph) =>
       api().put(`/workflows/${id}`).send({ name: 's', graph: g });
 
@@ -155,6 +156,17 @@ describe('/workflows', () => {
       await save(id, withCron('0 7 * * *')).expect(204);
       await api().delete(`/workflows/${id}`).expect(204);
       expect(await schedules(id)).toEqual([]);
+    });
+
+    it('목록에 Trigger의 cron을 함께 돌려준다', async () => {
+      const id = await create('s', withCron('0 7 * * *'));
+      const none = await create('s', withCron(null));
+      const rows = (await api().get('/workflows').expect(200)).body as {
+        id: string;
+        cron: string | null;
+      }[];
+      expect(rows.find((w) => w.id === id)?.cron).toBe('0 7 * * *');
+      expect(rows.find((w) => w.id === none)?.cron).toBeNull();
     });
 
     it('틀린 cron은 저장하되 스케줄은 해제한다', async () => {
