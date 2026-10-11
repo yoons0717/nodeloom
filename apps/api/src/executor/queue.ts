@@ -1,19 +1,23 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   type OnModuleDestroy,
   type OnModuleInit,
 } from '@nestjs/common';
 import { type Graph, isValidCron } from '@nodeloom/core';
-import { fromPrisma, PgBoss } from 'pg-boss';
+import { type Clock, fromPrisma, PgBoss } from 'pg-boss';
 import { env } from '../env.js';
 import { Prisma, type RunKind } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma.service.js';
+import { PG_BOSS_CLOCK } from './pg-boss-clock.js';
 
 // job 하나 = 실행 하나(DECISIONS 7-1)
 export const RUN_QUEUE = 'run';
 export type RunJob = { runId: string };
+// 시도 횟수(pg-boss 기본 재시도 2번)를 다 쓴 실행 job이 옮겨 가는 큐. 남은 RUNNING을 FAILED로 끝낸다(M5 작은 결정 ⑤).
+export const RUN_DEAD_QUEUE = 'run-dead';
 const HEARTBEAT_SECONDS = 30;
 // 스케줄 하나 = 워크플로우 하나. 키는 워크플로우 id
 export const SCHEDULE_QUEUE = 'schedule';
@@ -24,20 +28,26 @@ type Tx = Parameters<Parameters<PrismaService['$transaction']>[0]>[0];
 @Injectable()
 export class QueueService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(QueueService.name);
-  readonly boss = new PgBoss({
-    connectionString: env.DATABASE_URL,
-    schema: 'pgboss',
-    // 데모에서는 스케줄을 돌리지 않는다(DECISIONS D-3).
-    schedule: !env.DEMO_MODE,
-  });
+  readonly boss: PgBoss;
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(PG_BOSS_CLOCK) readonly clock: Clock,
+  ) {
+    this.boss = new PgBoss({
+      connectionString: env.DATABASE_URL,
+      schema: 'pgboss',
+      // 데모에서는 스케줄을 돌리지 않는다(DECISIONS D-3).
+      schedule: !env.DEMO_MODE,
+      clock,
+    });
     // 'error' 이벤트를 받는 곳이 없으면 프로세스가 죽는다.
     this.boss.on('error', (err) => this.logger.error(err));
   }
 
   async onModuleInit() {
     await this.boss.start();
+    await this.boss.createQueue(RUN_DEAD_QUEUE);
     await this.boss.createQueue(RUN_QUEUE);
     await this.boss.createQueue(SCHEDULE_QUEUE);
   }
@@ -81,6 +91,7 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
           // 워커가 죽으면 heartbeat가 끊기고, pg-boss가 job을 다시 꺼내 이어서 실행한다(M4 작은 결정 ③).
           heartbeatSeconds: HEARTBEAT_SECONDS,
           expireInSeconds: env.RUN_TIMEOUT + 60,
+          deadLetter: RUN_DEAD_QUEUE,
         });
         return run.id;
       });

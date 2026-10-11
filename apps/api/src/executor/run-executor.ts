@@ -20,12 +20,22 @@ import { createMasker } from './mask.js';
 import { NodeError } from './nodes/node-error.js';
 import { runNode } from './nodes/run-node.js';
 import { createHttpGuard } from './nodes/ssrf.js';
-import { QueueService, RUN_QUEUE, type RunJob } from './queue.js';
+import {
+  QueueService,
+  RUN_DEAD_QUEUE,
+  RUN_QUEUE,
+  type RunJob,
+} from './queue.js';
 
 // 동시에 실행하는 흐름 수. 같은 흐름은 인덱스가 하나로 막는다(DECISIONS 7-5).
 const CONCURRENT_RUNS = 5;
 
-type RunError = { code: string; message: string; nodeKey?: string };
+export type RunError = { code: string; message: string; nodeKey?: string };
+
+const ABORTED: RunError = {
+  code: 'RUN_ABORTED',
+  message: '실행 엔진이 반복해서 멈춰 실행을 중단했습니다',
+};
 
 @Injectable()
 export class RunExecutor implements OnApplicationBootstrap {
@@ -53,6 +63,28 @@ export class RunExecutor implements OnApplicationBootstrap {
         for (const job of jobs) await this.execute(job.data.runId);
       },
     );
+    await this.queue.boss.work<RunJob>(RUN_DEAD_QUEUE, async (jobs) => {
+      for (const job of jobs) await this.abort(job.data.runId);
+    });
+  }
+
+  // 실행 엔진이 시도 횟수를 다 쓰도록 죽었다(DB 오류 등). 끝나지 않은 실행을 FAILED로 끝내야
+  // 동시 실행 제한이 풀려 다음 실행과 스케줄이 막히지 않는다(M5 작은 결정 ⑤).
+  async abort(runId: string) {
+    const { count } = await this.prisma.run.updateMany({
+      where: { id: runId, status: { in: ['PENDING', 'RUNNING'] } },
+      data: {
+        status: 'FAILED',
+        error: ABORTED,
+        finishedAt: new Date(),
+      },
+    });
+    if (count === 0) return;
+    const run = await this.prisma.run.findUniqueOrThrow({
+      where: { id: runId },
+    });
+    this.logger.error(`run aborted after retries runId=${runId}`);
+    if (run.kind !== 'FAILURE') await this.startFailureRun(run, ABORTED);
   }
 
   // 실행 하나를 끝까지 돌린다. 서버가 죽었다 다시 불려도 이어서 실행한다(DECISIONS 7-1).
@@ -257,7 +289,7 @@ export class RunExecutor implements OnApplicationBootstrap {
 
   // 워크플로우에 지정된 실패 알림 워크플로우를 실행한다(DECISIONS 7-4, B-10).
   // 그 워크플로우가 검사에 걸리면 실행하지 않고 FAILED 기록만 남긴다(DECISIONS 7-5).
-  private async startFailureRun(run: Run, error: RunError) {
+  async startFailureRun(run: Run, error: RunError) {
     const workflow = await this.prisma.workflow.findUnique({
       where: { id: run.workflowId },
       include: { failureWorkflow: true },

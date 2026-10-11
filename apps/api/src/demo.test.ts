@@ -61,8 +61,9 @@ describe('DEMO_MODE', () => {
       .expect(403);
   });
 
-  it('cron을 적어 저장해도 스케줄을 등록하지 않는다', async () => {
-    const { QueueService, SCHEDULE_QUEUE } = await import('./executor/queue.js');
+  it('cron을 적어 저장해도, 기록 정리도 스케줄을 등록하지 않는다', async () => {
+    const { QueueService, SCHEDULE_QUEUE } =
+      await import('./executor/queue.js');
     const trigger = {
       id: 't',
       key: 'trigger_1',
@@ -79,6 +80,10 @@ describe('DEMO_MODE', () => {
     const id = (res.body as { id: string }).id;
     expect(
       await app.get(QueueService).boss.getSchedules(SCHEDULE_QUEUE, id),
+    ).toEqual([]);
+    const { CLEANUP_QUEUE } = await import('./executor/run-cleanup.js');
+    expect(
+      await app.get(QueueService).boss.getSchedules(CLEANUP_QUEUE),
     ).toEqual([]);
   });
 

@@ -56,8 +56,11 @@ const schema = z
       .string()
       .default('Asia/Seoul')
       .refine(isTimeZone, {
-        error: (i) => `APP_TIMEZONE의 "${String(i.input)}"는 시간대 이름이 아닙니다`,
+        error: (i) =>
+          `APP_TIMEZONE의 "${String(i.input)}"는 시간대 이름이 아닙니다`,
       }),
+    // 끝난 실행 기록을 남겨 두는 날 수(DECISIONS A-6)
+    RUN_RETENTION_DAYS: z.coerce.number().int().positive().default(30),
     // 실행 한 번의 전체 시간 제한, 초(DECISIONS 7-3, B-13)
     RUN_TIMEOUT: z.coerce.number().int().positive().default(300),
     // 연습용 응답 주소(DECISIONS B-7). 비우면 api 자신

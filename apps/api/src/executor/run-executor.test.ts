@@ -387,5 +387,48 @@ describe('실행 엔진', () => {
         nodeRuns: [],
       });
     });
+    it('실행 job이 시도 횟수를 다 쓰면 Run을 FAILED로 끝내고 실패 알림을 실행한다', async () => {
+      const { QueueService } = await import('./queue.js');
+      const queue = app.get(QueueService);
+      const alertId = await createWorkflow(g([trigger()], []));
+      const graph = g([trigger()], []);
+      const workflowId = await createWorkflow(graph);
+      await prisma.workflow.update({
+        where: { id: workflowId },
+        data: { failureWorkflowId: alertId },
+      });
+      // DB 오류처럼 실행 엔진이 매번 죽는 경우
+      const spy = vi
+        .spyOn(executor, 'execute')
+        .mockRejectedValue(new Error('db down'));
+      const runId = await queue.enqueueRun({
+        workflowId,
+        kind: 'MANUAL',
+        graph,
+        triggerInput: {},
+      });
+      try {
+        await vi.waitFor(
+          async () =>
+            expect(
+              await prisma.run.findUnique({ where: { id: runId } }),
+            ).toMatchObject({
+              status: 'FAILED',
+              error: { code: 'RUN_ABORTED' },
+            }),
+          { timeout: 30_000, interval: 500 },
+        );
+      } finally {
+        spy.mockRestore();
+      }
+      expect(await failureRuns(alertId)).toHaveLength(1);
+      // 남아 있던 RUNNING이 풀려 다음 실행이 막히지 않는다.
+      await queue.enqueueRun({
+        workflowId,
+        kind: 'MANUAL',
+        graph,
+        triggerInput: {},
+      });
+    }, 40_000);
   });
 });
