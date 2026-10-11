@@ -5,54 +5,102 @@
 /* 테마는 토큰 값만 바꿔서 처리한다. shadcn 부품의 dark: 스타일은 쓰지 않도록 .dark 안에서만 켜지게 두고, .dark는 붙이지 않는다. */
 @custom-variant dark (&:is(.dark *));
 
-/* 색은 이 토큰으로만 쓴다(docs/DESIGN.md, DECISIONS I-1). 지금은 어두운 테마 하나뿐이다. */
+/* 색은 이 토큰으로만 쓴다(docs/DESIGN.md, DECISIONS I-1). 지금은 어두운 테마 하나뿐이다.
+   기본값 → 의미 → 부품 순서로 쓴다. 부품(shadcn, React Flow)은 의미 토큰을 가리키기만 한다. */
 :root {
   color-scheme: dark;
 
-  --background: #0e1116;
-  --surface: #161b22;
-  --raised: #1c232c;
-  --border: #2e3744;
-  --divider: #262e38;
+  /* 표면 */
+  --bg: #0e1116;
+  --surface: #151a21;
+  --raised: #1b222b;
+  --raised-hover: #232b36;
+  --overlay: #28313d;
   --grid: #252c36;
-  --foreground: #e4e8ee;
-  --muted-foreground: #93a0ae;
-  --disabled: #6b7684;
-  --primary: #5fd4c7;
-  --primary-ring: rgba(95, 212, 199, 0.18);
+  /* 테두리 */
+  --border-subtle: #242c36;
+  --border: #303a47;
+  /* 입력 칸·버튼 경계. bg 3.4:1, surface 3.1:1(WCAG 1.4.11). raised 위는 2.9:1이라 입력 칸을 두지 않는다 */
+  --border-control: #5d6979;
+  /* 글자 */
+  --text: #e4e8ee;
+  --text-label: #c9d0d9;
+  --text-muted: #97a3b1;
+  --text-disabled: #6b7684;
+  /* 강조: 선택·포커스·주요 버튼·실행 중·지나간 연결선에만 쓴다 */
+  --accent: #5fd4c7;
+  --accent-hover: #8fe3da;
+  --accent-soft: rgb(95 212 199 / 0.16);
+  --accent-ring: rgb(95 212 199 / 0.22);
+  /* 상태. 실행 중은 강조색을 쓴다 */
+  --success: oklch(0.78 0.14 155);
+  --success-text: oklch(0.8 0.14 155);
+  --success-soft: oklch(0.78 0.14 155 / 0.16);
+  --warning: oklch(0.8 0.14 60);
+  --warning-text: oklch(0.84 0.12 60);
+  --warning-soft: oklch(0.8 0.14 60 / 0.16);
+  --danger: #ff6b6b;
+  --danger-text: #ff9a94;
+  --danger-soft: #3a1d20;
+  --danger-strong: #b3302b;
+  /* 노드 종류. 명도·채도는 같고 색상만 다르다 */
+  --node-trigger: oklch(0.78 0.12 300);
+  --node-trigger-soft: oklch(0.78 0.12 300 / 0.16);
+  --node-http: oklch(0.78 0.12 245);
+  --node-http-soft: oklch(0.78 0.12 245 / 0.16);
+  --node-transform: oklch(0.78 0.12 350);
+  --node-transform-soft: oklch(0.78 0.12 350 / 0.16);
+  --node-condition: oklch(0.8 0.12 80);
+  --node-condition-soft: oklch(0.8 0.12 80 / 0.16);
+  /* 글리프 칩 글자. 바탕(-soft) 위에서 읽히도록 조금 밝다 */
+  --node-trigger-text: oklch(0.8 0.12 300);
+  --node-http-text: oklch(0.8 0.12 245);
+  --node-transform-text: oklch(0.8 0.12 350);
+  --node-condition-text: oklch(0.84 0.12 80);
+  /* 연결선. 안 간 갈래는 점선으로 그린다 */
   --edge: #3e8f87;
-  --destructive: #ff6b6b;
-  --destructive-text: #ff9a94;
-  --destructive-soft: #3a1d20;
-  --destructive-strong: #b3302b;
-  --radius: 6px;
+  --edge-active: var(--accent);
+  --edge-inactive: #4a5666;
+  --radius-control: 6px;
+
+  /* 이전 이름. 부품을 옮기는 동안(M6 6-b~6-d) 남겨 두고 다 옮기면 지운다. */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --muted-foreground: var(--text-muted);
+  --disabled: var(--text-disabled);
+  --divider: var(--border-subtle);
+  --primary-ring: var(--accent-ring);
+  --destructive: var(--danger);
+  --destructive-text: var(--danger-text);
+  --destructive-soft: var(--danger-soft);
+  --destructive-strong: var(--danger-strong);
 
   /* shadcn 부품이 쓰는 이름. 위 토큰에 연결만 한다. */
-  --primary-foreground: var(--background);
+  --primary: var(--accent);
+  --primary-foreground: var(--bg);
   --card: var(--raised);
-  --card-foreground: var(--foreground);
-  --popover: var(--raised);
-  --popover-foreground: var(--foreground);
+  --card-foreground: var(--text);
+  --popover: var(--overlay);
+  --popover-foreground: var(--text);
   --secondary: var(--raised);
-  --secondary-foreground: var(--foreground);
+  --secondary-foreground: var(--text);
   --muted: var(--raised);
-  --accent: var(--border);
-  --accent-foreground: var(--foreground);
-  --input: var(--border);
-  --ring: var(--primary);
+  --accent-foreground: var(--text);
+  --input: var(--border-control);
+  --ring: var(--accent);
 
   /* React Flow 기본 색을 토큰으로 바꾼다. */
-  --xy-background-color: var(--background);
+  --xy-background-color: var(--bg);
   --xy-background-pattern-color: var(--grid);
   --xy-edge-stroke: var(--edge);
-  --xy-edge-stroke-selected: var(--primary);
+  --xy-edge-stroke-selected: var(--accent);
   --xy-connectionline-stroke: var(--edge);
   --xy-handle-background-color: var(--raised);
-  --xy-handle-border-color: var(--muted-foreground);
+  --xy-handle-border-color: var(--text-muted);
   --xy-controls-button-background-color: var(--surface);
   --xy-controls-button-background-color-hover: var(--raised);
-  --xy-controls-button-color: var(--foreground);
-  --xy-controls-button-color-hover: var(--foreground);
+  --xy-controls-button-color: var(--text);
+  --xy-controls-button-color-hover: var(--text);
   --xy-controls-button-border-color: var(--border);
   --xy-controls-box-shadow: none;
   --xy-attribution-background-color: transparent;
@@ -68,7 +116,7 @@
 
 /* 연결할 수 없는 포트 위에서는 미리보기 선을 빨간 점선으로. */
 .react-flow__connection.invalid .react-flow__connection-path {
-  stroke: var(--destructive);
+  stroke: var(--danger);
   stroke-dasharray: 6 4;
 }
 
@@ -76,23 +124,65 @@
   --font-sans: var(--font-noto-sans-kr), 'Apple SD Gothic Neo', sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
-  --color-background: var(--background);
+  /* 글자 단계(크기/줄 높이). Tailwind 기본 xs 12/16, sm 14/20, base 16/24, xl 20/28에 13과 11을 더한다. */
+  --text-body-sm: 0.8125rem;
+  --text-body-sm--line-height: 1.25rem;
+  --text-caption: 0.6875rem;
+  --text-caption--line-height: 1rem;
+
+  --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-raised: var(--raised);
+  --color-raised-hover: var(--raised-hover);
+  --color-overlay: var(--overlay);
+  --color-border-subtle: var(--border-subtle);
   --color-border: var(--border);
-  --color-divider: var(--divider);
+  --color-border-control: var(--border-control);
+  --color-label: var(--text-label);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ring: var(--accent-ring);
+  --color-success: var(--success);
+  --color-success-text: var(--success-text);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-text: var(--warning-text);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-text: var(--danger-text);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-strong: var(--danger-strong);
+  --color-node-trigger: var(--node-trigger);
+  --color-node-trigger-soft: var(--node-trigger-soft);
+  --color-node-http: var(--node-http);
+  --color-node-http-soft: var(--node-http-soft);
+  --color-node-transform: var(--node-transform);
+  --color-node-transform-soft: var(--node-transform-soft);
+  --color-node-condition: var(--node-condition);
+  --color-node-condition-soft: var(--node-condition-soft);
+  --color-node-trigger-text: var(--node-trigger-text);
+  --color-node-http-text: var(--node-http-text);
+  --color-node-transform-text: var(--node-transform-text);
+  --color-node-condition-text: var(--node-condition-text);
+  --color-edge: var(--edge);
+  --color-edge-active: var(--edge-active);
+  --color-edge-inactive: var(--edge-inactive);
+
+  /* 이전 이름(6-b~6-d에서 옮긴 뒤 지운다). 글자색은 text-text-* 처럼 겹치지 않게 이 이름을 계속 쓴다. */
+  --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted-foreground: var(--muted-foreground);
   --color-disabled: var(--disabled);
-  --color-primary: var(--primary);
+  --color-divider: var(--divider);
   --color-primary-ring: var(--primary-ring);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-edge: var(--edge);
   --color-destructive: var(--destructive);
   --color-destructive-text: var(--destructive-text);
   --color-destructive-soft: var(--destructive-soft);
   --color-destructive-strong: var(--destructive-strong);
 
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -100,15 +190,15 @@
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
-  --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
+  /* 4px 글리프·kbd · 6px 버튼·입력 칸 · 8px 노드·카드 */
+  --radius-sm: 4px;
+  --radius-md: var(--radius-control);
+  --radius-lg: 8px;
+  --radius-xl: 12px;
 }
 
 @layer base {

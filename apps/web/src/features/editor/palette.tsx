@@ -41,7 +41,7 @@ export function Palette() {
               e.dataTransfer.setData(DRAG_MIME, type);
               e.dataTransfer.effectAllowed = 'move';
             }}
-            className="cursor-grab rounded-lg border border-border bg-raised px-3 py-2.5 hover:border-muted-foreground active:cursor-grabbing"
+            className="cursor-grab rounded-md border border-border bg-raised px-3 py-2.5 hover:border-muted-foreground active:cursor-grabbing"
           >
             <div className="font-bold">{NODE_META[type].label}</div>
             <div className="text-xs text-muted-foreground">
