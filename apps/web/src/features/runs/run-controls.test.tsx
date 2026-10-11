@@ -81,5 +81,8 @@ describe('RunControls', () => {
       'GET /api/runs/r1/status',
     ]);
     await waitFor(() => expect(screen.getByText('저장됨')).toBeTruthy());
+    expect(
+      screen.getByRole('link', { name: '결과 보기' }).getAttribute('href'),
+    ).toBe('/w/wf-1/runs/r1');
   });
 });

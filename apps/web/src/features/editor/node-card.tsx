@@ -11,11 +11,16 @@ import {
 import { onNodeRender } from './bench';
 import { NODE_META, PORT_LABEL } from './node-meta';
 
-export type CanvasNode = Node<{ node: GraphNode; issues: Issue[] }>;
+// runStatus는 실행 상세 화면에서만 넘긴다. 에디터에서는 없다.
+export type CanvasNode = Node<{
+  node: GraphNode;
+  issues: Issue[];
+  runStatus?: { label: string; className: string };
+}>;
 
 // 노드 4종이 함께 쓰는 카드. 포트는 core의 NODE_SPECS에서 읽는다.
 export function NodeCard({ data, selected }: NodeProps<CanvasNode>) {
-  const { node, issues } = data;
+  const { node, issues, runStatus } = data;
   const spec = NODE_SPECS[node.type];
   const outputs = spec.outputs as readonly string[];
 
@@ -27,7 +32,7 @@ export function NodeCard({ data, selected }: NodeProps<CanvasNode>) {
         className={`min-w-[150px] rounded-lg border bg-raised px-3 py-2.5 ${
           selected
             ? 'border-primary shadow-[0_0_0_1px_var(--primary),0_0_0_5px_var(--primary-ring)]'
-            : 'border-border'
+            : (runStatus?.className ?? 'border-border')
         }`}
       >
         {spec.inputs.length > 0 && (
@@ -60,6 +65,7 @@ export function NodeCard({ data, selected }: NodeProps<CanvasNode>) {
         <div className="font-mono text-[11px] text-muted-foreground">
           {node.key}
         </div>
+        {runStatus && <div className="mt-1 text-xs">{runStatus.label}</div>}
         {outputs.map((port, i) => (
           <Handle
             key={port}

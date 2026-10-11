@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { clientApi } from '@/lib/client-api';
@@ -79,6 +80,15 @@ export function RunControls({
       >
         {text}
       </span>
+      {/* 시작하자마자 보여 준다. 끝난 뒤에만 보이면 실행이 멈췄을 때 볼 방법이 없다. */}
+      {runId && (
+        <Link
+          href={`/w/${workflowId}/runs/${runId}`}
+          className="text-xs text-primary hover:underline"
+        >
+          결과 보기
+        </Link>
+      )}
     </div>
   );
 }

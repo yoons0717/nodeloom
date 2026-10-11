@@ -148,4 +148,61 @@ describe('실행 API', () => {
       failureWorkflowId: null,
     });
   });
+  describe('실행 기록', () => {
+    const run = async (id: string) => {
+      const { runId } = (await agent.post(`/workflows/${id}/runs`).expect(202))
+        .body as { runId: string };
+      await vi.waitFor(
+        async () => expect((await status(runId)).status).toBe('SUCCESS'),
+        { timeout: 10_000, interval: 200 },
+      );
+      return runId;
+    };
+
+    it('목록은 최근 실행부터 입출력 없이 돌려준다', async () => {
+      const id = await create();
+      const first = await run(id);
+      const second = await run(id);
+      const res = await agent.get(`/workflows/${id}/runs`).expect(200);
+      expect(res.body).toMatchObject([
+        { id: second, status: 'SUCCESS', kind: 'MANUAL' },
+        { id: first },
+      ]);
+      expect(JSON.stringify(res.body)).not.toContain('graph');
+      await agent
+        .get('/workflows/00000000-0000-0000-0000-000000000000/runs')
+        .expect(404);
+    });
+
+    it('상세는 실행 당시 그래프와 노드별 상태를 돌려준다', async () => {
+      const id = await create();
+      const runId = await run(id);
+      // 실행 뒤에 워크플로우를 고쳐도 상세는 실행 당시 그래프다.
+      await agent
+        .put(`/workflows/${id}`)
+        .send({ name: 'w', graph: { ...graph, nodes: [graph.nodes[0]] } })
+        .expect(204);
+      const res = await agent.get(`/runs/${runId}`).expect(200);
+      expect(res.body).toMatchObject({
+        id: runId,
+        workflowId: id,
+        status: 'SUCCESS',
+        graph,
+      });
+      const { nodes } = res.body as { nodes: { nodeKey: string }[] };
+      expect(nodes.map((n) => n.nodeKey).sort()).toEqual(['plus', 'trigger']);
+      expect(JSON.stringify(nodes)).not.toContain('output');
+      await agent.get('/runs/00000000-0000-0000-0000-000000000000').expect(404);
+    });
+
+    it('노드 입출력은 노드를 골랐을 때 시도별로 돌려준다', async () => {
+      const id = await create();
+      const runId = await run(id);
+      const res = await agent.get(`/runs/${runId}/nodes/plus`).expect(200);
+      expect(res.body).toMatchObject([
+        { attempt: 1, status: 'SUCCESS', input: { n: 1 }, output: 2 },
+      ]);
+      await agent.get(`/runs/${runId}/nodes/ghost`).expect(404);
+    });
+  });
 });

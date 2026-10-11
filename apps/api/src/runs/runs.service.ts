@@ -41,6 +41,62 @@ export class RunsService {
     return { runId };
   }
 
+  // 목록은 최근 50개(M5 작은 결정 ③). 30일 보존이라 페이지 넘김 없이 충분하다.
+  async list(workflowId: string) {
+    const workflow = await this.prisma.workflow.findUnique({
+      where: { id: workflowId },
+      select: { id: true },
+    });
+    if (!workflow) throw new NotFoundException('워크플로우를 찾을 수 없습니다');
+    return this.prisma.run.findMany({
+      where: { workflowId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: {
+        id: true,
+        status: true,
+        kind: true,
+        error: true,
+        createdAt: true,
+        startedAt: true,
+        finishedAt: true,
+      },
+    });
+  }
+
+  // 상세 화면은 실행 당시 그래프(스냅샷)를 그린다(DECISIONS B-9). 입출력은 노드를 고를 때 따로 받는다(B-1).
+  async detail(runId: string) {
+    const [run, status] = await Promise.all([
+      this.prisma.run.findUnique({
+        where: { id: runId },
+        select: { workflowId: true, kind: true, graph: true },
+      }),
+      this.status(runId),
+    ]);
+    if (!run) throw notFound();
+    return { ...status, ...run, graph: graphSchema.parse(run.graph) };
+  }
+
+  async nodeAttempts(runId: string, nodeId: string) {
+    const attempts = await this.prisma.nodeRun.findMany({
+      where: { runId, nodeId },
+      orderBy: { attempt: 'asc' },
+      select: {
+        attempt: true,
+        status: true,
+        port: true,
+        input: true,
+        output: true,
+        error: true,
+        startedAt: true,
+        finishedAt: true,
+      },
+    });
+    if (attempts.length === 0)
+      throw new NotFoundException('이 노드의 실행 기록이 없습니다');
+    return attempts;
+  }
+
   // 1초마다 조회하므로 상태와 시간만 돌려준다. 노드 입출력은 돌려주지 않는다(DECISIONS B-1).
   async status(runId: string) {
     const run = await this.prisma.run.findUnique({
@@ -58,10 +114,14 @@ export class RunsService {
         },
       },
     });
-    if (!run) throw new NotFoundException('실행 기록을 찾을 수 없습니다');
+    if (!run) throw notFound();
     // 노드마다 마지막 시도만
     const { nodeRuns, ...rest } = run;
     const nodes = new Map(nodeRuns.map((r) => [r.nodeId, r]));
     return { ...rest, nodes: [...nodes.values()] };
   }
+}
+
+function notFound() {
+  return new NotFoundException('실행 기록을 찾을 수 없습니다');
 }

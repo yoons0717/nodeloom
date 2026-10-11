@@ -21,6 +21,24 @@ export class RunsController {
     return this.runs.start(workflowId);
   }
 
+  @Get('workflows/:id/runs')
+  list(@Param('id', id) workflowId: string) {
+    return this.runs.list(workflowId);
+  }
+
+  @Get('runs/:id')
+  detail(@Param('id', id) runId: string) {
+    return this.runs.detail(runId);
+  }
+
+  @Get('runs/:id/nodes/:nodeId')
+  nodeAttempts(
+    @Param('id', id) runId: string,
+    @Param('nodeId') nodeId: string,
+  ) {
+    return this.runs.nodeAttempts(runId, nodeId);
+  }
+
   @Get('runs/:id/status')
   status(@Param('id', id) runId: string) {
     return this.runs.status(runId);

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Editor } from '@/features/editor/editor';
 import { RunControls } from '@/features/runs/run-controls';
 import { FailureWorkflowSelect } from './failure-workflow-select';
@@ -35,6 +36,12 @@ export function WorkflowEditor({ workflow }: { workflow: Workflow }) {
                 workflowId={workflow.id}
                 initial={workflow.failureWorkflowId}
               />
+              <Link
+                href={`/w/${workflow.id}/runs`}
+                className="text-xs text-muted-foreground hover:text-primary"
+              >
+                실행 기록
+              </Link>
             </>
           }
         />
