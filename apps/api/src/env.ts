@@ -26,6 +26,15 @@ const ipOrSubnet = z.string().refine(
   },
 );
 
+function isTimeZone(tz: string) {
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const schema = z
   .object({
     DATABASE_URL: z.url(),
@@ -42,6 +51,13 @@ const schema = z
     JWT_SECRET: optional(
       z.string().min(32, { error: 'JWT_SECRET은 32자 이상이어야 합니다' }),
     ),
+    // 스케줄과 화면 시각의 시간대(DECISIONS 3-5)
+    APP_TIMEZONE: z
+      .string()
+      .default('Asia/Seoul')
+      .refine(isTimeZone, {
+        error: (i) => `APP_TIMEZONE의 "${String(i.input)}"는 시간대 이름이 아닙니다`,
+      }),
     // 실행 한 번의 전체 시간 제한, 초(DECISIONS 7-3, B-13)
     RUN_TIMEOUT: z.coerce.number().int().positive().default(300),
     // 연습용 응답 주소(DECISIONS B-7). 비우면 api 자신

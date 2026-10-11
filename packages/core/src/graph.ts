@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidCron } from './cron.js';
 
 // 저장된 그래프 JSON의 형식 버전. 형식이 바뀌면 올리고, 새 설정 항목은 zod 기본값으로 채운다(DECISIONS B-8).
 export const GRAPH_SCHEMA_VERSION = 1;
@@ -8,7 +9,13 @@ export const NODE_KEY_PATTERN = /^[a-z][a-z0-9_]*$/;
 
 // 오류 문구는 설정 패널에 그대로 보이므로 칸마다 한국어로 적는다.
 const triggerConfig = z.object({
-  cron: z.string().nullable().default(null),
+  cron: z
+    .string()
+    .refine(isValidCron, {
+      error: 'cron 식이 올바르지 않습니다(분 시 일 월 요일, 5자리)',
+    })
+    .nullable()
+    .default(null),
   testInput: z.json({ error: 'JSON 값이어야 합니다' }).default({}),
 });
 

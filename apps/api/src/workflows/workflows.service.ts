@@ -8,13 +8,17 @@ import {
 import { type Graph, graphSchema } from '@nodeloom/core';
 import { DEMO_LIMITS } from '../demo-limits.js';
 import { env } from '../env.js';
+import { QueueService } from '../executor/queue.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma.service.js';
 import type { FailureWorkflowBody, WorkflowBody } from './workflows.schemas.js';
 
 @Injectable()
 export class WorkflowsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly queue: QueueService,
+  ) {}
 
   async list() {
     const rows = await this.prisma.workflow.findMany({
@@ -49,18 +53,25 @@ export class WorkflowsService {
         );
     }
     checkDemoGraph(body);
-    const w = await this.prisma.workflow.create({ data: toRow(body) });
+    const w = await this.prisma.$transaction(async (tx) => {
+      const w = await tx.workflow.create({ data: toRow(body) });
+      await this.queue.syncSchedule(tx, w.id, body.graph);
+      return w;
+    });
     return { id: w.id };
   }
 
   // 덮어쓰기 저장. 버전 비교(409)는 하지 않는다(DECISIONS 2-4).
   async update(id: string, body: WorkflowBody) {
     checkDemoGraph(body);
-    const { count } = await this.prisma.workflow.updateMany({
-      where: { id },
-      data: toRow(body),
+    await this.prisma.$transaction(async (tx) => {
+      const { count } = await tx.workflow.updateMany({
+        where: { id },
+        data: toRow(body),
+      });
+      if (count === 0) throw notFound();
+      await this.queue.syncSchedule(tx, id, body.graph);
     });
-    if (count === 0) throw notFound();
   }
 
   async setFailureWorkflow(id: string, body: FailureWorkflowBody) {
@@ -84,7 +95,7 @@ export class WorkflowsService {
     }
   }
 
-  // 실행 중이면 지우지 않는다. 지우면 실행 기록도 함께 지워지고, 이 워크플로우를 실패 알림으로 지정한 설정은 비워진다(DECISIONS B-4, 외래 키 규칙).
+  // 실행 중이면 지우지 않는다. 지우면 스케줄은 해제되고 실행 기록도 함께 지워지고, 이 워크플로우를 실패 알림으로 지정한 설정은 비워진다(DECISIONS B-4, 외래 키 규칙).
   // ponytail: 확인과 삭제 사이에 실행이 시작될 수 있다. 그 실행은 기록이 지워져 실행기가 오류로 멈추고, 다시 시도할 때 기록이 없어 끝난다.
   async remove(id: string) {
     const running = await this.prisma.run.count({
@@ -92,8 +103,11 @@ export class WorkflowsService {
     });
     if (running > 0)
       throw new ConflictException('실행 중인 워크플로우는 삭제할 수 없습니다');
-    const { count } = await this.prisma.workflow.deleteMany({ where: { id } });
-    if (count === 0) throw notFound();
+    await this.prisma.$transaction(async (tx) => {
+      const { count } = await tx.workflow.deleteMany({ where: { id } });
+      if (count === 0) throw notFound();
+      await this.queue.syncSchedule(tx, id, null);
+    });
   }
 }
 

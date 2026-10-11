@@ -61,6 +61,27 @@ describe('DEMO_MODE', () => {
       .expect(403);
   });
 
+  it('cron을 적어 저장해도 스케줄을 등록하지 않는다', async () => {
+    const { QueueService, SCHEDULE_QUEUE } = await import('./executor/queue.js');
+    const trigger = {
+      id: 't',
+      key: 'trigger_1',
+      type: 'trigger',
+      title: '',
+      position: { x: 0, y: 0 },
+      config: { cron: '* * * * *' },
+    };
+    const body = workflow(0);
+    const res = await api()
+      .post('/workflows')
+      .send({ ...body, graph: { ...body.graph, nodes: [trigger] } })
+      .expect(201);
+    const id = (res.body as { id: string }).id;
+    expect(
+      await app.get(QueueService).boss.getSchedules(SCHEDULE_QUEUE, id),
+    ).toEqual([]);
+  });
+
   it('256KB를 넘는 요청은 413이다', async () => {
     const big = { ...workflow(1), name: 'x' };
     const res = await api()

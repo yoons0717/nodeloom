@@ -5,7 +5,7 @@ import {
   type OnModuleDestroy,
   type OnModuleInit,
 } from '@nestjs/common';
-import type { Graph } from '@nodeloom/core';
+import { type Graph, isValidCron } from '@nodeloom/core';
 import { fromPrisma, PgBoss } from 'pg-boss';
 import { env } from '../env.js';
 import { Prisma, type RunKind } from '../generated/prisma/client.js';
@@ -15,6 +15,10 @@ import { PrismaService } from '../prisma.service.js';
 export const RUN_QUEUE = 'run';
 export type RunJob = { runId: string };
 const HEARTBEAT_SECONDS = 30;
+// 스케줄 하나 = 워크플로우 하나. 키는 워크플로우 id
+export const SCHEDULE_QUEUE = 'schedule';
+export type ScheduleJob = { workflowId: string };
+type Tx = Parameters<Parameters<PrismaService['$transaction']>[0]>[0];
 
 // pg-boss는 앱과 같은 DB의 pgboss 스키마에 대기열 테이블을 만든다(DECISIONS 6-3). 워커도 같은 프로세스에서 돈다(7-6).
 @Injectable()
@@ -23,6 +27,8 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
   readonly boss = new PgBoss({
     connectionString: env.DATABASE_URL,
     schema: 'pgboss',
+    // 데모에서는 스케줄을 돌리지 않는다(DECISIONS D-3).
+    schedule: !env.DEMO_MODE,
   });
 
   constructor(private readonly prisma: PrismaService) {
@@ -33,10 +39,29 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     await this.boss.start();
     await this.boss.createQueue(RUN_QUEUE);
+    await this.boss.createQueue(SCHEDULE_QUEUE);
   }
 
   async onModuleDestroy() {
     await this.boss.stop();
+  }
+
+  // 저장·삭제와 같은 트랜잭션에서 Trigger의 cron대로 스케줄을 등록하거나 해제한다(DECISIONS B-5).
+  // 그래프가 없거나(삭제) cron이 없거나 틀리면 해제한다. 다른 검사 오류는 실행할 때 FAILED로 남긴다(7-5).
+  async syncSchedule(tx: Tx, workflowId: string, graph: Graph | null) {
+    if (env.DEMO_MODE) return;
+    const db = fromPrisma(tx);
+    const cron = graph?.nodes.find((n) => n.type === 'trigger')?.config.cron;
+    if (typeof cron === 'string' && isValidCron(cron)) {
+      await this.boss.schedule(
+        SCHEDULE_QUEUE,
+        cron,
+        { workflowId } satisfies ScheduleJob,
+        { key: workflowId, tz: env.APP_TIMEZONE, db },
+      );
+    } else {
+      await this.boss.unschedule(SCHEDULE_QUEUE, workflowId, { db });
+    }
   }
 
   // 실행 기록과 job을 한 트랜잭션으로 만든다. 하나가 실패하면 둘 다 남지 않는다(DECISIONS 6-3).

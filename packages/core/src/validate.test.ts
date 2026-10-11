@@ -20,6 +20,22 @@ describe('validateGraph', () => {
     ).toEqual(['url', 'timeoutSec']);
   });
 
+  it('cron은 분 단위 5자리만 받는다', () => {
+    const cronIssue = (cron: string | null) => {
+      const g = rainFlow();
+      g.nodes[0]!.config = { cron };
+      return validateGraph(g).find((i) => i.field === 'cron');
+    };
+    expect(cronIssue(null)).toBeUndefined();
+    expect(cronIssue('0 7 * * *')).toBeUndefined();
+    expect(cronIssue('*/15 9-18 * * 1-5')).toBeUndefined();
+    expect(cronIssue('0 25 * * *')).toMatchObject({ code: 'invalid_config' });
+    expect(cronIssue('매일')).toMatchObject({ code: 'invalid_config' });
+    // 초가 들어간 6자리는 스케줄러가 분 단위로 돌아서 받지 않는다.
+    expect(cronIssue('0 0 7 * * *')).toMatchObject({ code: 'invalid_config' });
+    expect(cronIssue('0 7 * *')).toMatchObject({ code: 'invalid_config' });
+  });
+
   it('잘못된 참조 키와 중복 키를 보고한다', () => {
     const g = rainFlow();
     g.nodes[2]!.key = 'Cond';

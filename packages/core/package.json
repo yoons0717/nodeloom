@@ -20,6 +20,7 @@
     "vitest": "^4.1.11"
   },
   "dependencies": {
+    "cron-parser": "5.10.1",
     "jsonata": "2.2.2",
     "zod": "^4.6.5"
   }

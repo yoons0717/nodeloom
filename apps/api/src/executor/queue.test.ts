@@ -19,6 +19,7 @@ describe('실행 대기열', () => {
   let prisma: PrismaService;
   let workflowId: string;
   let RUN_QUEUE: string;
+  let SCHEDULE_QUEUE: string;
   const enqueue = (kind: 'MANUAL' | 'SCHEDULE' | 'FAILURE') =>
     queue.enqueueRun({ workflowId, kind, graph, triggerInput: {} });
   const jobs = () => queue.boss.fetch<RunJob>(RUN_QUEUE, { batchSize: 10 });
@@ -26,7 +27,7 @@ describe('실행 대기열', () => {
   beforeAll(async () => {
     ({ app, container } = await startTestApp());
     const { QueueService } = await import('./queue.js');
-    ({ RUN_QUEUE } = await import('./queue.js'));
+    ({ RUN_QUEUE, SCHEDULE_QUEUE } = await import('./queue.js'));
     const { PrismaService } = await import('../prisma.service.js');
     queue = app.get(QueueService);
     prisma = app.get(PrismaService);
@@ -73,5 +74,29 @@ describe('실행 대기열', () => {
 
     expect(await prisma.run.count({ where: { workflowId } })).toBe(0);
     expect(await jobs()).toEqual([]);
+  });
+  it('스케줄 등록은 트랜잭션을 따라 함께 되돌아간다', async () => {
+    const withCron = {
+      ...graph,
+      nodes: [
+        {
+          id: 't',
+          key: 'trigger_1',
+          type: 'trigger' as const,
+          title: '',
+          position: { x: 0, y: 0 },
+          config: { cron: '0 7 * * *' },
+        },
+      ],
+    };
+    await expect(
+      prisma.$transaction(async (tx) => {
+        await queue.syncSchedule(tx, workflowId, withCron);
+        throw new Error('저장 실패');
+      }),
+    ).rejects.toThrow('저장 실패');
+    expect(await queue.boss.getSchedules(SCHEDULE_QUEUE, workflowId)).toEqual(
+      [],
+    );
   });
 });
