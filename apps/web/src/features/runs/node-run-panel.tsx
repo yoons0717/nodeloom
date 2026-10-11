@@ -11,7 +11,7 @@ function Json({ label, value }: { label: string; value: unknown }) {
   return (
     <div className="flex flex-col gap-1">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <pre className="max-h-64 overflow-auto rounded-md border border-border bg-background p-2 font-mono text-[11px] whitespace-pre-wrap">
+      <pre className="max-h-64 overflow-auto rounded-md border border-border bg-bg p-2 font-mono text-[11px] whitespace-pre-wrap">
         {JSON.stringify(value, null, 2)}
       </pre>
     </div>
@@ -53,9 +53,7 @@ export function NodeRunPanel({
           이 노드는 실행되지 않았습니다.
         </p>
       ) : attempts.error ? (
-        <p className="text-sm text-destructive-text">
-          {attempts.error.message}
-        </p>
+        <p className="text-sm text-danger-text">{attempts.error.message}</p>
       ) : !attempts.data ? (
         <p className="text-sm text-muted-foreground">불러오는 중…</p>
       ) : (
@@ -67,7 +65,7 @@ export function NodeRunPanel({
               </p>
             )}
             {a.error && (
-              <p className="text-sm text-destructive-text">{a.error.message}</p>
+              <p className="text-sm text-danger-text">{a.error.message}</p>
             )}
             <Json label="입력" value={a.input} />
             <Json label="출력" value={a.output} />

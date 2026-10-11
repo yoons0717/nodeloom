@@ -42,7 +42,7 @@ export default async function RunListPage({
           아직 실행 기록이 없습니다. 에디터에서 실행하거나 스케줄을 설정하세요.
         </p>
       ) : (
-        <ul className="flex flex-col divide-y divide-divider rounded-lg border border-border bg-surface">
+        <ul className="flex flex-col divide-y divide-border-subtle rounded-lg border border-border bg-surface">
           {runs.map((r) => (
             <li key={r.id}>
               <Link
@@ -64,7 +64,7 @@ export default async function RunListPage({
                   {formatDuration(r.startedAt, r.finishedAt)}
                 </span>
                 {r.error && (
-                  <span className="w-full truncate text-xs text-destructive-text">
+                  <span className="w-full truncate text-xs text-danger-text">
                     {r.error.message}
                   </span>
                 )}

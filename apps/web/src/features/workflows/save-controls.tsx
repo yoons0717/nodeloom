@@ -130,7 +130,7 @@ export function SaveControls({
       </Button>
       <span
         role="status"
-        className={`text-xs ${save.error ? 'text-destructive-text' : 'text-muted-foreground'}`}
+        className={`text-xs ${save.error ? 'text-danger-text' : 'text-muted-foreground'}`}
       >
         {nameError ?? status}
       </span>

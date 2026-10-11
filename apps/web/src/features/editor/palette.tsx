@@ -19,7 +19,7 @@ export function Palette() {
   );
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col gap-2.5 border-r border-divider bg-surface p-4">
+    <aside className="flex w-56 shrink-0 flex-col gap-2.5 border-r border-border-subtle bg-surface p-4">
       <label
         htmlFor="palette-search"
         className="text-xs font-bold text-muted-foreground"

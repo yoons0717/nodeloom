@@ -2,6 +2,7 @@
 
 import type { GraphNode, NodeType } from '@nodeloom/core';
 import type { ComponentType } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { renameNode, updateConfig } from './commands';
@@ -34,7 +35,7 @@ export function SettingsPanel() {
   return (
     <aside
       aria-label="노드 설정"
-      className="flex w-80 shrink-0 flex-col border-l border-divider bg-surface"
+      className="flex w-80 shrink-0 flex-col border-l border-border-subtle bg-surface"
     >
       {node ? (
         <ScrollArea className="min-h-0 flex-1">
@@ -62,18 +63,18 @@ function NodeSettings({ node }: { node: GraphNode }) {
 
   const Settings = SETTINGS[node.type];
   return (
-    <div className="flex flex-col gap-3.5 p-4">
+    <div className="flex flex-col gap-4 p-4">
       <h2 className="text-xs font-bold text-muted-foreground">
         {NODE_META[node.type].label} 설정
       </h2>
       {nodeIssues.length > 0 && (
-        <ul role="status" className="flex flex-col gap-1">
+        <ul role="status" className="flex flex-col items-start gap-1">
           {nodeIssues.map((i) => (
-            <li
-              key={i.code}
-              className="rounded-lg bg-destructive-soft px-2.5 py-1.5 text-xs text-destructive-text"
-            >
-              {i.message}
+            <li key={i.code}>
+              {/* 문구가 길어 패널 너비를 넘으면 줄을 바꾼다. */}
+              <Badge tone="danger" className="h-auto py-0.5 whitespace-normal">
+                {i.message}
+              </Badge>
             </li>
           ))}
         </ul>
@@ -98,7 +99,7 @@ function NodeSettings({ node }: { node: GraphNode }) {
           <Input
             {...control}
             spellCheck={false}
-            className="font-mono text-[13px]"
+            className="font-mono text-body-sm"
             value={node.key}
             onChange={(e) =>
               execute(renameNode(graph, node.id, 'key', e.target.value))

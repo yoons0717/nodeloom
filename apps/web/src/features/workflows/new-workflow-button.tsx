@@ -26,7 +26,7 @@ export function NewWorkflowButton() {
         {create.isPending ? '만드는 중…' : '새로 만들기'}
       </Button>
       {create.error && (
-        <p role="alert" className="text-xs text-destructive-text">
+        <p role="alert" className="text-xs text-danger-text">
           {create.error.message}
         </p>
       )}

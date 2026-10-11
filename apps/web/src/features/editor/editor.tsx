@@ -75,7 +75,7 @@ function TopBar({ toolbar }: { toolbar?: ReactNode }) {
   const graphIssues = getGraphIssues(graph).graphLevel;
 
   return (
-    <header className="flex flex-wrap items-center gap-3 border-b border-divider bg-surface px-5 py-2.5">
+    <header className="flex flex-wrap items-center gap-3 border-b border-border-subtle bg-surface px-5 py-2.5">
       {toolbar ?? <h1 className="text-base font-bold">새 워크플로우</h1>}
       <div className="flex gap-2">
         <Button variant="outline" onClick={undo} disabled={!canUndo}>
@@ -90,7 +90,7 @@ function TopBar({ toolbar }: { toolbar?: ReactNode }) {
           <span
             key={i.code}
             role="status"
-            className="rounded-full bg-destructive-soft px-2.5 py-1 text-xs font-bold text-destructive-text"
+            className="rounded-full bg-danger-soft px-2.5 py-1 text-xs font-bold text-danger-text"
           >
             {i.message}
           </span>

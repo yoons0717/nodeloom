@@ -79,7 +79,7 @@ export function FailureWorkflowSelect({
         </SelectContent>
       </Select>
       {save.error && (
-        <span className="text-destructive-text">{save.error.message}</span>
+        <span className="text-danger-text">{save.error.message}</span>
       )}
     </label>
   );

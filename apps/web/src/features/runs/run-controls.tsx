@@ -76,7 +76,7 @@ export function RunControls({
       </Button>
       <span
         role="status"
-        className={`text-xs ${failed ? 'text-destructive-text' : 'text-muted-foreground'}`}
+        className={`text-xs ${failed ? 'text-danger-text' : 'text-muted-foreground'}`}
       >
         {text}
       </span>

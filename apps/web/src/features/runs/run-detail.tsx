@@ -108,7 +108,7 @@ export function RunDetail({ run }: { run: Run }) {
           )}
         </dl>
         {p.error && (
-          <div className="text-sm text-destructive-text">
+          <div className="text-sm text-danger-text">
             <p>{p.error.message}</p>
             {p.error.issues && (
               <ul className="mt-1 list-disc pl-4 text-xs">
@@ -119,7 +119,7 @@ export function RunDetail({ run }: { run: Run }) {
             )}
           </div>
         )}
-        <hr className="border-divider" />
+        <hr className="border-border-subtle" />
         {selected ? (
           <NodeRunPanel
             runId={run.id}

@@ -38,7 +38,7 @@ export default async function WorkflowListPage() {
           아직 워크플로우가 없습니다. 새로 만들기를 눌러 시작하세요.
         </p>
       ) : (
-        <ul className="flex flex-col divide-y divide-divider rounded-lg border border-border bg-surface">
+        <ul className="flex flex-col divide-y divide-border-subtle rounded-lg border border-border bg-surface">
           {workflows.map((w) => (
             <li
               key={w.id}
@@ -70,7 +70,7 @@ export default async function WorkflowListPage() {
 function ScheduleText({ cron, demo }: { cron: string | null; demo: boolean }) {
   if (cron === null) return null;
   if (!isValidCron(cron))
-    return <span className="text-xs text-destructive-text">스케줄 오류</span>;
+    return <span className="text-xs text-danger-text">스케줄 오류</span>;
   const next = demo ? null : nextCronRuns(cron, TIMEZONE, 1)[0];
   return (
     <span className="text-xs text-primary">

@@ -128,7 +128,7 @@ export function TriggerSettings({ node, errors, set }: SettingsProps) {
         )}
       </Field>
       {schedule.kind === 'weekly' ? (
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-3">
           <Field label="요일">
             {(control) => (
               <Select
@@ -184,7 +184,7 @@ export function TriggerSettings({ node, errors, set }: SettingsProps) {
           {(control) => (
             <Input
               {...control}
-              className="font-mono text-xs"
+              className="font-mono text-body-sm"
               placeholder="0 7 * * *"
               value={cron ?? ''}
               // 빈 칸은 스케줄 없음(null)으로 저장한다.

@@ -68,10 +68,6 @@
 | `--edge-active` | `--accent` | 실행 상세에서 지나간 연결선 |
 | `--edge-inactive` | `#4A5666` | 실행 상세에서 안 간 갈래(점선 5 5) |
 
-### 이전 이름
-
-M6 동안 부품을 옮기며 지운다: `--background`(→ `--bg`), `--divider`(→ `--border-subtle`), `--primary-ring`(→ `--accent-ring`), `--destructive*`(→ `--danger*`).
-
 ## 글꼴
 
 | 토큰 | 값 | 쓰는 곳 |
@@ -101,3 +97,15 @@ M6 동안 부품을 옮기며 지운다: `--background`(→ `--bg`), `--divider`
 | 캔버스 격자 | 16px |
 | 노드 카드 | 136×84 고정(Condition 136×108), 안쪽 여백 10px 12px |
 | 선택된 노드 | 테두리 2px `--accent` + 바깥 4px `--accent-ring` |
+
+## 부품
+
+`apps/web/src/components/ui`. 값은 디자인 리뷰 데모를 따른다.
+
+| 부품 | 값 |
+|---|---|
+| Button | 높이 36(sm 28, lg 44), 좌우 16, 모서리 6, 14px. **default**: 청록 바탕, 바탕색 글자, 700, hover `--accent-hover`. 화면당 하나. **outline**: `--border-control` 테두리, `--raised` 바탕, hover `--raised-hover`. **ghost**: 좌우 10, 13px, `--text-label`, hover `--raised-hover`. **destructive**: `--danger-soft` 바탕, `--danger-text` 글자. 비활성은 `--text-disabled` |
+| Badge | `tone` = neutral·running·success·warning·danger. 높이 22, 좌우 8, 글리프와 글자 사이 4, pill, 12px 500. 바탕은 각 `-soft`(neutral은 `--raised-hover`), 글자는 각 `-text`(running은 `--accent`, neutral은 `--text-label`). 글리프 ● ✓ ▲ !는 부품이 붙인다 |
+| Input·Textarea·Select | 높이 36, `--border-control` 1px, `--bg` 바탕, 좌우 12, 14px, 모서리 6. 포커스는 2px `--accent` + 3px `--accent-ring`, 오류는 2px `--danger`. 두꺼워진 테두리만큼 안쪽 여백을 1px 줄여 크기를 유지한다 |
+| Field | 라벨 12/16 500 `--text-label`, 라벨과 칸 사이 4, 칸 사이 16. 설명은 12px `--text-muted`, 오류는 12px `--danger-text`에 "! "를 붙인다. 칸이 여럿인 묶음(쿼리·헤더)은 `group`으로 같은 모양을 쓴다 |
+

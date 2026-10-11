@@ -34,7 +34,7 @@ export function DeleteWorkflowButton({
       role="group"
       aria-label={`${name} 삭제 확인`}
     >
-      <span className="text-xs text-destructive-text">
+      <span className="text-xs text-danger-text">
         {remove.error ? remove.error.message : '정말 삭제할까요?'}
       </span>
       <Button

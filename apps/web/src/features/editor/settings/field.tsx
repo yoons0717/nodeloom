@@ -29,25 +29,34 @@ export type FieldControlProps = {
 };
 
 // 라벨, 입력 부품, 오류 문구를 묶는다. 입력 부품에 붙일 id와 오류 상태(aria-invalid)를 넘겨준다.
+// group: 입력 부품이 여럿인 묶음(쿼리·헤더). 라벨은 묶음의 이름이 되고, 묶음에 aria-labelledby={`${id}-label`}을 붙인다.
 export function Field({
   label,
   error,
   hint,
+  group = false,
   children,
 }: {
   label: string;
   error?: string;
   hint?: string;
+  group?: boolean;
   children: (control: FieldControlProps) => ReactNode;
 }) {
   const id = useId();
   const messageId = `${id}-message`;
   const message = error ?? hint;
   return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-xs text-muted-foreground">
-        {label}
-      </label>
+    <div className="flex flex-col gap-1">
+      {group ? (
+        <span id={`${id}-label`} className="text-xs font-medium text-label">
+          {label}
+        </span>
+      ) : (
+        <label htmlFor={id} className="text-xs font-medium text-label">
+          {label}
+        </label>
+      )}
       {children({
         id,
         'aria-invalid': error ? true : undefined,
@@ -56,8 +65,10 @@ export function Field({
       {message && (
         <p
           id={messageId}
-          className={`text-xs ${error ? 'text-destructive-text' : 'text-muted-foreground'}`}
+          className={`text-xs ${error ? 'text-danger-text' : 'text-muted-foreground'}`}
         >
+          {/* 색 없이도 오류인 줄 알 수 있게 글리프를 붙인다. */}
+          {error && <span aria-hidden>! </span>}
           {message}
         </p>
       )}

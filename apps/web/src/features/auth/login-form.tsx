@@ -48,13 +48,13 @@ export function LoginForm() {
       className="flex w-full max-w-sm flex-col gap-4 rounded-lg border border-border bg-surface p-6"
     >
       <div className="flex flex-col gap-1">
-        <h1 className="text-lg font-bold">Nodeloom</h1>
+        <h1 className="text-xl font-bold">Nodeloom</h1>
         <p className="text-xs text-muted-foreground">
           관리자 비밀번호로 로그인하세요
         </p>
       </div>
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="password" className="text-xs text-muted-foreground">
+      <div className="flex flex-col gap-1">
+        <label htmlFor="password" className="text-xs font-medium text-label">
           비밀번호
         </label>
         <Input
@@ -67,11 +67,8 @@ export function LoginForm() {
           aria-describedby={error ? 'login-error' : undefined}
         />
         {error && (
-          <p
-            id="login-error"
-            role="alert"
-            className="text-xs text-destructive-text"
-          >
+          <p id="login-error" role="alert" className="text-xs text-danger-text">
+            <span aria-hidden>! </span>
             {error}
           </p>
         )}

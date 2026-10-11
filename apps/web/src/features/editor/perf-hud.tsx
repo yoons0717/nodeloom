@@ -31,7 +31,7 @@ export function PerfHud() {
   return (
     <Panel
       position="top-right"
-      className="rounded-lg border border-border bg-surface px-3 py-2 font-mono text-[11px] text-muted-foreground"
+      className="rounded-lg border border-border bg-surface px-3 py-2 font-mono text-caption text-muted-foreground"
     >
       <div>노드 {total}</div>
       <div>그려진 노드 {rendered}</div>

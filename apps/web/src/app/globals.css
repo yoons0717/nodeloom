@@ -63,17 +63,10 @@
   --edge-inactive: #4a5666;
   --radius-control: 6px;
 
-  /* 이전 이름. 부품을 옮기는 동안(M6 6-b~6-d) 남겨 두고 다 옮기면 지운다. */
-  --background: var(--bg);
+  /* shadcn 관례 이름. 글자색은 Tailwind에서 text-text-* 처럼 겹치지 않게 이 이름으로 쓴다. */
   --foreground: var(--text);
   --muted-foreground: var(--text-muted);
   --disabled: var(--text-disabled);
-  --divider: var(--border-subtle);
-  --primary-ring: var(--accent-ring);
-  --destructive: var(--danger);
-  --destructive-text: var(--danger-text);
-  --destructive-soft: var(--danger-soft);
-  --destructive-strong: var(--danger-strong);
 
   /* shadcn 부품이 쓰는 이름. 위 토큰에 연결만 한다. */
   --primary: var(--accent);
@@ -169,17 +162,10 @@
   --color-edge-active: var(--edge-active);
   --color-edge-inactive: var(--edge-inactive);
 
-  /* 이전 이름(6-b~6-d에서 옮긴 뒤 지운다). 글자색은 text-text-* 처럼 겹치지 않게 이 이름을 계속 쓴다. */
-  --color-background: var(--background);
+  /* 글자색은 text-text-* 처럼 겹치지 않게 shadcn 관례 이름으로 쓴다. */
   --color-foreground: var(--foreground);
   --color-muted-foreground: var(--muted-foreground);
   --color-disabled: var(--disabled);
-  --color-divider: var(--divider);
-  --color-primary-ring: var(--primary-ring);
-  --color-destructive: var(--destructive);
-  --color-destructive-text: var(--destructive-text);
-  --color-destructive-soft: var(--destructive-soft);
-  --color-destructive-strong: var(--destructive-strong);
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
@@ -203,9 +189,9 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-accent-ring;
   }
   body {
-    @apply bg-background font-sans text-sm text-foreground;
+    @apply bg-bg font-sans text-sm text-foreground;
   }
 }

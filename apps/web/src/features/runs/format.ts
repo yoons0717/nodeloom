@@ -11,7 +11,7 @@ export const RUN_STATUS_CLASS: Record<RunListItem['status'], string> = {
   PENDING: 'text-muted-foreground',
   RUNNING: 'text-muted-foreground',
   SUCCESS: 'text-primary',
-  FAILED: 'text-destructive-text',
+  FAILED: 'text-danger-text',
 };
 
 export const RUN_KIND_LABEL: Record<RunListItem['kind'], string> = {
@@ -38,7 +38,7 @@ export const NODE_RUN_STATUS: Record<
 > = {
   RUNNING: { label: '실행 중…', className: 'border-muted-foreground' },
   SUCCESS: { label: '성공', className: 'border-primary' },
-  FAILED: { label: '실패', className: 'border-destructive' },
+  FAILED: { label: '실패', className: 'border-danger' },
   SKIPPED: {
     label: '건너뜀',
     className: 'border-dashed border-border opacity-60',

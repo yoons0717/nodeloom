@@ -51,7 +51,7 @@ export function HttpSettings({ node, errors, set }: SettingsProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-3">
         <Field label="메서드" error={errors.method}>
           {(control) => (
             <Select
@@ -85,35 +85,33 @@ export function HttpSettings({ node, errors, set }: SettingsProps) {
           <Input
             {...control}
             spellCheck={false}
-            className="font-mono text-xs"
+            className="font-mono text-body-sm"
             placeholder="https://"
             value={text('url')}
             onChange={(e) => set('url', e.target.value)}
           />
         )}
       </Field>
-      <div className="flex flex-col gap-1.5">
-        <span className="text-xs text-muted-foreground">쿼리</span>
-        <KeyValueInput
-          label="쿼리"
-          value={configValue(node, 'query')}
-          onChange={(v) => set('query', v)}
-        />
-        {errors.query && (
-          <p className="text-xs text-destructive-text">{errors.query}</p>
+      <Field label="쿼리" group error={errors.query}>
+        {(control) => (
+          <KeyValueInput
+            label="쿼리"
+            control={control}
+            value={configValue(node, 'query')}
+            onChange={(v) => set('query', v)}
+          />
         )}
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <span className="text-xs text-muted-foreground">헤더</span>
-        <KeyValueInput
-          label="헤더"
-          value={configValue(node, 'headers')}
-          onChange={(v) => set('headers', v)}
-        />
-        {errors.headers && (
-          <p className="text-xs text-destructive-text">{errors.headers}</p>
+      </Field>
+      <Field label="헤더" group error={errors.headers}>
+        {(control) => (
+          <KeyValueInput
+            label="헤더"
+            control={control}
+            value={configValue(node, 'headers')}
+            onChange={(v) => set('headers', v)}
+          />
         )}
-      </div>
+      </Field>
       <Field
         label="본문 (JSONata 식)"
         hint="객체를 만드는 식. 비워 두면 본문 없이 보냅니다"
@@ -124,7 +122,7 @@ export function HttpSettings({ node, errors, set }: SettingsProps) {
             {...control}
             rows={4}
             spellCheck={false}
-            className="font-mono text-xs"
+            className="font-mono text-body-sm"
             value={text('body')}
             onChange={(e) => set('body', e.target.value)}
           />
@@ -141,7 +139,7 @@ export function HttpSettings({ node, errors, set }: SettingsProps) {
       >
         {(control) => <Input {...control} {...numberInput('retry')} />}
       </Field>
-      <label className="flex min-h-11 items-center gap-2.5 text-[13px]">
+      <label className="flex min-h-11 items-center gap-2 text-body-sm">
         <Switch
           checked={configValue(node, 'continueOnNon2xx') === true}
           onCheckedChange={(v) => set('continueOnNon2xx', v)}

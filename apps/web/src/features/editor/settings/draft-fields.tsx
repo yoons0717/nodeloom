@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Field } from './field';
+import { Field, type FieldControlProps } from './field';
 
 type Parsed = { ok: true; value: unknown } | { ok: false; error: string };
 
@@ -59,7 +59,7 @@ export function JsonField({
         <Textarea
           {...control}
           rows={4}
-          className="font-mono text-xs"
+          className="font-mono text-body-sm"
           value={draft}
           onChange={(e) => {
             setDraft(e.target.value);
@@ -92,10 +92,12 @@ export function KeyValueInput({
   value,
   onChange,
   label,
+  control,
 }: {
   value: unknown;
   onChange: (value: unknown) => void;
   label: string;
+  control: FieldControlProps;
 }) {
   const [rows, setRows] = useDraft(value, toRows, toRecord);
   const update = (next: Row[]) => {
@@ -105,13 +107,18 @@ export function KeyValueInput({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div
+      role="group"
+      aria-labelledby={`${control.id}-label`}
+      aria-describedby={control['aria-describedby']}
+      className="flex flex-col gap-2"
+    >
       {rows.map((row, i) => (
-        <div key={i} className="flex gap-1.5">
+        <div key={i} className="flex gap-2">
           <Input
             aria-label={`${label} ${i + 1} 이름`}
             placeholder="이름"
-            className="font-mono text-xs"
+            className="font-mono text-body-sm"
             value={row.name}
             onChange={(e) =>
               update(rows.with(i, { ...row, name: e.target.value }))
@@ -120,7 +127,7 @@ export function KeyValueInput({
           <Input
             aria-label={`${label} ${i + 1} 값`}
             placeholder="값"
-            className="font-mono text-xs"
+            className="font-mono text-body-sm"
             value={row.value}
             onChange={(e) =>
               update(rows.with(i, { ...row, value: e.target.value }))

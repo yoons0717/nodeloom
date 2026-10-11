@@ -219,7 +219,7 @@ function ConnectionFeedback({ graph }: { graph: Graph }) {
     <ViewportPortal>
       <div
         role="alert"
-        className="pointer-events-none absolute z-[2000] rounded-lg bg-destructive-strong px-2.5 py-1.5 text-xs whitespace-nowrap text-white"
+        className="pointer-events-none absolute z-[2000] rounded-lg bg-danger-strong px-2.5 py-1.5 text-xs whitespace-nowrap text-white"
         style={{
           transform: `translate(${connection.to.x + 12}px, ${connection.to.y + 12}px)`,
         }}
