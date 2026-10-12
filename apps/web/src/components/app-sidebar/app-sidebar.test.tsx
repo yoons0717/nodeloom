@@ -2,6 +2,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { z } from 'zod';
+import { workflowListSchema } from '@/features/workflows/schemas';
 import { AppSidebar, locate } from './app-sidebar';
 import { COLLAPSED_KEY, resolveCollapsed, SidebarShell } from './sidebar-shell';
 
@@ -16,17 +18,22 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const wf = (id: string, name: string) => ({
+type Wf = z.output<typeof workflowListSchema>[number];
+const wf = (id: string, name: string, over: Partial<Wf> = {}): Wf => ({
   id,
   name,
   nodeCount: 1,
   cron: null,
   lastRun: null,
-  runCount: 3,
+  failedLast24h: 0,
   updatedAt: '2026-10-12T00:00:00Z',
+  ...over,
 });
 
-function renderSidebar(pathname: string) {
+function renderSidebar(
+  pathname: string,
+  workflows = [wf('w1', '아침 비 알림'), wf('w2', '평일 보고')],
+) {
   nav.pathname = pathname;
   vi.stubGlobal(
     'fetch',
@@ -36,10 +43,7 @@ function renderSidebar(pathname: string) {
   );
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <AppSidebar
-        role="admin"
-        initialWorkflows={[wf('w1', '아침 비 알림'), wf('w2', '평일 보고')]}
-      />
+      <AppSidebar role="admin" initialWorkflows={workflows} />
     </QueryClientProvider>,
   );
 }
@@ -75,6 +79,32 @@ describe('AppSidebar', () => {
     ).toBe('false');
     // 24시간 실패 수
     expect(await screen.findByLabelText('최근 24시간 실패 2건')).toBeTruthy();
+  });
+
+  it('트리 행은 실패와 실행 중만 오른쪽 끝에 보이고, 성공은 표시하지 않는다', () => {
+    renderSidebar('/w/w1', [
+      wf('w1', '디스코드', {
+        lastRun: { status: 'SUCCESS', finishedAt: null },
+        failedLast24h: 2,
+      }),
+      wf('w2', '주간 리포트', {
+        lastRun: { status: 'RUNNING', finishedAt: null },
+      }),
+      wf('w3', '매일 환율 기록', {
+        lastRun: { status: 'SUCCESS', finishedAt: null },
+      }),
+    ]);
+    const row = (name: string) =>
+      screen.getByText(name).closest('a') as HTMLElement;
+    // 마지막 실행이 성공이어도 24시간 안의 실패는 보인다
+    expect(row('디스코드').textContent).toContain('2');
+    expect(
+      row('디스코드').querySelector('[aria-label="최근 24시간 실패 2건"]'),
+    ).toBeTruthy();
+    expect(row('주간 리포트').textContent).toContain('실행 중');
+    expect(row('매일 환율 기록').textContent).toBe('매일 환율 기록');
+    // 하위 "실행 기록"에는 실패 건수
+    expect(screen.getByLabelText('실패 2건')).toBeTruthy();
   });
 
   it('화살표는 이동 없이 펼치기만 하고, 찾기는 이름으로 거른다', () => {

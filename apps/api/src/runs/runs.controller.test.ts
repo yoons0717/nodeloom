@@ -204,23 +204,36 @@ describe('실행 API', () => {
       ]);
       await agent.get(`/runs/${runId}/nodes/ghost`).expect(404);
     });
-    it('워크플로우 목록에 마지막 실행과 실행 수를 함께 돌려준다', async () => {
+    it('워크플로우 목록에 마지막 실행과 24시간 안의 실패 수를 함께 돌려준다', async () => {
       const id = await create();
       const none = await create();
-      await run(id);
+      const failed = (finishedAt: Date) =>
+        prisma.run.create({
+          data: {
+            workflowId: id,
+            kind: 'MANUAL',
+            status: 'FAILED',
+            graph: {},
+            triggerInput: {},
+            finishedAt,
+          },
+        });
+      await failed(new Date());
+      await failed(new Date(Date.now() - 25 * 60 * 60_000));
+      // 실패 뒤에 성공해도 실패 수는 남는다.
       await run(id);
       const rows = (await agent.get('/workflows').expect(200)).body as {
         id: string;
         lastRun: { status: string } | null;
-        runCount: number;
+        failedLast24h: number;
       }[];
       expect(rows.find((w) => w.id === id)).toMatchObject({
         lastRun: { status: 'SUCCESS' },
-        runCount: 2,
+        failedLast24h: 1,
       });
       expect(rows.find((w) => w.id === none)).toMatchObject({
         lastRun: null,
-        runCount: 0,
+        failedLast24h: 0,
       });
     });
 

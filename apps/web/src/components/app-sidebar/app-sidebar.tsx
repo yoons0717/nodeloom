@@ -68,13 +68,6 @@ const ICON_ITEM = cn(
 const ACTIVE =
   'bg-accent-soft font-medium text-foreground hover:bg-accent-soft';
 
-const DOT: Record<NonNullable<Workflow['lastRun']>['status'], string> = {
-  SUCCESS: 'bg-success',
-  FAILED: 'bg-danger',
-  RUNNING: 'bg-accent',
-  PENDING: 'bg-accent',
-};
-
 // 공통 왼쪽 사이드바(M6 6-g, DESIGN.md). 화면 이동은 여기서 맡는다.
 // 펼침 240px, 접힘 56px(아이콘 + 툴팁). 접힘 상태는 SidebarShell이 정한다.
 export function AppSidebar({
@@ -161,7 +154,7 @@ export function AppSidebar({
       {failed}
     </Badge>
   );
-  const subItems = (id: string, count: number) => [
+  const subItems = (id: string, failedCount: number) => [
     {
       href: `/w/${id}`,
       label: '편집',
@@ -173,9 +166,12 @@ export function AppSidebar({
       label: '실행 기록',
       icon: <History className="size-3.5" />,
       active: id === workflowId && section === 'history',
-      extra: (
-        <span className="ml-auto font-mono text-caption text-muted-foreground">
-          {count}
+      extra: failedCount > 0 && (
+        <span
+          aria-label={`실패 ${failedCount}건`}
+          className="ml-auto font-mono text-caption text-danger-text"
+        >
+          ! {failedCount}
         </span>
       ),
     },
@@ -306,7 +302,7 @@ export function AppSidebar({
         // 접힌 상태: 트리는 숨기고 지금 워크플로우의 하위 항목만 아이콘으로.
         current && (
           <ul className="flex flex-col items-center gap-0.5 border-t border-border-subtle pt-3">
-            {subItems(current.id, current.runCount).map((item) => (
+            {subItems(current.id, current.failedLast24h).map((item) => (
               <li key={item.href}>
                 <MenuLink
                   href={item.href}
@@ -358,13 +354,16 @@ export function AppSidebar({
                         w.id === workflowId && 'text-foreground',
                       )}
                     >
-                      <StatusDot run={w.lastRun} />
                       <span className="truncate">{w.name}</span>
+                      <TreeStatus
+                        run={w.lastRun}
+                        failedCount={w.failedLast24h}
+                      />
                     </Link>
                   </div>
                   {open && (
                     <ul className="ml-[22px] flex flex-col gap-0.5 py-0.5">
-                      {subItems(w.id, w.runCount).map((item) => (
+                      {subItems(w.id, w.failedLast24h).map((item) => (
                         <li key={item.href}>
                           <MenuLink
                             {...item}
@@ -452,16 +451,31 @@ export function AppSidebar({
   );
 }
 
-function StatusDot({ run }: { run: Workflow['lastRun'] }) {
-  return (
-    <span
-      aria-hidden
-      className={cn(
-        'size-1.5 shrink-0 rounded-full',
-        run ? DOT[run.status] : 'bg-disabled',
-      )}
-    />
-  );
+// 트리 행 오른쪽 끝의 상태. 성공과 실행 없음은 표시하지 않고 예외만 보인다(DESIGN.md).
+function TreeStatus({
+  run,
+  failedCount,
+}: {
+  run: Workflow['lastRun'];
+  failedCount: number;
+}) {
+  if (run?.status === 'RUNNING' || run?.status === 'PENDING')
+    return (
+      <span className="ml-auto flex shrink-0 items-center gap-1 text-caption text-accent">
+        <span aria-hidden>●</span>실행 중
+      </span>
+    );
+  if (failedCount > 0)
+    return (
+      <Badge
+        tone="danger"
+        aria-label={`최근 24시간 실패 ${failedCount}건`}
+        className="ml-auto px-1.5"
+      >
+        {failedCount}
+      </Badge>
+    );
+  return null;
 }
 
 // 접힌 사이드바에서만 툴팁을 단다. 펼친 상태에서는 글자가 보이므로 그대로 둔다.
