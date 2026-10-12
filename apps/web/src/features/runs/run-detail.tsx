@@ -113,7 +113,6 @@ export function RunDetail({
     <>
       {/* 실행은 시각으로 부른다(M6 작은 결정 ③). 뒤로 가기 하나만 둔다(M6 6-f). */}
       <PageHeader
-        back={{ href: `/w/${run.workflowId}/runs`, label: '실행 기록' }}
         context={workflowName}
         title={`${formatRunTime(run.createdAt)} 실행`}
         status={

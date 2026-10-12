@@ -16,6 +16,8 @@
   --raised: #1b222b;
   --raised-hover: #232b36;
   --overlay: #28313d;
+  /* 드로어 뒤를 가리는 막 */
+  --scrim: rgb(14 17 22 / 0.8);
   --grid: #252c36;
   /* 테두리 */
   --border-subtle: #242c36;
@@ -166,6 +168,7 @@
   --color-raised: var(--raised);
   --color-raised-hover: var(--raised-hover);
   --color-overlay: var(--overlay);
+  --color-scrim: var(--scrim);
   --color-border-subtle: var(--border-subtle);
   --color-border: var(--border);
   --color-border-control: var(--border-control);

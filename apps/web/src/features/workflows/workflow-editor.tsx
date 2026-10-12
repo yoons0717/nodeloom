@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { MobileNavButton } from '@/components/app-sidebar/sidebar-shell';
 import {
   Popover,
   PopoverContent,
@@ -22,7 +23,8 @@ export function WorkflowEditor({ workflow }: { workflow: Workflow }) {
   return (
     <>
       {/* 좁은 화면에서는 편집 대신 안내만 보여 준다(DECISIONS B-11). 실행 기록은 읽기 화면이라 볼 수 있다. */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center md:hidden">
+      <div className="relative flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center md:hidden">
+        <MobileNavButton className="absolute top-2 left-4" />
         <p className="font-bold">{workflow.name}</p>
         <p className="text-sm text-muted-foreground">
           에디터는 데스크톱처럼 넓은 화면에서 열어 주세요.

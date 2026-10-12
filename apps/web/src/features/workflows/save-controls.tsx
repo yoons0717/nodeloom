@@ -1,10 +1,10 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Graph } from '@nodeloom/core';
-import Link from 'next/link';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { MobileNavButton } from '@/components/app-sidebar/sidebar-shell';
 import { Input } from '@/components/ui/input';
 import { useEditorStore } from '@/features/editor/store-context';
 import { ApiError, clientApi } from '@/lib/client-api';
@@ -32,6 +32,7 @@ export function SaveControls({
   after?: (ensureSaved: () => Promise<boolean>) => ReactNode;
 }) {
   const graph = useEditorStore((s) => s.graph);
+  const queryClient = useQueryClient();
   const [name, setName] = useState(initialName);
   const [saved, setSaved] = useState<Saved>(() => ({
     name: initialName,
@@ -60,6 +61,8 @@ export function SaveControls({
         body: JSON.stringify(body),
       }),
     onSuccess: (_, body) => {
+      // 이름이 바뀌었을 수 있으니 사이드바 목록을 다시 불러온다(M6 6-g).
+      void queryClient.invalidateQueries({ queryKey: ['workflows'] });
       setSaved({ ...body, json: JSON.stringify(body.graph) });
       setName(body.name);
     },
@@ -93,11 +96,25 @@ export function SaveControls({
   });
 
   // 새로고침, 탭 닫기, 주소 이동 전에 확인한다.
+  // 앱 안 이동(사이드바 링크 등)은 beforeunload가 불리지 않아서 링크 클릭을 먼저 가로채 묻는다.
   useEffect(() => {
     if (!dirty) return;
     const onBeforeUnload = (e: BeforeUnloadEvent) => e.preventDefault();
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as Element | null)?.closest('a[href]');
+      const href = a?.getAttribute('href');
+      if (!href?.startsWith('/') || href === window.location.pathname) return;
+      if (!window.confirm(LEAVE_MESSAGE)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
     window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+    document.addEventListener('click', onClick, true);
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      document.removeEventListener('click', onClick, true);
+    };
   }, [dirty]);
 
   const status = save.isPending
@@ -113,23 +130,7 @@ export function SaveControls({
 
   return (
     <>
-      {/* 뒤로 가기는 글자가 있는 ghost 버튼 하나로 통일한다(M6 6-f). */}
-      <Button
-        variant="ghost"
-        className="-ml-2 shrink-0"
-        nativeButton={false}
-        render={
-          <Link
-            href="/"
-            // 앱 안 이동은 beforeunload가 불리지 않아서 직접 묻는다.
-            onClick={(e) => {
-              if (dirty && !window.confirm(LEAVE_MESSAGE)) e.preventDefault();
-            }}
-          />
-        }
-      >
-        ← 목록
-      </Button>
+      <MobileNavButton />
       {/* 글자처럼 보이다가 누르면 편집한다(M6 작은 결정 ⑩). */}
       <Input
         aria-label="워크플로우 이름"

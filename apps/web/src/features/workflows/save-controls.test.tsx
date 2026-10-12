@@ -114,4 +114,20 @@ describe('SaveControls', () => {
       screen.getByRole('button', { name: '저장' }).hasAttribute('disabled'),
     ).toBe(true);
   });
+
+  it('저장하지 않은 변경이 있으면 앱 안 링크로 나가기 전에 묻고, 취소하면 머문다', () => {
+    renderControls();
+    fireEvent.click(screen.getByText('노드 추가'));
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const link = document.createElement('a');
+    link.href = '/runs';
+    link.setAttribute('href', '/runs');
+    document.body.appendChild(link);
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    link.dispatchEvent(event);
+    expect(confirm).toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(true);
+    link.remove();
+    confirm.mockRestore();
+  });
 });

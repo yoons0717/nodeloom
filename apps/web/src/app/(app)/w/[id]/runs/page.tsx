@@ -45,12 +45,8 @@ export default async function RunListPage({
 
   return (
     <>
-      <PageHeader
-        back={{ href: `/w/${id}`, label: '에디터' }}
-        context={workflow.name}
-        title="실행 기록"
-      />
-      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
+      <PageHeader context={workflow.name} title="실행 기록" />
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
         {runs.length === 0 ? (
           <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-border px-6 py-12 text-center">
             <p className="text-sm text-muted-foreground">
@@ -131,7 +127,7 @@ export default async function RunListPage({
             )}
           </>
         )}
-      </main>
+      </div>
     </>
   );
 }

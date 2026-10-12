@@ -1,17 +1,14 @@
-import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { Button } from './button';
+import { MobileNavButton } from '@/components/app-sidebar/sidebar-shell';
 
 // 화면 상단 바(56px). 에디터를 뺀 화면(목록, 실행 기록, 실행 상세)이 같이 쓴다(DESIGN.md).
-// title은 "context / title" 꼴로 그린다. 뒤로 가기는 글자가 있는 ghost 버튼 하나다.
+// title은 "context / title" 꼴로 그린다. 화면 사이 이동은 사이드바가 맡는다(M6 6-g).
 export function PageHeader({
-  back,
   context,
   title,
   status,
   actions,
 }: {
-  back?: { href: string; label: string };
   context?: string;
   title: ReactNode;
   status?: ReactNode;
@@ -19,16 +16,7 @@ export function PageHeader({
 }) {
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border-subtle bg-surface px-4">
-      {back && (
-        <Button
-          variant="ghost"
-          className="-ml-2 shrink-0"
-          render={<Link href={back.href} />}
-          nativeButton={false}
-        >
-          ← {back.label}
-        </Button>
-      )}
+      <MobileNavButton />
       <h1 className="flex min-w-0 items-center gap-2 text-base">
         {/* 좁은 화면에서는 맥락을 숨겨 지금 화면 이름이 보이게 한다. */}
         {context && (

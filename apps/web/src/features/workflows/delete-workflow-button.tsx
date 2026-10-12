@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -15,10 +15,15 @@ export function DeleteWorkflowButton({
   name: string;
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [confirming, setConfirming] = useState(false);
   const remove = useMutation({
     mutationFn: () => clientApi(`/workflows/${id}`, { method: 'DELETE' }),
-    onSuccess: () => router.refresh(),
+    onSuccess: () => {
+      // 사이드바 목록도 다시 불러온다(M6 6-g).
+      void queryClient.invalidateQueries({ queryKey: ['workflows'] });
+      router.refresh();
+    },
   });
 
   // 목록 행 전체가 링크라서 이 안의 클릭이 행으로 번지지 않게 막는다.

@@ -20,8 +20,8 @@ export default async function RunDetailPage({
   if (run.workflowId !== id) notFound();
 
   return (
-    <main className="flex h-dvh flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <RunDetail run={run} workflowName={workflow.name} />
-    </main>
+    </div>
   );
 }

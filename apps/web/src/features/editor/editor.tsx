@@ -54,7 +54,7 @@ function EditorLayout({
 }) {
   useEditorShortcuts();
   return (
-    <div className="flex h-dvh flex-col">
+    <div className="flex h-full min-h-0 flex-1 flex-col">
       <TopBar toolbar={toolbar} />
       <div className="flex min-h-0 flex-1">
         <Palette />

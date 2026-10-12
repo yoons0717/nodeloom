@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { createInitialGraph } from '@/features/editor/commands';
@@ -8,18 +8,26 @@ import { clientApi } from '@/lib/client-api';
 
 const NEW_NAME = '새 워크플로우';
 
-// Trigger 하나가 놓인 그래프로 만들고 바로 에디터로 이동한다.
-export function NewWorkflowButton() {
+// Trigger 하나가 놓인 그래프로 만들고 바로 에디터로 이동한다. 목록 버튼과 사이드바가 같이 쓴다.
+export function useCreateWorkflow() {
   const router = useRouter();
-  const create = useMutation({
+  const queryClient = useQueryClient();
+  return useMutation({
     mutationFn: async () =>
       (await clientApi('/workflows', {
         method: 'POST',
         body: JSON.stringify({ name: NEW_NAME, graph: createInitialGraph() }),
       })) as { id: string },
-    onSuccess: ({ id }) => router.push(`/w/${id}`),
+    onSuccess: ({ id }) => {
+      // 사이드바 목록(['workflows'])도 새로 불러온다.
+      void queryClient.invalidateQueries({ queryKey: ['workflows'] });
+      router.push(`/w/${id}`);
+    },
   });
+}
 
+export function NewWorkflowButton() {
+  const create = useCreateWorkflow();
   return (
     <div className="flex flex-col items-end gap-1">
       <Button onClick={() => create.mutate()} disabled={create.isPending}>
