@@ -3,19 +3,12 @@
 import Link from 'next/link';
 import { MobileNavButton } from '@/components/app-sidebar/sidebar-shell';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import {
   Editor,
   GraphIssueBadge,
   TopBarDivider,
   UndoRedo,
 } from '@/features/editor/editor';
 import { RunControls } from '@/features/runs/run-controls';
-import { FailureWorkflowSelect } from './failure-workflow-select';
 import { SaveControls } from './save-controls';
 import type { Workflow } from './schemas';
 
@@ -49,30 +42,7 @@ export function WorkflowEditor({ workflow }: { workflow: Workflow }) {
                   <UndoRedo />
                 </>
               }
-              actions={
-                <>
-                  <GraphIssueBadge />
-                  <Button
-                    variant="ghost"
-                    render={<Link href={`/w/${workflow.id}/runs`} />}
-                    nativeButton={false}
-                  >
-                    실행 기록
-                  </Button>
-                  <Popover>
-                    <PopoverTrigger render={<Button variant="ghost" />}>
-                      설정
-                    </PopoverTrigger>
-                    <PopoverContent>
-                      <FailureWorkflowSelect
-                        workflowId={workflow.id}
-                        initial={workflow.failureWorkflowId}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <TopBarDivider />
-                </>
-              }
+              actions={<GraphIssueBadge />}
               after={(ensureSaved) => (
                 <RunControls
                   workflowId={workflow.id}

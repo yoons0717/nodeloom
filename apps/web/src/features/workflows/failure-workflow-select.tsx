@@ -52,8 +52,8 @@ export function FailureWorkflowSelect({
   ];
 
   return (
-    // 상단 바의 "설정" 팝오버 안에 둔다(M6). 한 번 정하면 잘 바꾸지 않는 설정이라서다.
-    <div className="flex w-64 flex-col gap-1">
+    // 워크플로우 설정 화면에 둔다(M6 6-g).
+    <div className="flex max-w-sm flex-col gap-1">
       <span className="text-xs font-medium text-label">실패하면 실행</span>
       <Select
         value={value}
