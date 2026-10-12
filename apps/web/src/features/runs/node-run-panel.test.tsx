@@ -15,18 +15,44 @@ const node = newNode({ schemaVersion: 1, nodes: [], edges: [] }, 'http', {
   y: 0,
 });
 
-function renderPanel(response: Response) {
+function renderPanel(response: Response, runError?: string) {
   const fetchMock = vi.fn(() => Promise.resolve(response));
   vi.stubGlobal('fetch', fetchMock);
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <NodeRunPanel runId="r1" node={node} status="SUCCESS" />
+      <NodeRunPanel
+        runId="r1"
+        node={node}
+        status="SUCCESS"
+        runError={runError}
+      />
     </QueryClientProvider>,
   );
   return fetchMock;
 }
 
 describe('NodeRunPanel', () => {
+  it('패널 위의 실행 오류와 같은 문구는 다시 보여 주지 않는다', async () => {
+    const failed = (message: string) =>
+      Response.json([
+        {
+          attempt: 1,
+          status: 'FAILED',
+          port: null,
+          input: null,
+          output: null,
+          error: { message },
+        },
+      ]);
+    renderPanel(failed('응답 코드 404'), '응답 코드 404');
+    await screen.findByText('값이 없습니다');
+    expect(screen.queryByText('응답 코드 404')).toBeNull();
+    cleanup();
+
+    renderPanel(failed('응답 코드 404'), '다른 노드 오류');
+    expect(await screen.findByText('응답 코드 404')).toBeTruthy();
+  });
+
   it('마지막 시도의 출력을 먼저 보여 주고, 시도·입력 탭을 바꿔 볼 수 있다', async () => {
     const fetchMock = renderPanel(
       Response.json([

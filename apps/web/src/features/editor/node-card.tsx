@@ -64,9 +64,12 @@ export function NodeCard({ data, selected }: NodeProps<CanvasNode>) {
         )}
         <div className="flex h-[18px] items-center gap-1.5">
           <NodeGlyph type={node.type} />
-          <span className="min-w-0 truncate text-caption text-muted-foreground">
-            {NODE_META[node.type].label}
-          </span>
+          {/* 실행 상세에서는 상태·걸린 시간이 자리를 쓰므로 종류는 글리프로만 보인다. */}
+          {!run && (
+            <span className="min-w-0 truncate text-caption text-muted-foreground">
+              {NODE_META[node.type].label}
+            </span>
+          )}
           {/* 상태는 꺾이지 않고, 자리가 모자라면 종류 이름이 줄어든다. */}
           <span className="ml-auto shrink-0 text-caption font-bold whitespace-nowrap">
             {firstIssue ? (

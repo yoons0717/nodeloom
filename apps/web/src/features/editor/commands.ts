@@ -44,8 +44,7 @@ export function newNode(
     id: crypto.randomUUID(),
     key,
     type,
-    // 제목 기본값은 노드 종류 이름. 참조 키는 카드에 따로 보인다.
-    title: NODE_META[type].label,
+    title: NODE_META[type].defaultTitle,
     position,
     config: {},
   };

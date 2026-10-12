@@ -82,7 +82,8 @@
 | body | 14/20 | `text-sm` | 본문, 입력 칸 |
 | body-sm | 13/20 | `text-body-sm` | 노드 제목, 목록 행 |
 | label | 12/16, 500 | `text-xs` | 라벨, 배지, 설명 |
-| caption | 11/16 | `text-caption` | 노드 종류 이름, 요약. 가장 작은 크기(10px은 쓰지 않는다) |
+| caption | 11/16 | `text-caption` | 노드 종류 이름, 요약. 글자로 읽는 것 중 가장 작은 크기(10px은 쓰지 않는다) |
+| glyph-sm | 9 | `text-glyph-sm` | 노드 카드 글리프 칩(18px) 안의 ▶만 |
 
 고정폭: 입력 13, 카드 요약 11, JSON 뷰어 12/20. 굵기는 400·500·700만 쓰고 대문자·자간 처리는 하지 않는다.
 
@@ -108,12 +109,12 @@
 | Badge | `tone` = neutral·running·success·warning·danger. 높이 22, 좌우 8, 글리프와 글자 사이 4, pill, 12px 500. 바탕은 각 `-soft`(neutral은 `--raised-hover`), 글자는 각 `-text`(running은 `--accent`, neutral은 `--text-label`). 글리프 ● ✓ ▲ !는 부품이 붙인다 |
 | Input·Textarea·Select | 높이 36, `--border-control` 1px, `--bg` 바탕, 좌우 12, 14px, 모서리 6. 포커스는 2px `--accent` + 3px `--accent-ring`, 오류는 2px `--danger`. 두꺼워진 테두리만큼 안쪽 여백을 1px 줄여 크기를 유지한다 |
 | Field | 라벨 12/16 500 `--text-label`, 라벨과 칸 사이 4, 칸 사이 16. 설명은 12px `--text-muted`, 오류는 12px `--danger-text`에 "! "를 붙인다. 칸이 여럿인 묶음(쿼리·헤더)은 `group`으로 같은 모양을 쓴다 |
-| 노드 카드 | 136×84 고정(Condition 136×108), 모서리 8, 안쪽 10/12, 줄 사이 4. 1줄: 글리프 칩 18px + 종류 이름 11px + 오른쪽 상태, 2줄: 제목 13/20 700, 3줄: 설정 요약 고정폭 11px(Condition은 참·거짓 라벨). hover는 `--raised-hover` + `--border-control`, 선택은 2px `--accent` + 4px `--accent-ring`, 오류는 `--danger` 테두리와 "! n", 실행 중은 `--accent` 테두리와 막대, 성공은 기본 테두리와 "✓ 걸린 시간", 건너뜀은 점선·`--surface`·60% |
+| 노드 카드 | 136×84 고정(Condition 136×108), 모서리 8, 안쪽 10/12, 줄 사이 4. 1줄: 글리프 칩 18px + 종류 이름 11px(실행 상세에서는 빼고 글리프만) + 오른쪽 상태, 2줄: 제목 13/20 700, 3줄: 설정 요약 고정폭 11px(Condition은 참·거짓 라벨). hover는 `--raised-hover` + `--border-control`, 선택은 2px `--accent` + 4px `--accent-ring`, 오류는 `--danger` 테두리와 "! n", 실행 중은 `--accent` 테두리와 막대, 성공은 기본 테두리와 "✓ 걸린 시간", 건너뜀은 점선·`--surface`·60% |
 | 포트 | 12px 원(`--bg` 바탕, 2px `--text-muted`), 누르는 영역 24px. hover는 `--text` 테두리 + `--text-ring`. 선을 끄는 동안 입력 포트는 14px `--accent` + `--accent-glow`, 연결할 수 없는 포트 위에서는 `--danger` 테두리 |
 | 상단 바(에디터) | 높이 56, 좌우 16, 한 줄. 왼쪽 이름(글자처럼 보이다 눌러서 편집) · 저장 상태 · 구분선 · 되돌리기/다시 하기(ghost), 오른쪽 문제 배지 · 저장(outline) · 실행(default). 저장하지 않은 변경이 있으면 앱 안 링크로 나가기 전에 묻는다 |
 | 토스트 | 실행 버튼 아래, `--overlay` 바탕 + 그림자, 12px. 성공은 4초 뒤 저절로 닫히고 실패는 닫기 전까지 남는다 |
 | 캔버스 도구 | 왼쪽 아래, 높이 36, `--surface` 바탕, `--border` 테두리. − 배율 + │ 맞춤 보기 |
-| 실행 상세 패널 | 너비 320. 위는 "실행 순서"(줄 높이 28, 상태 글리프 · 제목 13px · 걸린 시간 고정폭 11px, 고른 줄은 `--accent-soft` + 700, 전체의 절반을 넘긴 노드는 40×4 `--warning` 막대). 아래는 입력/출력 탭(높이 28) · 복사, 남은 높이를 다 쓰는 JSON 보기(12/20, 키 `--node-http-text`, 숫자·참거짓 `--node-condition-text`, 문자열 `--success-text`, 접힌 객체 "… n"), 맨 아래 고른 값을 읽는 식(고정폭 11px) |
+| 실행 상세 패널 | 너비 384. 위는 "실행 순서"(줄 높이 28, 상태 글리프 · 제목 13px · 걸린 시간 고정폭 11px, 고른 줄은 `--accent-soft` + 700, 전체의 절반을 넘긴 노드는 40×4 `--warning` 막대). 아래는 입력/출력 탭(높이 28) · 복사, 남은 높이를 다 쓰는 JSON 보기(12/20, 키 `--node-http-text`, 숫자·참거짓 `--node-condition-text`, 문자열 `--success-text`, 접힌 객체 "… n"), 맨 아래 고른 값을 읽는 식(고정폭 11px) |
 | PageHeader | 에디터를 뺀 화면(목록, 실행 기록, 실행 상세, 모든 실행, 설정)의 상단 바. 높이 56, `--surface`, 아래 `--border-subtle`. 뒤로 가기는 없다(사이드바가 맡음). 좁은 화면에서는 왼쪽에 메뉴 버튼, 제목은 "맥락 / 화면"(좁은 화면에서는 맥락을 숨김), 상태 배지, 오른쪽 동작 |
 | InlineError | "! 문구" 꼴 오류. `--danger-text`, 글리프는 읽지 않게(aria-hidden). 문제 목록을 함께 받을 수 있다 |
 | 실행 기록 행 | 고정 열: 상태 배지 84 · 시각(HH:mm, 고정폭) 44 · 방식 · 걸린 시간(고정폭, 오른쪽 정렬) · ›. 실패 행은 왼쪽 2px `--danger` 막대와 배지 열만큼 들여 쓴 오류 두 줄. 날짜별 묶음(오늘 / 어제 / 10월 9일), 상태 거르기 칩은 주소 `?status=` |

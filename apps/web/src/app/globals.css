@@ -162,6 +162,8 @@
   --text-body-sm--line-height: 1.25rem;
   --text-caption: 0.6875rem;
   --text-caption--line-height: 1rem;
+  /* 노드 카드 글리프 칩(18px) 안의 ▶ 전용(데모 값) */
+  --text-glyph-sm: 0.5625rem;
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);

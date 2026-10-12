@@ -4,6 +4,8 @@ import { describeSchedule, parseSchedule } from './settings/schedule';
 type NodeMeta = {
   // 종류 이름은 영문으로 고정한다. 사용자 제목은 한글로 쓴다(M6 작은 결정 ⑨).
   label: string;
+  // 새 노드의 제목 기본값. 종류 이름과 겹치지 않게 한글로 쓴다.
+  defaultTitle: string;
   description: string;
   glyph: string;
   // 글리프 칩의 바탕(-soft)과 글자(-text). Tailwind가 찾을 수 있게 클래스 이름을 그대로 적는다.
@@ -17,6 +19,7 @@ type NodeMeta = {
 export const NODE_META: Record<NodeType, NodeMeta> = {
   trigger: {
     label: 'Trigger',
+    defaultTitle: '시작',
     description: '흐름의 시작. 수동·스케줄',
     glyph: '▶',
     chipClass: 'bg-node-trigger-soft text-node-trigger-text',
@@ -24,12 +27,14 @@ export const NODE_META: Record<NodeType, NodeMeta> = {
   },
   http: {
     label: 'HTTP',
+    defaultTitle: 'HTTP 요청',
     description: 'API 호출, 응답 받기',
     glyph: '⇄',
     chipClass: 'bg-node-http-soft text-node-http-text',
   },
   transform: {
     label: 'Transform',
+    defaultTitle: '데이터 가공',
     description: 'JSONata로 데이터 가공',
     glyph: 'fx',
     chipClass: 'bg-node-transform-soft text-node-transform-text',
@@ -37,6 +42,7 @@ export const NODE_META: Record<NodeType, NodeMeta> = {
   },
   condition: {
     label: 'Condition',
+    defaultTitle: '조건 분기',
     description: '참·거짓에 따라 다른 길로',
     glyph: '◇',
     chipClass: 'bg-node-condition-soft text-node-condition-text',

@@ -183,6 +183,7 @@ export function RunDetail({
               runId={run.id}
               node={selected}
               status={nodeRuns.get(selected.id)?.status}
+              runError={p.error?.message}
             />
           ) : (
             <p className="p-4 text-sm text-muted-foreground">

@@ -14,7 +14,7 @@ export function NodeGlyph({
   const text =
     size === 'sm'
       ? meta.smallGlyph
-        ? 'text-[9px]'
+        ? 'text-glyph-sm'
         : 'text-caption'
       : meta.smallGlyph
         ? 'text-caption'

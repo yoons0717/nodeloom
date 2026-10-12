@@ -23,11 +23,14 @@ export function NodeRunPanel({
   runId,
   node,
   status,
+  runError,
 }: {
   runId: string;
   node: GraphNode;
   // 상태가 바뀌면(진행 중 → 끝) 다시 받는다.
   status: NodeRunStatus | undefined;
+  // 패널 위에 이미 보이는 실행 오류. 같은 문구면 시도 오류를 다시 쓰지 않는다.
+  runError?: string;
 }) {
   const [tab, setTab] = useState<'input' | 'output'>('output');
   const [attemptNo, setAttemptNo] = useState<number | null>(null);
@@ -91,7 +94,9 @@ export function NodeRunPanel({
           ))}
         </div>
       )}
-      {attempt.error && <InlineError message={attempt.error.message} />}
+      {attempt.error && attempt.error.message !== runError && (
+        <InlineError message={attempt.error.message} />
+      )}
       <div className="flex items-center gap-2">
         <div
           role="tablist"
