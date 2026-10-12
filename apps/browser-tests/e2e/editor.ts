@@ -16,14 +16,20 @@ export async function addNode(page: Page, label: string, x: number, y: number) {
 }
 
 // from 블록의 출력 점에서 to 블록의 입력 점으로 선을 끈다. 놓기 전에 확인할 일이 있으면 beforeDrop에서 한다.
+// 출력이 여럿인 Condition은 'condition_1.true'처럼 포트를 붙인다.
 export async function connect(
   page: Page,
-  fromKey: string,
+  source: string,
   toKey: string,
   beforeDrop?: () => Promise<void>,
 ) {
+  const [fromKey = source, port] = source.split('.');
   const from = await nodeByKey(page, fromKey)
-    .locator('.react-flow__handle.source')
+    .locator(
+      port
+        ? `.react-flow__handle.source[data-handleid="${port}"]`
+        : '.react-flow__handle.source',
+    )
     .boundingBox();
   const to = await nodeByKey(page, toKey)
     .locator('.react-flow__handle.target')
