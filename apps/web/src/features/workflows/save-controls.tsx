@@ -152,7 +152,7 @@ const CHIP =
 const CHIP_BUTTON =
   'flex h-[22px] items-center gap-1.5 rounded-full px-2 font-bold outline-none focus-visible:ring-3 focus-visible:ring-accent-ring';
 
-// 저장 상태가 곧 저장 버튼이다. 저장됨은 흐린 글자, 바뀌면 칩 안에 저장 버튼, 실패하면 빨간 칩에 다시 시도.
+// 저장 상태가 곧 저장 버튼이다. 저장됨은 화면에 보이지 않고(스크린 리더에만), 바뀌면 칩 안에 저장 버튼, 실패하면 빨간 칩에 다시 시도.
 // 긴 실패 사유(로그인 만료 안내)는 칩에 넣지 않고 툴팁과 스크린 리더 글자로 둔다.
 function SaveStatus({
   nameError,
@@ -214,11 +214,8 @@ function SaveStatus({
       </span>
     );
   return (
-    <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
-      <span aria-hidden className="text-success-text">
-        ✓
-      </span>
-      <span role="status">저장됨</span>
+    <span role="status" className="sr-only">
+      저장됨
     </span>
   );
 }
