@@ -4,6 +4,7 @@ import type { Graph } from '@nodeloom/core';
 import { PORT_LABEL } from '@/features/editor/node-meta';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { formatMs } from './format';
 import type { RunProgress } from './schemas';
 
 type NodeRunRow = RunProgress['nodes'][number];
@@ -22,10 +23,6 @@ const durationOf = (r: NodeRunRow) =>
   r.startedAt && r.finishedAt
     ? Date.parse(r.finishedAt) - Date.parse(r.startedAt)
     : undefined;
-
-function formatMs(ms: number) {
-  return ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`;
-}
 
 // 시작한 순서. 아직 시작하지 않은 노드는 맨 뒤로.
 export function orderNodeRuns(nodes: NodeRunRow[]) {
@@ -72,7 +69,8 @@ export function RunTimeline({
           className="flex w-full items-center gap-2 rounded-md px-2 pb-1 text-left text-xs font-medium text-label hover:text-foreground"
           onClick={() => setOpen(!open)}
         >
-          <span aria-hidden className="w-3">
+          {/* 행의 상태 글리프 칸(16px)과 같은 너비라 "실행 순서"가 행 제목과 같은 줄에서 시작한다. */}
+          <span aria-hidden className="w-4 shrink-0">
             {open ? '▾' : '▸'}
           </span>
           실행 순서
@@ -94,7 +92,8 @@ export function RunTimeline({
               aria-pressed={on}
               onClick={() => onSelect(r.nodeId)}
               className={cn(
-                'grid h-7 grid-cols-[16px_minmax(0,1fr)_auto] items-center gap-2 rounded-md px-2 text-left text-body-sm hover:bg-raised-hover',
+                // 막대와 시간은 고정 너비 열이라 행마다 같은 자리에 선다.
+                'grid h-7 grid-cols-[16px_minmax(0,1fr)_40px_64px] items-center gap-2 rounded-md px-2 text-left text-body-sm hover:bg-raised-hover',
                 on && 'bg-accent-soft font-bold',
                 skipped && 'text-muted-foreground',
               )}
@@ -106,30 +105,27 @@ export function RunTimeline({
                 {GLYPH[r.status].glyph}
               </span>
               <span className="truncate">{titleOf.get(r.nodeId)}</span>
+              {/* 모든 행에 비율 막대, 전체의 절반을 넘긴 노드만 경고색(M6 6-f). 건너뛴 행은 막대 없이. */}
+              <span className="block h-1 overflow-hidden rounded-full bg-border">
+                {!skipped && (
+                  <span
+                    className={cn(
+                      'block h-full',
+                      share > 0.5 ? 'bg-warning' : 'bg-accent',
+                    )}
+                    style={{ width: `${Math.round(share * 100)}%` }}
+                  />
+                )}
+              </span>
               <span
                 className={cn(
-                  'flex items-center gap-1.5 font-mono text-caption font-normal',
+                  'truncate text-right font-mono text-caption font-normal',
                   on ? 'text-label' : 'text-muted-foreground',
                 )}
               >
-                {skipped ? (
-                  '건너뜀'
-                ) : (
-                  <>
-                    {/* 모든 행에 비율 막대, 전체의 절반을 넘긴 노드만 경고색(M6 6-f). */}
-                    <span className="block h-1 w-10 overflow-hidden rounded-full bg-border">
-                      <span
-                        className={cn(
-                          'block h-full',
-                          share > 0.5 ? 'bg-warning' : 'bg-accent',
-                        )}
-                        style={{ width: `${Math.round(share * 100)}%` }}
-                      />
-                    </span>
-                    {r.port && `${PORT_LABEL[r.port] ?? r.port} · `}
-                    {ms !== undefined && formatMs(ms)}
-                  </>
-                )}
+                {skipped
+                  ? '건너뜀'
+                  : `${r.port ? `${PORT_LABEL[r.port] ?? r.port} · ` : ''}${ms !== undefined ? formatMs(ms) : ''}`}
               </span>
             </button>
           );

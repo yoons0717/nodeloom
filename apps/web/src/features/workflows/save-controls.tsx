@@ -135,7 +135,7 @@ export function SaveControls({
         aria-label="워크플로우 이름"
         aria-invalid={nameError ? true : undefined}
         title={nameError}
-        className="h-9 w-56 border-transparent bg-transparent text-base font-bold hover:border-border-control"
+        className="field-sizing-content h-9 w-auto max-w-72 min-w-24 border-transparent bg-transparent text-base font-bold hover:border-border-control"
         value={name}
         onChange={(e) => setName(e.target.value)}
       />

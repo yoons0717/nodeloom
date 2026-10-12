@@ -29,13 +29,19 @@ export const NODE_RUN_LABEL: Record<NodeRunStatus, string> = {
   SKIPPED: '건너뜀',
 };
 
-// 시작과 끝이 모두 있을 때만. 1분이 넘으면 분·초로.
+// 걸린 시간 표기를 한 곳에서 맞춘다: 1초 미만 "980ms", 1분 미만 "1.4초", 그 이상 "2분 3초".
+export function formatMs(ms: number) {
+  if (ms < 1000) return `${Math.round(ms)}ms`;
+  const sec = ms / 1000;
+  if (sec < 60) return `${sec.toFixed(1)}초`;
+  return `${Math.floor(sec / 60)}분 ${Math.round(sec % 60)}초`;
+}
+
+// 시작과 끝이 모두 있을 때만.
 export function formatDuration(
   startedAt: string | null,
   finishedAt: string | null,
 ) {
   if (!startedAt || !finishedAt) return '';
-  const sec = (Date.parse(finishedAt) - Date.parse(startedAt)) / 1000;
-  if (sec < 60) return `${sec.toFixed(1)}초`;
-  return `${Math.floor(sec / 60)}분 ${Math.round(sec % 60)}초`;
+  return formatMs(Date.parse(finishedAt) - Date.parse(startedAt));
 }

@@ -116,7 +116,8 @@ export function NodeRunPanel({
         </div>
         <button
           type="button"
-          className={cn(SMALL_BUTTON, 'ml-auto')}
+          // 글자 끝을 아래 JSON 상자의 오른쪽 끝에 맞춘다.
+          className={cn(SMALL_BUTTON, '-mr-2.5 ml-auto')}
           onClick={() => void copy('json')}
         >
           {copied === 'json' ? '복사됨' : '복사'}
@@ -137,13 +138,14 @@ export function NodeRunPanel({
       {/* 길면 줄을 바꿔 끝까지 보여 준다(M6 6-f). */}
       {tab === 'output' && (
         <div className="flex items-start gap-2">
-          <p className="min-w-0 flex-1 font-mono text-caption break-all text-muted-foreground">
+          {/* 버튼 높이(좁은 화면 44, 넓은 화면 28)의 가운데에 첫 줄이 오게 위아래 여백을 준다. */}
+          <p className="min-w-0 flex-1 py-3.5 font-mono text-caption break-all text-muted-foreground md:py-1.5">
             {expression}
             {picked && ` = ${JSON.stringify(picked.value)}`}
           </p>
           <button
             type="button"
-            className={SMALL_BUTTON}
+            className={cn(SMALL_BUTTON, '-mr-2.5')}
             onClick={() => void copy('expr')}
           >
             {copied === 'expr' ? '복사됨' : '식 복사'}

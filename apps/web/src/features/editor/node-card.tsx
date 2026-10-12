@@ -4,6 +4,7 @@ import { type GraphNode, type Issue, NODE_SPECS } from '@nodeloom/core';
 import { Handle, type Node, type NodeProps, Position } from '@xyflow/react';
 import { Profiler } from 'react';
 import { cn } from '@/lib/utils';
+import { formatMs } from '@/features/runs/format';
 import { onNodeRender } from './bench';
 import { NodeGlyph } from './node-glyph';
 import { NODE_META, PORT_LABEL, summarizeNode } from './node-meta';
@@ -26,10 +27,6 @@ export type CanvasNode = Node<{
 const HEIGHT = { default: 84, condition: 108 };
 // Condition의 참·거짓 포트는 카드 안 라벨 줄의 가운데에 둔다(데모 기준).
 const CONDITION_PORT_TOP = { true: 63, false: 85 };
-
-function formatMs(ms: number) {
-  return ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`;
-}
 
 // 노드 4종이 함께 쓰는 카드. 1줄 종류와 상태, 2줄 제목, 3줄 설정 요약(Condition은 참·거짓 라벨).
 export function NodeCard({ data, selected }: NodeProps<CanvasNode>) {
@@ -67,10 +64,11 @@ export function NodeCard({ data, selected }: NodeProps<CanvasNode>) {
         )}
         <div className="flex h-[18px] items-center gap-1.5">
           <NodeGlyph type={node.type} />
-          <span className="text-caption text-muted-foreground">
+          <span className="min-w-0 truncate text-caption text-muted-foreground">
             {NODE_META[node.type].label}
           </span>
-          <span className="ml-auto text-caption font-bold">
+          {/* 상태는 꺾이지 않고, 자리가 모자라면 종류 이름이 줄어든다. */}
+          <span className="ml-auto shrink-0 text-caption font-bold whitespace-nowrap">
             {firstIssue ? (
               <span
                 title={issues.map((i) => i.message).join('\n')}

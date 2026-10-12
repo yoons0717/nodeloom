@@ -71,7 +71,7 @@ describe('RunTimeline', () => {
     // 모든 실행 행에 비율 막대, 느린 노드(3초 / 전체 4초)만 경고색
     expect(container.querySelectorAll('.bg-warning')).toHaveLength(1);
     expect(container.querySelectorAll('.bg-accent')).toHaveLength(1);
-    expect(rows[1]).toContain('3.0s');
+    expect(rows[1]).toContain('3.0초');
   });
 
   it('노드가 8개를 넘으면 처음부터 접어 두고, 머리글을 누르면 펼친다', () => {
