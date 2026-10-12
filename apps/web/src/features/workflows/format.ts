@@ -29,3 +29,27 @@ const shortFormatter = new Intl.DateTimeFormat('ko-KR', {
 export function formatRunTime(iso: string) {
   return shortFormatter.format(new Date(iso));
 }
+
+const timeFormatter = new Intl.DateTimeFormat('ko-KR', {
+  timeZone: TIMEZONE,
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+// 실행 기록 행의 시각(HH:mm). 날짜는 묶음 머리글에 있다.
+export function formatTime(iso: string) {
+  return timeFormatter.format(new Date(iso));
+}
+
+const dayKeyFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: TIMEZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+// APP_TIMEZONE 기준 날짜(YYYY-MM-DD). 날짜별로 묶을 때 쓴다.
+export function dayKey(iso: string | Date) {
+  return dayKeyFormatter.format(new Date(iso));
+}
