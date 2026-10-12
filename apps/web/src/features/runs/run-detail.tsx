@@ -24,7 +24,7 @@ import {
   RUN_STATUS_TONE,
 } from './format';
 import { NodeRunPanel } from './node-run-panel';
-import { RunTimeline } from './run-timeline';
+import { firstFailedNodeId, RunTimeline } from './run-timeline';
 import { type RunDetail as Run, runProgressSchema } from './schemas';
 
 const nodeTypes = {
@@ -43,7 +43,10 @@ export function RunDetail({
   run: Run;
   workflowName: string;
 }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // 실패한 실행은 처음 실패한 노드를 고른 채 연다(M6 6-f).
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    firstFailedNodeId(run.nodes),
+  );
 
   // 끝날 때까지 1초마다 상태만 조회한다(DECISIONS B-1).
   const progress = useQuery({
@@ -151,7 +154,7 @@ export function RunDetail({
             </ReactFlow>
           </ReactFlowProvider>
         </div>
-        <aside className="flex min-h-0 w-full flex-col border-t border-border-subtle bg-surface md:w-80 md:border-t-0 md:border-l">
+        <aside className="flex min-h-0 w-full flex-col border-t border-border-subtle bg-surface md:w-96 md:border-t-0 md:border-l">
           {p.error && (
             <InlineError
               className="border-b border-border-subtle p-4"
