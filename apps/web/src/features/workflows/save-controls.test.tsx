@@ -60,15 +60,17 @@ function renderControls() {
 const status = () => screen.getByRole('status').textContent;
 
 describe('SaveControls', () => {
-  it('그래프를 바꾸면 저장되지 않음으로 표시하고, 저장하면 덮어쓰기 요청 후 저장됨으로 돌아간다', async () => {
+  it('그래프를 바꾸면 저장 안 됨 칩 안에 저장 버튼이 나오고, 저장하면 덮어쓰기 요청 후 저장됨으로 돌아간다', async () => {
     const fetchMock = renderControls();
     expect(status()).toBe('저장됨');
 
     fireEvent.click(screen.getByText('노드 추가'));
-    expect(status()).toBe('저장되지 않음');
+    expect(status()).toBe('저장 안 됨');
 
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
     await waitFor(() => expect(status()).toBe('저장됨'));
+    // 저장할 것이 없으면 저장 버튼은 없다(M6 6-h).
+    expect(screen.queryByRole('button', { name: '저장' })).toBeNull();
     const [url, init] = fetchMock.mock.calls[0] as unknown as [
       string,
       RequestInit,
@@ -102,6 +104,7 @@ describe('SaveControls', () => {
     fireEvent.click(screen.getByText('노드 추가'));
     fireEvent.click(screen.getByRole('button', { name: '저장' }));
     await waitFor(() => expect(status()).toMatch(/다른 탭에서 로그인/));
+    expect(screen.getByRole('button', { name: '다시 시도' })).toBeTruthy();
   });
 
   it('이름을 비우면 저장할 수 없고 이유를 보여 준다', () => {
@@ -110,9 +113,7 @@ describe('SaveControls', () => {
       target: { value: '  ' },
     });
     expect(status()).toBe('이름을 입력하세요');
-    expect(
-      screen.getByRole('button', { name: '저장' }).hasAttribute('disabled'),
-    ).toBe(true);
+    expect(screen.queryByRole('button', { name: '저장' })).toBeNull();
   });
 
   it('저장하지 않은 변경이 있으면 앱 안 링크로 나가기 전에 묻고, 취소하면 머문다', () => {

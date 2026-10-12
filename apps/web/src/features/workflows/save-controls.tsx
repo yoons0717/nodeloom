@@ -3,7 +3,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Graph } from '@nodeloom/core';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { MobileNavButton } from '@/components/app-sidebar/sidebar-shell';
 import { Input } from '@/components/ui/input';
 import { useEditorStore } from '@/features/editor/store-context';
@@ -14,20 +13,18 @@ type Saved = { name: string; graph: Graph; json: string };
 const LEAVE_MESSAGE =
   '저장하지 않은 변경 사항이 있습니다. 이 페이지를 나갈까요?';
 
-// 이름 편집, 저장 버튼, ⌘S, 저장 여부 표시(M3 작은 결정 ③④). 저장은 덮어쓰기다(DECISIONS 2-4).
-// 상단 바 한 줄을 이룬다: 왼쪽(← · 이름 · 저장 상태 · middle), 오른쪽(actions · 저장 · after).
-// middle: 편집 도구(되돌리기). actions: 저장 앞 버튼들(문제, 실행 기록, 설정).
-// after: 저장 뒤에 붙일 것(실행 버튼). 실행 전에 저장하도록 ensureSaved를 넘긴다.
+// 이름 편집, 저장 상태 칩, ⌘S(M3 작은 결정 ③④). 저장은 덮어쓰기다(DECISIONS 2-4).
+// 상단 바 한 줄을 이룬다: 왼쪽(이름 · 저장 상태 칩), 오른쪽(actions · after).
+// 저장 버튼은 따로 두지 않고, 바뀐 것이 있을 때 상태 칩 안에 나타난다(M6 6-h, 시안 1b).
+// actions: 오른쪽 앞 요소(문제 배지). after: 실행 버튼. 실행 전에 저장하도록 ensureSaved를 넘긴다.
 export function SaveControls({
   id,
   initialName,
-  middle,
   actions,
   after,
 }: {
   id: string;
   initialName: string;
-  middle?: ReactNode;
   actions?: ReactNode;
   after?: (ensureSaved: () => Promise<boolean>) => ReactNode;
 }) {
@@ -117,16 +114,11 @@ export function SaveControls({
     };
   }, [dirty]);
 
-  const status = save.isPending
-    ? '저장 중…'
-    : save.error
-      ? // 여기서 로그인 화면으로 가면 편집 중인 그래프를 잃는다. 쿠키는 탭끼리 같이 쓰므로 다른 탭에서 로그인하면 된다.
-        save.error instanceof ApiError && save.error.status === 401
-        ? '로그인이 만료되었습니다. 다른 탭에서 로그인한 뒤 다시 저장하세요'
-        : save.error.message
-      : dirty
-        ? '저장되지 않음'
-        : '저장됨';
+  // 여기서 로그인 화면으로 가면 편집 중인 그래프를 잃는다. 쿠키는 탭끼리 같이 쓰므로 다른 탭에서 로그인하면 된다.
+  const saveError =
+    save.error instanceof ApiError && save.error.status === 401
+      ? '로그인이 만료되었습니다. 다른 탭에서 로그인한 뒤 다시 저장하세요'
+      : save.error?.message;
 
   return (
     <>
@@ -140,20 +132,93 @@ export function SaveControls({
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
-      <span
-        role="status"
-        className={`shrink-0 text-xs ${save.error || nameError ? 'text-danger-text' : 'text-muted-foreground'}`}
-      >
-        {nameError ?? status}
-      </span>
-      {middle}
+      <SaveStatus
+        nameError={nameError}
+        pending={save.isPending}
+        error={saveError}
+        dirty={dirty}
+        onSave={submit}
+      />
       <div className="ml-auto flex shrink-0 items-center gap-2">
         {actions}
-        <Button variant="outline" onClick={submit} disabled={!canSave}>
-          저장
-        </Button>
         {after?.(ensureSaved)}
       </div>
     </>
+  );
+}
+
+const CHIP =
+  'flex h-7 shrink-0 items-center gap-2 rounded-full pr-1 pl-2.5 text-xs font-medium';
+const CHIP_BUTTON =
+  'flex h-[22px] items-center gap-1.5 rounded-full px-2 font-bold outline-none focus-visible:ring-3 focus-visible:ring-accent-ring';
+
+// 저장 상태가 곧 저장 버튼이다. 저장됨은 흐린 글자, 바뀌면 칩 안에 저장 버튼, 실패하면 빨간 칩에 다시 시도.
+// 긴 실패 사유(로그인 만료 안내)는 칩에 넣지 않고 툴팁과 스크린 리더 글자로 둔다.
+function SaveStatus({
+  nameError,
+  pending,
+  error,
+  dirty,
+  onSave,
+}: {
+  nameError: string | undefined;
+  pending: boolean;
+  error: string | undefined;
+  dirty: boolean;
+  onSave: () => void;
+}) {
+  if (nameError)
+    return (
+      <span role="status" className="shrink-0 text-xs text-danger-text">
+        {nameError}
+      </span>
+    );
+  if (pending)
+    return (
+      <span role="status" className="shrink-0 text-xs text-muted-foreground">
+        저장 중…
+      </span>
+    );
+  if (error)
+    return (
+      <span title={error} className={`${CHIP} bg-danger-soft text-danger-text`}>
+        <span aria-hidden>!</span>
+        <span role="status" className="-ml-1">
+          저장 실패<span className="sr-only"> · {error}</span>
+        </span>
+        <button
+          type="button"
+          onClick={onSave}
+          className={`${CHIP_BUTTON} border border-danger-text`}
+        >
+          다시 시도
+        </button>
+      </span>
+    );
+  if (dirty)
+    return (
+      <span className={`${CHIP} bg-warning-soft text-warning-text`}>
+        <span aria-hidden>●</span>
+        <span role="status" className="-ml-1">
+          저장 안 됨
+        </span>
+        <button
+          type="button"
+          aria-label="저장"
+          onClick={onSave}
+          className={`${CHIP_BUTTON} bg-warning text-bg`}
+        >
+          저장
+          <kbd className="font-mono text-caption font-medium">⌘S</kbd>
+        </button>
+      </span>
+    );
+  return (
+    <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+      <span aria-hidden className="text-success-text">
+        ✓
+      </span>
+      <span role="status">저장됨</span>
+    </span>
   );
 }

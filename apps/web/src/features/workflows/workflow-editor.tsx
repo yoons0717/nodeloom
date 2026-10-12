@@ -2,12 +2,7 @@
 
 import Link from 'next/link';
 import { MobileNavButton } from '@/components/app-sidebar/sidebar-shell';
-import {
-  Editor,
-  GraphIssueBadge,
-  TopBarDivider,
-  UndoRedo,
-} from '@/features/editor/editor';
+import { Editor, GraphIssueBadge } from '@/features/editor/editor';
 import { RunControls } from '@/features/runs/run-controls';
 import { SaveControls } from './save-controls';
 import type { Workflow } from './schemas';
@@ -36,12 +31,6 @@ export function WorkflowEditor({ workflow }: { workflow: Workflow }) {
             <SaveControls
               id={workflow.id}
               initialName={workflow.name}
-              middle={
-                <>
-                  <TopBarDivider />
-                  <UndoRedo />
-                </>
-              }
               actions={<GraphIssueBadge />}
               after={(ensureSaved) => (
                 <RunControls

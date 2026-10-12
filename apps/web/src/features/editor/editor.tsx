@@ -5,7 +5,6 @@ import { ReactFlowProvider } from '@xyflow/react';
 import { Profiler, type ReactNode } from 'react';
 import '@xyflow/react/dist/style.css';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { onEditorRender } from './bench';
 import { Canvas } from './canvas';
@@ -65,43 +64,19 @@ function EditorLayout({
   );
 }
 
-// 상단 바: 높이 56, 한 줄(데모). toolbar가 없으면(벤치) 제목과 편집 도구만 둔다.
+// 상단 바: 높이 56, 한 줄(데모). toolbar가 없으면(벤치) 제목과 문제 배지만 둔다.
 function TopBar({ toolbar }: { toolbar?: ReactNode }) {
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border-subtle bg-surface px-4">
       {toolbar ?? (
         <>
           <h1 className="text-base font-bold">새 워크플로우</h1>
-          <TopBarDivider />
-          <UndoRedo />
           <div className="ml-auto">
             <GraphIssueBadge />
           </div>
         </>
       )}
     </header>
-  );
-}
-
-export function TopBarDivider() {
-  return <span aria-hidden className="h-5 w-px shrink-0 bg-border" />;
-}
-
-export function UndoRedo() {
-  const canUndo = useEditorStore((s) => s.past.length > 0);
-  const canRedo = useEditorStore((s) => s.future.length > 0);
-  const undo = useEditorStore((s) => s.undo);
-  const redo = useEditorStore((s) => s.redo);
-  return (
-    <div className="flex gap-1">
-      <Button variant="ghost" onClick={undo} disabled={!canUndo}>
-        되돌리기
-        <kbd className="font-mono text-caption text-muted-foreground">⌘Z</kbd>
-      </Button>
-      <Button variant="ghost" onClick={redo} disabled={!canRedo}>
-        다시 하기
-      </Button>
-    </div>
   );
 }
 

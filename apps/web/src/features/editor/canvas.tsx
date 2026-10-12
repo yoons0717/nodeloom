@@ -21,7 +21,7 @@ import {
   ViewportPortal,
 } from '@xyflow/react';
 import { type DragEvent, type ReactNode, useCallback, useState } from 'react';
-import { CanvasControls } from './canvas-controls';
+import { CanvasControls, UndoRedo } from './canvas-controls';
 import { addNode, newNode } from './commands';
 import { getGraphIssues } from './graph-issues';
 import { type CanvasNode, NodeCard } from './node-card';
@@ -182,7 +182,7 @@ export function Canvas({ children }: { children?: ReactNode }) {
         fitViewOptions={{ maxZoom: 1 }}
       >
         <Background gap={GRID[0]} />
-        <CanvasControls />
+        <CanvasControls leading={<UndoRedo />} />
         <ConnectionFeedback graph={graph} />
         {children}
       </ReactFlow>
