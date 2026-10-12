@@ -65,7 +65,8 @@ const ICON_ITEM = cn(
   'flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-raised-hover hover:text-foreground',
   FOCUS,
 );
-const ACTIVE = 'bg-accent-soft font-medium text-foreground';
+const ACTIVE =
+  'bg-accent-soft font-medium text-foreground hover:bg-accent-soft';
 
 const DOT: Record<NonNullable<Workflow['lastRun']>['status'], string> = {
   SUCCESS: 'bg-success',

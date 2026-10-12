@@ -1,8 +1,6 @@
 import { cookies } from 'next/headers';
-import {
-  COLLAPSED_KEY,
-  SidebarShell,
-} from '@/components/app-sidebar/sidebar-shell';
+import { COLLAPSED_KEY } from '@/components/app-sidebar/sidebar-constants';
+import { SidebarShell } from '@/components/app-sidebar/sidebar-shell';
 import { meSchema, workflowListSchema } from '@/features/workflows/schemas';
 import { serverApi } from '@/lib/server-api';
 

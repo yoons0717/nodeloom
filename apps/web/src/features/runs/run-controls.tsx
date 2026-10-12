@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ export function RunControls({
   workflowId: string;
   ensureSaved: () => Promise<boolean>;
 }) {
+  const queryClient = useQueryClient();
   const [runId, setRunId] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
@@ -80,6 +81,14 @@ export function RunControls({
       ? (status.data.error?.message ?? '알 수 없는 오류')
       : null;
   const succeeded = status.data?.status === 'SUCCESS';
+
+  // 실행이 끝나면 사이드바의 상태 점·실행 수·실패 배지를 새로 불러온다(M6 6-g).
+  const finished = isDone(status.data);
+  useEffect(() => {
+    if (!finished) return;
+    void queryClient.invalidateQueries({ queryKey: ['workflows'] });
+    void queryClient.invalidateQueries({ queryKey: ['run-summary'] });
+  }, [finished, queryClient]);
 
   // 성공은 잠시 뒤 저절로 닫고, 실패는 직접 닫을 때까지 남긴다(M6 작은 결정 ⑥).
   useEffect(() => {

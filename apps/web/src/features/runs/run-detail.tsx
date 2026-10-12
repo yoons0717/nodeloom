@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Background,
   type Edge,
@@ -10,7 +10,7 @@ import {
 import Link from 'next/link';
 // 실행 상세 주소로 바로 들어와도 캔버스가 그려지도록 React Flow 기본 스타일을 여기서도 불러온다.
 import '@xyflow/react/dist/style.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
@@ -61,6 +61,13 @@ export function RunDetail({
   });
   const p = progress.data;
   const done = isDone(p.status);
+  // 실행이 끝나면 사이드바의 상태 점·실행 수·실패 배지를 새로 불러온다(M6 6-g).
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!done) return;
+    void queryClient.invalidateQueries({ queryKey: ['workflows'] });
+    void queryClient.invalidateQueries({ queryKey: ['run-summary'] });
+  }, [done, queryClient]);
   const nodeRuns = new Map(p.nodes.map((n) => [n.nodeId, n]));
 
   const nodes: CanvasNode[] = run.graph.nodes.map((n) => {

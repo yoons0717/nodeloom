@@ -7,9 +7,10 @@ import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { AppSidebar, locate } from './app-sidebar';
+import { COLLAPSED_KEY } from './sidebar-constants';
 import { SidebarContext, useSidebarState } from './sidebar-context';
 
-export const COLLAPSED_KEY = 'nodeloom.sidebar.collapsed';
+export { COLLAPSED_KEY };
 
 // 접힘을 고른 적이 없으면 에디터에서만 접는다(캔버스 폭 확보). 한 번 고르면 그 선택을 따른다(M6 6-g).
 export function resolveCollapsed(stored: boolean | null, pathname: string) {
