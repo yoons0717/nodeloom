@@ -70,7 +70,8 @@ describe('RunControls', () => {
     fireEvent.click(screen.getByText('노드 추가'));
     fireEvent.click(screen.getByRole('button', { name: '실행' }));
 
-    await screen.findByText('실행 실패: 응답 코드 404');
+    await screen.findByText('실행 실패');
+    expect(screen.getByText('응답 코드 404')).toBeTruthy();
     expect(
       fetchMock.mock.calls.map(
         ([url, init]) => `${init?.method ?? 'GET'} ${url}`,
@@ -119,11 +120,12 @@ describe('RunControls', () => {
     vi.stubGlobal('fetch', respond('FAILED'));
     renderRun();
     fireEvent.click(screen.getByRole('button', { name: '실행' }));
-    await screen.findByText('실행 실패: 응답 코드 500');
+    await screen.findByText('응답 코드 500');
     await vi.advanceTimersByTimeAsync(4000);
-    expect(screen.getByText('실행 실패: 응답 코드 500')).toBeTruthy();
+    expect(screen.getByText('실행 실패')).toBeTruthy();
+    expect(screen.getByText('응답 코드 500')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '닫기' }));
-    expect(screen.queryByText('실행 실패: 응답 코드 500')).toBeNull();
+    expect(screen.queryByText('응답 코드 500')).toBeNull();
     vi.useRealTimers();
   });
 });
