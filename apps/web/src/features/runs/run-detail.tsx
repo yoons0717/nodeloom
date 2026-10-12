@@ -8,6 +8,8 @@ import {
   ReactFlowProvider,
 } from '@xyflow/react';
 import Link from 'next/link';
+// 실행 상세 주소로 바로 들어와도 캔버스가 그려지도록 React Flow 기본 스타일을 여기서도 불러온다.
+import '@xyflow/react/dist/style.css';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -125,7 +127,8 @@ export function RunDetail({
             render={<Link href={`/w/${run.workflowId}`} />}
             nativeButton={false}
           >
-            에디터에서 열기
+            <span className="md:hidden">에디터</span>
+            <span className="hidden md:inline">에디터에서 열기</span>
           </Button>
         }
       />

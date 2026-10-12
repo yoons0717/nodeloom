@@ -16,6 +16,7 @@ import {
 import { NewWorkflowButton } from '@/features/workflows/new-workflow-button';
 import { meSchema, workflowListSchema } from '@/features/workflows/schemas';
 import { serverApi } from '@/lib/server-api';
+import { cn } from '@/lib/utils';
 
 // 목록은 서버 컴포넌트로 그린다(DECISIONS 4-1). 로그인하지 않았으면 serverApi가 /login으로 보낸다.
 export default async function WorkflowListPage() {
@@ -58,7 +59,13 @@ export default async function WorkflowListPage() {
                 </Link>
                 {/* TODO: 마지막 실행 상태는 목록 API에 없어서 보여 주지 않는다(M6 6-f). */}
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 md:contents">
-                  <span className="md:text-right">
+                  {/* 넓은 화면에서는 열을 맞추려고 빈 칸도 두고, 좁은 화면에서는 스케줄이 없으면 자리를 차지하지 않는다. */}
+                  <span
+                    className={cn(
+                      'md:block md:text-right',
+                      !w.cron && 'hidden',
+                    )}
+                  >
                     <ScheduleText cron={w.cron} demo={me.role === 'demo'} />
                   </span>
                   <span className="text-xs text-muted-foreground md:text-right">
@@ -72,7 +79,7 @@ export default async function WorkflowListPage() {
                   </span>
                 </div>
                 {/* 넓은 화면에서는 마우스를 올리거나 포커스가 있을 때만 보인다. 터치 화면(좁은 화면)에서는 늘 보인다. */}
-                <div className="relative z-10 self-start md:self-auto md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 md:has-[[data-confirming]]:opacity-100">
+                <div className="relative z-10 -ml-2.5 self-start md:ml-0 md:self-auto md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 md:has-[[data-confirming]]:opacity-100">
                   <DeleteWorkflowButton id={w.id} name={w.name} />
                 </div>
               </li>

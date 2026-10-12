@@ -30,13 +30,14 @@ export function PageHeader({
         </Button>
       )}
       <h1 className="flex min-w-0 items-center gap-2 text-base">
+        {/* 좁은 화면에서는 맥락을 숨겨 지금 화면 이름이 보이게 한다. */}
         {context && (
-          <>
+          <span className="hidden min-w-0 items-center gap-2 md:flex">
             <span className="truncate text-muted-foreground">{context}</span>
             <span aria-hidden className="text-disabled">
               /
             </span>
-          </>
+          </span>
         )}
         <span className="truncate font-bold">{title}</span>
       </h1>
