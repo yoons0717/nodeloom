@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
+import { InlineError } from '@/components/ui/inline-error';
 import { Input } from '@/components/ui/input';
 import { clientApi } from '@/lib/client-api';
 
@@ -67,10 +68,12 @@ export function LoginForm() {
           aria-describedby={error ? 'login-error' : undefined}
         />
         {error && (
-          <p id="login-error" role="alert" className="text-xs text-danger-text">
-            <span aria-hidden>! </span>
-            {error}
-          </p>
+          <InlineError
+            id="login-error"
+            role="alert"
+            className="text-xs"
+            message={error}
+          />
         )}
       </div>
       <Button type="submit" disabled={pending}>

@@ -11,6 +11,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/ui/page-header';
+import { InlineError } from '@/components/ui/inline-error';
 import { CanvasControls } from '@/features/editor/canvas-controls';
 import { type CanvasNode, NodeCard } from '@/features/editor/node-card';
 import { formatRunTime } from '@/features/workflows/format';
@@ -104,39 +106,17 @@ export function RunDetail({
 
   return (
     <>
-      {/* 에디터와 같은 56px 머리글(데모). 실행은 시각으로 부른다(M6 작은 결정 ③). */}
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border-subtle bg-surface px-4">
-        <Link
-          href={`/w/${run.workflowId}/runs`}
-          aria-label="실행 기록으로"
-          className="-ml-2 flex size-9 shrink-0 items-center justify-center rounded-md text-base text-muted-foreground hover:bg-raised-hover hover:text-foreground"
-        >
-          ←
-        </Link>
-        <h1 className="flex min-w-0 items-center gap-2 text-base">
-          <span className="truncate text-muted-foreground">{workflowName}</span>
-          <span aria-hidden className="text-disabled">
-            /
-          </span>
-          <span className="shrink-0 font-bold">
-            {formatRunTime(run.createdAt)} 실행
-          </span>
-        </h1>
-        <Badge tone={RUN_STATUS_TONE[p.status]} role="status">
-          {RUN_STATUS_LABEL[p.status]}
-        </Badge>
-        <span className="hidden truncate text-xs text-muted-foreground md:inline">
-          {summary.join(' · ')}
-        </span>
-        <div className="ml-auto flex shrink-0 items-center gap-2">
-          <Button
-            variant="ghost"
-            className="hidden md:inline-flex"
-            render={<Link href={`/w/${run.workflowId}/runs`} />}
-            nativeButton={false}
-          >
-            실행 기록
-          </Button>
+      {/* 실행은 시각으로 부른다(M6 작은 결정 ③). 뒤로 가기 하나만 둔다(M6 6-f). */}
+      <PageHeader
+        back={{ href: `/w/${run.workflowId}/runs`, label: '실행 기록' }}
+        context={workflowName}
+        title={`${formatRunTime(run.createdAt)} 실행`}
+        status={
+          <Badge tone={RUN_STATUS_TONE[p.status]} role="status">
+            {RUN_STATUS_LABEL[p.status]}
+          </Badge>
+        }
+        actions={
           <Button
             variant="outline"
             render={<Link href={`/w/${run.workflowId}`} />}
@@ -144,8 +124,12 @@ export function RunDetail({
           >
             에디터에서 열기
           </Button>
-        </div>
-      </header>
+        }
+      />
+      {/* 좁은 화면에서도 사라지지 않도록 머리글 아래 한 줄로 둔다. */}
+      <p className="border-b border-border-subtle bg-surface px-4 py-2 text-xs text-muted-foreground">
+        {summary.join(' · ')}
+      </p>
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         <div className="h-[50vh] min-w-0 md:h-auto md:flex-1">
           <ReactFlowProvider>
@@ -169,19 +153,11 @@ export function RunDetail({
         </div>
         <aside className="flex min-h-0 w-full flex-col border-t border-border-subtle bg-surface md:w-80 md:border-t-0 md:border-l">
           {p.error && (
-            <div className="border-b border-border-subtle p-4 text-sm text-danger-text">
-              <p>
-                <span aria-hidden>! </span>
-                {p.error.message}
-              </p>
-              {p.error.issues && (
-                <ul className="mt-1 list-disc pl-4 text-xs">
-                  {p.error.issues.map((i) => (
-                    <li key={i.message}>{i.message}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <InlineError
+              className="border-b border-border-subtle p-4"
+              message={p.error.message}
+              issues={p.error.issues}
+            />
           )}
           <RunTimeline
             graph={run.graph}

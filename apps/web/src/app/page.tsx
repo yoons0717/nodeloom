@@ -1,13 +1,18 @@
 import { isValidCron, nextCronRuns } from '@nodeloom/core';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/ui/page-header';
 import {
   describeSchedule,
   parseSchedule,
 } from '@/features/editor/settings/schedule';
 import { LogoutButton } from '@/features/auth/logout-button';
 import { DeleteWorkflowButton } from '@/features/workflows/delete-workflow-button';
-import { formatDateTime, TIMEZONE } from '@/features/workflows/format';
+import {
+  formatDateTime,
+  formatRunTime,
+  TIMEZONE,
+} from '@/features/workflows/format';
 import { NewWorkflowButton } from '@/features/workflows/new-workflow-button';
 import { meSchema, workflowListSchema } from '@/features/workflows/schemas';
 import { serverApi } from '@/lib/server-api';
@@ -20,48 +25,56 @@ export default async function WorkflowListPage() {
   ]);
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10">
-      <header className="flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-bold">Nodeloom</h1>
-        {me.role === 'demo' && (
-          <Badge>데모 · 로그인 없이 누구나 편집할 수 있습니다</Badge>
-        )}
-        <div className="ml-auto flex items-center gap-2">
-          {me.role === 'admin' && <LogoutButton />}
-          <NewWorkflowButton />
-        </div>
-      </header>
-
-      {workflows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-border px-6 py-12 text-center text-sm text-muted-foreground">
-          아직 워크플로우가 없습니다. 새로 만들기를 눌러 시작하세요.
-        </p>
-      ) : (
-        <ul className="flex flex-col divide-y divide-border-subtle rounded-lg border border-border bg-surface">
-          {workflows.map((w) => (
-            <li
-              key={w.id}
-              className="flex flex-wrap items-center gap-3 px-4 py-3"
-            >
-              <Link
-                href={`/w/${w.id}`}
-                className="min-w-0 flex-1 truncate font-bold hover:text-primary"
+    <>
+      <PageHeader
+        title="Nodeloom"
+        status={
+          me.role === 'demo' && (
+            <Badge>데모 · 로그인 없이 누구나 편집할 수 있습니다</Badge>
+          )
+        }
+        actions={
+          <>
+            {me.role === 'admin' && <LogoutButton />}
+            <NewWorkflowButton />
+          </>
+        }
+      />
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
+        {workflows.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-border px-6 py-12 text-center text-sm text-muted-foreground">
+            아직 워크플로우가 없습니다. 새로 만들기를 눌러 시작하세요.
+          </p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-border-subtle rounded-lg border border-border bg-surface">
+            {workflows.map((w) => (
+              <li
+                key={w.id}
+                className="flex flex-wrap items-center gap-3 px-4 py-3"
               >
-                {w.name}
-              </Link>
-              <ScheduleText cron={w.cron} demo={me.role === 'demo'} />
-              <span className="text-xs text-muted-foreground">
-                노드 {w.nodeCount}개
-              </span>
-              <span className="text-xs text-muted-foreground">
-                마지막 수정 {formatDateTime(w.updatedAt)}
-              </span>
-              <DeleteWorkflowButton id={w.id} name={w.name} />
-            </li>
-          ))}
-        </ul>
-      )}
-    </main>
+                <Link
+                  href={`/w/${w.id}`}
+                  className="min-w-0 flex-1 truncate font-bold hover:text-primary"
+                >
+                  {w.name}
+                </Link>
+                <ScheduleText cron={w.cron} demo={me.role === 'demo'} />
+                <span className="text-xs text-muted-foreground">
+                  노드 {w.nodeCount}개
+                </span>
+                <span
+                  className="text-xs text-muted-foreground"
+                  title={formatDateTime(w.updatedAt)}
+                >
+                  마지막 수정 {formatRunTime(w.updatedAt)}
+                </span>
+                <DeleteWorkflowButton id={w.id} name={w.name} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </main>
+    </>
   );
 }
 
@@ -74,7 +87,7 @@ function ScheduleText({ cron, demo }: { cron: string | null; demo: boolean }) {
   return (
     <span className="text-xs text-muted-foreground">
       {describeSchedule(parseSchedule(cron))}
-      {next && ` · 다음 ${formatDateTime(next.toISOString())}`}
+      {next && ` · 다음 ${formatRunTime(next.toISOString())}`}
     </span>
   );
 }

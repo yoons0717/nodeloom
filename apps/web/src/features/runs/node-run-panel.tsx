@@ -3,6 +3,7 @@
 import type { GraphNode } from '@nodeloom/core';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { InlineError } from '@/components/ui/inline-error';
 import { ApiError, clientApi } from '@/lib/client-api';
 import { cn } from '@/lib/utils';
 import { NODE_RUN_LABEL } from './format';
@@ -44,12 +45,7 @@ export function NodeRunPanel({
       </p>
     );
   if (attempts.error)
-    return (
-      <p className="p-4 text-sm text-danger-text">
-        <span aria-hidden>! </span>
-        {attempts.error.message}
-      </p>
-    );
+    return <InlineError className="p-4" message={attempts.error.message} />;
   if (!attempts.data)
     return <p className="p-4 text-sm text-muted-foreground">불러오는 중…</p>;
 
@@ -86,12 +82,7 @@ export function NodeRunPanel({
           ))}
         </div>
       )}
-      {attempt.error && (
-        <p className="text-sm text-danger-text">
-          <span aria-hidden>! </span>
-          {attempt.error.message}
-        </p>
-      )}
+      {attempt.error && <InlineError message={attempt.error.message} />}
       <div className="flex items-center gap-2">
         <div
           role="tablist"

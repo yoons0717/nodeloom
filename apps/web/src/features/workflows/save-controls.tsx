@@ -113,18 +113,23 @@ export function SaveControls({
 
   return (
     <>
-      <Link
-        href="/"
-        aria-label="목록으로"
-        title="목록"
-        className="-ml-2 flex size-9 shrink-0 items-center justify-center rounded-md text-base text-muted-foreground hover:bg-raised-hover hover:text-foreground"
-        // 앱 안 이동은 beforeunload가 불리지 않아서 직접 묻는다.
-        onClick={(e) => {
-          if (dirty && !window.confirm(LEAVE_MESSAGE)) e.preventDefault();
-        }}
+      {/* 뒤로 가기는 글자가 있는 ghost 버튼 하나로 통일한다(M6 6-f). */}
+      <Button
+        variant="ghost"
+        className="-ml-2 shrink-0"
+        nativeButton={false}
+        render={
+          <Link
+            href="/"
+            // 앱 안 이동은 beforeunload가 불리지 않아서 직접 묻는다.
+            onClick={(e) => {
+              if (dirty && !window.confirm(LEAVE_MESSAGE)) e.preventDefault();
+            }}
+          />
+        }
       >
-        ←
-      </Link>
+        ← 목록
+      </Button>
       {/* 글자처럼 보이다가 누르면 편집한다(M6 작은 결정 ⑩). */}
       <Input
         aria-label="워크플로우 이름"
