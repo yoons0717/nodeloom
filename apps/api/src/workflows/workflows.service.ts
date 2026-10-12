@@ -21,8 +21,17 @@ export class WorkflowsService {
   ) {}
 
   async list() {
+    // 사이드바의 상태 점과 실행 수를 위해 마지막 실행과 실행 수를 함께(M6 6-g).
     const rows = await this.prisma.workflow.findMany({
       orderBy: { updatedAt: 'desc' },
+      include: {
+        runs: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { status: true, finishedAt: true },
+        },
+        _count: { select: { runs: true } },
+      },
     });
     return rows.map((w) => {
       const graph = toGraph(w.graph);
@@ -33,6 +42,8 @@ export class WorkflowsService {
         nodeCount: graph.nodes.length,
         // 목록에 스케줄을 보여 준다. 틀린 cron도 그대로 내보내 화면이 오류로 표시한다.
         cron: typeof cron === 'string' ? cron : null,
+        lastRun: w.runs[0] ?? null,
+        runCount: w._count.runs,
         updatedAt: w.updatedAt,
       };
     });

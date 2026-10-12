@@ -5,6 +5,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 import { RunsService } from './runs.service.js';
 
@@ -24,6 +25,17 @@ export class RunsController {
   @Get('workflows/:id/runs')
   list(@Param('id', id) workflowId: string) {
     return this.runs.list(workflowId);
+  }
+
+  // runs/:id보다 먼저 둔다. 뒤에 두면 summary가 실행 id로 읽힌다.
+  @Get('runs/summary')
+  summary() {
+    return this.runs.summary();
+  }
+
+  @Get('runs')
+  allRuns(@Query('status') status?: string) {
+    return this.runs.allRuns(status);
   }
 
   @Get('runs/:id')

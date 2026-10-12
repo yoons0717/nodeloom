@@ -78,3 +78,16 @@ export const nodeAttemptsSchema = z.array(
     error: z.object({ message: z.string() }).nullable(),
   }),
 );
+
+// 모든 워크플로우의 실행(GET /runs). 행에 워크플로우 이름을 함께 보여 준다(M6 6-g).
+export const allRunsSchema = z.array(
+  runListSchema.element.extend({
+    workflow: z.object({ id: z.string(), name: z.string() }),
+  }),
+);
+export type AllRunsItem = z.output<typeof allRunsSchema>[number];
+
+export const runSummarySchema = z.object({
+  failedLast24h: z.number(),
+  running: z.number(),
+});

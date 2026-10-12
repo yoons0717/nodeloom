@@ -64,6 +64,49 @@ export class RunsService {
     });
   }
 
+  // 모든 워크플로우의 최근 50건(M6 6-g "모든 실행"). 상태로 거른다. 입출력·그래프는 넣지 않는다.
+  allRuns(filter: string | undefined) {
+    const status =
+      filter === 'failed'
+        ? { equals: 'FAILED' as const }
+        : filter === 'success'
+          ? { equals: 'SUCCESS' as const }
+          : filter === 'running'
+            ? { in: ['PENDING' as const, 'RUNNING' as const] }
+            : undefined;
+    return this.prisma.run.findMany({
+      where: status ? { status } : undefined,
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: {
+        id: true,
+        status: true,
+        kind: true,
+        error: true,
+        createdAt: true,
+        startedAt: true,
+        finishedAt: true,
+        workflow: { select: { id: true, name: true } },
+      },
+    });
+  }
+
+  // 사이드바의 실패 배지와 다시 불러올지 판단에 쓰는 요약(M6 6-g).
+  async summary() {
+    const [failedLast24h, running] = await Promise.all([
+      this.prisma.run.count({
+        where: {
+          status: 'FAILED',
+          finishedAt: { gte: new Date(Date.now() - 24 * 60 * 60_000) },
+        },
+      }),
+      this.prisma.run.count({
+        where: { status: { in: ['PENDING', 'RUNNING'] } },
+      }),
+    ]);
+    return { failedLast24h, running };
+  }
+
   // 상세 화면은 실행 당시 그래프(스냅샷)를 그린다(DECISIONS B-9). 입출력은 노드를 고를 때 따로 받는다(B-1).
   async detail(runId: string) {
     const [run, status] = await Promise.all([

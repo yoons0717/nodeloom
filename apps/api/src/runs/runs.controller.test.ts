@@ -204,5 +204,86 @@ describe('실행 API', () => {
       ]);
       await agent.get(`/runs/${runId}/nodes/ghost`).expect(404);
     });
+    it('워크플로우 목록에 마지막 실행과 실행 수를 함께 돌려준다', async () => {
+      const id = await create();
+      const none = await create();
+      await run(id);
+      await run(id);
+      const rows = (await agent.get('/workflows').expect(200)).body as {
+        id: string;
+        lastRun: { status: string } | null;
+        runCount: number;
+      }[];
+      expect(rows.find((w) => w.id === id)).toMatchObject({
+        lastRun: { status: 'SUCCESS' },
+        runCount: 2,
+      });
+      expect(rows.find((w) => w.id === none)).toMatchObject({
+        lastRun: null,
+        runCount: 0,
+      });
+    });
+
+    it('모든 실행 목록은 워크플로우 이름과 함께 최근 순이고, 상태로 거른다', async () => {
+      const ok = await create();
+      await agent
+        .put(`/workflows/${ok}`)
+        .send({ name: '성공 흐름', graph })
+        .expect(204);
+      const okRun = await run(ok);
+      const bad = await create();
+      await agent
+        .put(`/workflows/${bad}`)
+        .send({ name: '실패 흐름', graph })
+        .expect(204);
+      const badRun = await prisma.run.create({
+        data: {
+          workflowId: bad,
+          kind: 'SCHEDULE',
+          status: 'FAILED',
+          graph: {},
+          triggerInput: {},
+          finishedAt: new Date(),
+        },
+      });
+
+      const all = (await agent.get('/runs').expect(200)).body as {
+        id: string;
+        workflow: { id: string; name: string };
+      }[];
+      expect(all.slice(0, 2)).toMatchObject([
+        { id: badRun.id, workflow: { id: bad, name: '실패 흐름' } },
+        { id: okRun, workflow: { id: ok, name: '성공 흐름' } },
+      ]);
+      const failed = (await agent.get('/runs?status=failed').expect(200))
+        .body as { status: string }[];
+      expect(failed.every((r) => r.status === 'FAILED')).toBe(true);
+      expect(JSON.stringify(all)).not.toContain('graph');
+    });
+
+    it('요약은 24시간 안에 실패한 수와 아직 끝나지 않은 수를 돌려준다', async () => {
+      type Summary = { failedLast24h: number; running: number };
+      const before = (await agent.get('/runs/summary').expect(200))
+        .body as Summary;
+      const id = await create();
+      const failed = (finishedAt: Date) =>
+        prisma.run.create({
+          data: {
+            workflowId: id,
+            kind: 'MANUAL',
+            status: 'FAILED',
+            graph: {},
+            triggerInput: {},
+            finishedAt,
+          },
+        });
+      await failed(new Date());
+      await failed(new Date(Date.now() - 25 * 60 * 60_000));
+      await markRunning(id);
+      const after = (await agent.get('/runs/summary').expect(200))
+        .body as Summary;
+      expect(after.failedLast24h - before.failedLast24h).toBe(1);
+      expect(after.running - before.running).toBe(1);
+    });
   });
 });
