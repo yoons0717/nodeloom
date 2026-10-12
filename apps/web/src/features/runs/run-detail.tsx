@@ -22,6 +22,7 @@ import {
   RUN_STATUS_TONE,
 } from './format';
 import { NodeRunPanel } from './node-run-panel';
+import { RunTimeline } from './run-timeline';
 import { type RunDetail as Run, runProgressSchema } from './schemas';
 
 const nodeTypes = {
@@ -166,9 +167,9 @@ export function RunDetail({
             </ReactFlow>
           </ReactFlowProvider>
         </div>
-        <aside className="flex w-full flex-col gap-4 border-t border-border-subtle bg-surface p-4 md:w-80 md:overflow-y-auto md:border-t-0 md:border-l">
+        <aside className="flex min-h-0 w-full flex-col border-t border-border-subtle bg-surface md:w-80 md:border-t-0 md:border-l">
           {p.error && (
-            <div className="text-sm text-danger-text">
+            <div className="border-b border-border-subtle p-4 text-sm text-danger-text">
               <p>
                 <span aria-hidden>! </span>
                 {p.error.message}
@@ -182,14 +183,21 @@ export function RunDetail({
               )}
             </div>
           )}
+          <RunTimeline
+            graph={run.graph}
+            nodes={p.nodes}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
           {selected ? (
             <NodeRunPanel
+              key={selected.id}
               runId={run.id}
               node={selected}
               status={nodeRuns.get(selected.id)?.status}
             />
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="p-4 text-sm text-muted-foreground">
               노드를 고르면 받은 값과 내보낸 값을 볼 수 있습니다.
             </p>
           )}
