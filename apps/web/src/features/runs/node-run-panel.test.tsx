@@ -60,6 +60,15 @@ describe('NodeRunPanel', () => {
     expect(screen.getByText(`$nodes.${node.key}`)).toBeTruthy();
     fireEvent.click(screen.getByText('true'));
     expect(screen.getByText(`$nodes.${node.key}.rain = true`)).toBeTruthy();
+    const writeText = vi.fn(() => Promise.resolve());
+    Object.assign(navigator, { clipboard: { writeText } });
+    fireEvent.click(screen.getByRole('button', { name: '식 복사' }));
+    expect(writeText).toHaveBeenCalledWith(`$nodes.${node.key}.rain`);
+
+    // 실패한 시도에는 ! 글리프
+    expect(
+      screen.getByRole('button', { name: '1번째 시도 · 실패' }).textContent,
+    ).toBe('!1번째 시도');
 
     fireEvent.click(screen.getByRole('button', { name: '1번째 시도 · 실패' }));
     expect(screen.getByText('응답 코드 503')).toBeTruthy();
