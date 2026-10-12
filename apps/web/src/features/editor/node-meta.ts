@@ -6,7 +6,13 @@ type NodeMeta = {
   label: string;
   // 새 노드의 제목 기본값. 종류 이름과 겹치지 않게 한글로 쓴다.
   defaultTitle: string;
+  // 노드 목록의 짧은 설명
   description: string;
+  // 설명에는 없지만 노드 검색에서 찾히게 할 낱말
+  keywords: string;
+  // 노드 목록 도움말(M6 6-i): 하는 일, 다음 노드가 받는 값
+  does: string;
+  passes: string;
   glyph: string;
   // 글리프 칩의 바탕(-soft)과 글자(-text). Tailwind가 찾을 수 있게 클래스 이름을 그대로 적는다.
   chipClass: string;
@@ -20,7 +26,10 @@ export const NODE_META: Record<NodeType, NodeMeta> = {
   trigger: {
     label: 'Trigger',
     defaultTitle: '시작',
-    description: '흐름의 시작. 수동·스케줄',
+    description: '흐름의 시작',
+    keywords: '수동 스케줄',
+    does: '흐름의 시작. 직접 실행하거나 정해진 시각에 실행',
+    passes: '직접 실행: 테스트 입력 JSON · 스케줄: {}',
     glyph: '▶',
     chipClass: 'bg-node-trigger-soft text-node-trigger-text',
     smallGlyph: true,
@@ -28,14 +37,20 @@ export const NODE_META: Record<NodeType, NodeMeta> = {
   http: {
     label: 'HTTP',
     defaultTitle: 'HTTP 요청',
-    description: 'API 호출, 응답 받기',
+    description: '요청 보내고 응답 받기',
+    keywords: 'API 호출',
+    does: '주소로 요청을 보내고 응답을 받음',
+    passes: '응답 본문',
     glyph: '⇄',
     chipClass: 'bg-node-http-soft text-node-http-text',
   },
   transform: {
     label: 'Transform',
     defaultTitle: '데이터 가공',
-    description: 'JSONata로 데이터 가공',
+    description: '식으로 데이터 만들기',
+    keywords: 'JSONata 가공',
+    does: '식으로 데이터를 새로 만듦',
+    passes: '식의 결과',
     glyph: 'fx',
     chipClass: 'bg-node-transform-soft text-node-transform-text',
     glyphClass: 'font-mono font-bold tracking-[-0.04em]',
@@ -43,7 +58,10 @@ export const NODE_META: Record<NodeType, NodeMeta> = {
   condition: {
     label: 'Condition',
     defaultTitle: '조건 분기',
-    description: '참·거짓에 따라 다른 길로',
+    description: '참/거짓으로 나누기',
+    keywords: '분기',
+    does: '식이 참이면 참 포트로, 거짓이면 거짓 포트로',
+    passes: '받은 입력 그대로',
     glyph: '◇',
     chipClass: 'bg-node-condition-soft text-node-condition-text',
   },

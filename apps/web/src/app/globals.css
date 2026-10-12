@@ -16,6 +16,11 @@
   --raised: #1b222b;
   --raised-hover: #232b36;
   --overlay: #28313d;
+  /* 도움말 팝오버(M6 6-i): 바탕, 테두리, 규칙 표 줄무늬, 열린 노드 목록 항목 */
+  --help: #1f262f;
+  --help-border: #3a4452;
+  --help-stripe: rgb(255 255 255 / 0.025);
+  --raised-open: #1e252e;
   /* 드로어 뒤를 가리는 막 */
   --scrim: rgb(14 17 22 / 0.8);
   --grid: #252c36;
@@ -170,6 +175,11 @@
   --color-raised: var(--raised);
   --color-raised-hover: var(--raised-hover);
   --color-overlay: var(--overlay);
+  --color-help: var(--help);
+  --color-help-border: var(--help-border);
+  --color-help-stripe: var(--help-stripe);
+  --color-raised-open: var(--raised-open);
+  --shadow-help: 0 16px 40px rgb(0 0 0 / 0.55);
   --color-scrim: var(--scrim);
   --color-border-subtle: var(--border-subtle);
   --color-border: var(--border);

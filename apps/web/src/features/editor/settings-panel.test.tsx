@@ -36,7 +36,7 @@ describe('SettingsPanel', () => {
     expect(url.getAttribute('aria-invalid')).toBe('true');
     expect(screen.getByText('URL을 입력하세요')).toBeTruthy();
 
-    fireEvent.change(screen.getByLabelText('본문 JSONata'), {
+    fireEvent.change(screen.getByLabelText('본문'), {
       target: { value: '{ "a": 1' },
     });
     expect(screen.getByText(/^식 문법 오류: "}"가 빠졌습니다/)).toBeTruthy();

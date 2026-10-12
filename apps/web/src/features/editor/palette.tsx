@@ -3,6 +3,7 @@
 import { NODE_SPECS, type NodeType } from '@nodeloom/core';
 import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
+import { NodeHelp } from './help';
 import { NodeGlyph } from './node-glyph';
 import { DRAG_MIME, NODE_META } from './node-meta';
 
@@ -15,7 +16,7 @@ export function Palette() {
   const visible = TYPES.filter(
     (t) =>
       !q ||
-      `${t} ${NODE_META[t].label} ${NODE_META[t].description}`
+      `${t} ${NODE_META[t].label} ${NODE_META[t].description} ${NODE_META[t].keywords}`
         .toLowerCase()
         .includes(q),
   );
@@ -36,6 +37,7 @@ export function Palette() {
   return (
     <aside
       aria-label="노드 목록"
+      data-help-edge
       className="flex w-56 shrink-0 flex-col gap-3 border-r border-border-subtle bg-surface p-4"
     >
       <div className="relative">
@@ -53,22 +55,30 @@ export function Palette() {
       </div>
       <ul className="flex flex-col gap-1">
         {visible.map((type) => (
+          // (?)는 끌어다 놓는 영역 밖에 두어 누를 때 끌기가 시작되지 않게 한다(M6 6-i).
           <li
             key={type}
-            draggable
-            onDragStart={(e) => {
-              e.dataTransfer.setData(DRAG_MIME, type);
-              e.dataTransfer.effectAllowed = 'move';
-            }}
-            className="flex cursor-grab items-start gap-3 rounded-md p-2 hover:bg-raised active:cursor-grabbing"
+            className="flex items-start rounded-md p-2 hover:bg-raised has-data-popup-open:bg-raised-open"
           >
-            <NodeGlyph type={type} size="md" />
-            <div>
-              <div className="text-sm font-bold">{NODE_META[type].label}</div>
-              <div className="text-xs text-muted-foreground">
-                {NODE_META[type].description}
+            <div
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData(DRAG_MIME, type);
+                e.dataTransfer.effectAllowed = 'move';
+              }}
+              className="flex min-w-0 flex-1 cursor-grab items-start gap-2.5 active:cursor-grabbing"
+            >
+              <NodeGlyph type={type} size="md" />
+              <div className="min-w-0">
+                <div className="text-sm font-bold">{NODE_META[type].label}</div>
+                <div className="text-xs text-muted-foreground">
+                  {NODE_META[type].description}
+                </div>
               </div>
             </div>
+            <span className="-mt-0.5 -mr-1">
+              <NodeHelp type={type} />
+            </span>
           </li>
         ))}
         {visible.length === 0 && (

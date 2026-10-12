@@ -36,6 +36,7 @@ export function SettingsPanel() {
   return (
     <aside
       aria-label="노드 설정"
+      data-help-edge
       className="flex w-80 shrink-0 flex-col border-l border-border-subtle bg-surface"
     >
       {node ? (

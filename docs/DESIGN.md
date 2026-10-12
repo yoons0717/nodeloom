@@ -20,6 +20,8 @@
 | `--raised` | `#1B222B` | 노드 카드, 목록 항목, 버튼 |
 | `--raised-hover` | `#232B36` | 마우스를 올린 카드·버튼·목록 항목(어두운 테마라 밝아진다) |
 | `--overlay` | `#28313D` | 토스트, 팝오버, 툴팁, 선택 메뉴(그림자와 함께 띄운다) |
+| `--help` · `--help-border` | `#1F262F` · `#3A4452` | 도움말 팝오버 바탕과 테두리(그림자 `shadow-help` 0 16 40 55% 검정). 규칙 표 줄무늬는 `--help-stripe`(흰색 2.5%) |
+| `--raised-open` | `#1E252E` | 도움말이 열린 노드 목록 항목 |
 | `--grid` | `#252C36` | 캔버스 점 격자 |
 | `--border-subtle` | `#242C36` | 영역 사이 구분선 |
 | `--border` | `#303A47` | 카드 등 장식 경계 |
@@ -108,7 +110,8 @@
 | Button | 높이 36(sm 28, lg 44), 좌우 16, 모서리 6, 14px. **default**: 청록 바탕, 바탕색 글자, 700, hover `--accent-hover`. 화면당 하나. **outline**: `--border-control` 테두리, `--raised` 바탕, hover `--raised-hover`. **ghost**: 좌우 10, 13px, `--text-label`, hover `--raised-hover`. **destructive**: `--danger-soft` 바탕, `--danger-text` 글자. 비활성은 `--text-disabled` |
 | Badge | `tone` = neutral·running·success·warning·danger. 높이 22, 좌우 8, 글리프와 글자 사이 4, pill, 12px 500. 바탕은 각 `-soft`(neutral은 `--raised-hover`), 글자는 각 `-text`(running은 `--accent`, neutral은 `--text-label`). 글리프 ● ✓ ▲ !는 부품이 붙인다 |
 | Input·Textarea·Select | 높이 36, `--border-control` 1px, `--bg` 바탕, 좌우 12, 14px, 모서리 6. 포커스는 2px `--accent` + 3px `--accent-ring`, 오류는 2px `--danger`. 두꺼워진 테두리만큼 안쪽 여백을 1px 줄여 크기를 유지한다 |
-| Field | 라벨 12/16 500 `--text-label`, 라벨과 칸 사이 4, 칸 사이 16. 설명은 12px `--text-muted`, 오류는 12px `--danger-text`에 "! "를 붙인다. 칸이 여럿인 묶음(쿼리·헤더)은 `group`으로 같은 모양을 쓴다 |
+| Field | 라벨 12/16 500 `--text-label`, 라벨과 칸 사이 4, 칸 사이 16. 설명(hint)은 한 줄, 12px `--text-muted`, 늘 보인다. 오류는 설명 위에 따로 12px `--danger-text`에 "! "를 붙인다. 라벨 오른쪽 6px에 도움말 (?)를 둘 수 있다. 칸이 여럿인 묶음(쿼리·헤더)은 `group`으로 같은 모양을 쓴다 |
+| 도움말 팝오버 | `features/editor/help.tsx`. (?)는 16px 원(누르는 영역 24), 평소 `--border-control` 테두리·`--text-muted`, hover·열림은 `--accent` 바탕·`--bg` 글자. 누르면 열리고 바깥을 눌러도 닫히지 않는다(× 또는 Esc). (?)가 든 패널 바깥에 붙고 화살표가 (?) 높이를 가리킨다. 모서리 10, 머리 14px 700 + × 28. **식 도움말**(Transform·Condition 식, HTTP 본문): 폭 440, 높이 최대 640(남은 화면 높이까지), 노드별 설명 13/20 `--text-label`과 예시(`--bg` 바탕 고정폭 12/18) → "식에서 쓸 수 있는 것" 표(116 · 1fr · 1.15fr, 쓰는 법 `--accent` 고정폭, 줄무늬, 이 부분만 스크롤) → 실행 상세 안내 + JSONata 문서 링크. **노드 도움말**(노드 목록 항목): 폭 340, 글리프 20 + 이름, 하는 일 · 다음 노드가 받는 값, 아래에 여러 선이 들어올 때의 입력. (?)는 끌어다 놓는 영역 밖 |
 | 노드 카드 | 136×84 고정(Condition 136×108), 모서리 8, 안쪽 10/12, 줄 사이 4. 1줄: 글리프 칩 18px + 종류 이름 11px(실행 상세에서는 빼고 글리프만) + 오른쪽 상태, 2줄: 제목 13/20 700, 3줄: 설정 요약 고정폭 11px(Condition은 참·거짓 라벨). hover는 `--raised-hover` + `--border-control`, 선택은 2px `--accent` + 4px `--accent-ring`, 오류는 `--danger` 테두리와 "! n", 실행 중은 `--accent` 테두리와 막대, 성공은 기본 테두리와 "✓ 걸린 시간", 건너뜀은 점선·`--surface`·60% |
 | 포트 | 12px 원(`--bg` 바탕, 2px `--text-muted`), 누르는 영역 24px. hover는 `--text` 테두리 + `--text-ring`. 선을 끄는 동안 입력 포트는 14px `--accent` + `--accent-glow`, 연결할 수 없는 포트 위에서는 `--danger` 테두리 |
 | 상단 바(에디터) | 높이 56, 좌우 16, 한 줄. 왼쪽 이름(글자처럼 보이다 눌러서 편집) · 저장 상태 칩, 오른쪽 문제 배지 · 실행(default). 저장하지 않은 변경이 있으면 앱 안 링크로 나가기 전에 묻는다 |

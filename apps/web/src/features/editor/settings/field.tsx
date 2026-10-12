@@ -30,63 +30,57 @@ export type FieldControlProps = {
 
 // 라벨, 입력 부품, 오류 문구를 묶는다. 입력 부품에 붙일 id와 오류 상태(aria-invalid)를 넘겨준다.
 // group: 입력 부품이 여럿인 묶음(쿼리·헤더). 라벨은 묶음의 이름이 되고, 묶음에 aria-labelledby={`${id}-label`}을 붙인다.
-// labelNote: 라벨 뒤에 흐리게 붙는 말(예: JSONata). ok: 문제가 없을 때 보여 줄 확인 문구(예: 식이 올바릅니다).
+// help: 라벨 오른쪽의 도움말 (?)(M6 6-i). hint는 늘 보이고, 오류는 그 위에 따로 보인다.
 export function Field({
   label,
-  labelNote,
+  help,
   error,
   hint,
-  ok,
   group = false,
   children,
 }: {
   label: string;
-  labelNote?: string;
+  help?: ReactNode;
   error?: string;
   hint?: string;
-  ok?: string;
   group?: boolean;
   children: (control: FieldControlProps) => ReactNode;
 }) {
   const id = useId();
-  const messageId = `${id}-message`;
-  const message = error ?? ok ?? hint;
-  const labelText = (
-    <>
-      {label}
-      {labelNote && (
-        <span className="font-normal text-muted-foreground"> {labelNote}</span>
-      )}
-    </>
-  );
+  const errorId = `${id}-error`;
+  const hintId = `${id}-hint`;
+  const describedBy = [error && errorId, hint && hintId]
+    .filter(Boolean)
+    .join(' ');
   return (
     <div className="flex flex-col gap-1">
-      {group ? (
-        <span id={`${id}-label`} className="text-xs font-medium text-label">
-          {labelText}
-        </span>
-      ) : (
-        <label htmlFor={id} className="text-xs font-medium text-label">
-          {labelText}
-        </label>
-      )}
+      <div className="flex items-center gap-1.5">
+        {group ? (
+          <span id={`${id}-label`} className="text-xs font-medium text-label">
+            {label}
+          </span>
+        ) : (
+          <label htmlFor={id} className="text-xs font-medium text-label">
+            {label}
+          </label>
+        )}
+        {help}
+      </div>
       {children({
         id,
         'aria-invalid': error ? true : undefined,
-        'aria-describedby': message ? messageId : undefined,
+        'aria-describedby': describedBy || undefined,
       })}
-      {message && (
-        <p
-          id={messageId}
-          className={`text-xs ${error ? 'text-danger-text' : ok ? 'text-success-text' : 'text-muted-foreground'}`}
-        >
+      {error && (
+        <p id={errorId} className="text-xs text-danger-text">
           {/* 색 없이도 알 수 있게 글리프를 붙인다. */}
-          {error ? (
-            <span aria-hidden>! </span>
-          ) : (
-            ok && <span aria-hidden>✓ </span>
-          )}
-          {message}
+          <span aria-hidden>! </span>
+          {error}
+        </p>
+      )}
+      {hint && (
+        <p id={hintId} className="text-xs text-muted-foreground">
+          {hint}
         </p>
       )}
     </div>

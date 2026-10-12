@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { ExpressionHelp, HelpCode } from '../help';
 import { KeyValueInput } from './draft-fields';
 import { configDefault, configValue, Field, type SettingsProps } from './field';
 
@@ -114,10 +115,35 @@ export function HttpSettings({ node, errors, set }: SettingsProps) {
       </Field>
       <Field
         label="본문"
-        labelNote="JSONata"
+        help={
+          <ExpressionHelp label="본문" title="HTTP에서 식 쓰기">
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1">
+                <p>
+                  <b className="text-foreground">URL·쿼리·헤더</b> 그냥
+                  글자예요. <span className="whitespace-nowrap">{'{{ }}'}</span>{' '}
+                  안만 식으로 계산해요.
+                </p>
+                <HelpCode>{'https://api.example.com/users/{{ id }}'}</HelpCode>
+              </div>
+              <div className="flex flex-col gap-1">
+                <p>
+                  <b className="text-foreground">본문</b> 칸 전체가 식이에요.
+                  결과 객체가 JSON으로 보내져요. 비워 두면 본문이 없어요.
+                </p>
+                <HelpCode>{'{ "content": "알림: " & text }'}</HelpCode>
+              </div>
+            </div>
+            <p>
+              이 노드의 출력은 응답 본문이에요. &quot;2xx가 아니어도
+              계속&quot;을 켜면{' '}
+              <span className="whitespace-nowrap">{'{ status, body }'}</span>{' '}
+              형태가 돼요.
+            </p>
+          </ExpressionHelp>
+        }
         hint="객체를 만드는 식. 비워 두면 본문 없이 보냅니다"
         error={errors.body}
-        ok={text('body').trim() ? '식이 올바릅니다' : undefined}
       >
         {(control) => (
           <Textarea

@@ -84,13 +84,13 @@ test('Condition이 고른 갈래만 실행되고, 상세 화면에서 고른 쪽
   await connect(page, 'condition_1.false', 'transform_3');
 
   await selectNode(page, 'transform_1');
-  await page.getByLabel(/변환 식/).fill('{ "n": 5 }');
+  await page.getByLabel('변환 식', { exact: true }).fill('{ "n": 5 }');
   await selectNode(page, 'condition_1');
-  await page.getByLabel(/조건 식/).fill('n > 3');
+  await page.getByLabel('조건 식', { exact: true }).fill('n > 3');
   await selectNode(page, 'transform_2');
-  await page.getByLabel(/변환 식/).fill('"크다"');
+  await page.getByLabel('변환 식', { exact: true }).fill('"크다"');
   await selectNode(page, 'transform_3');
-  await page.getByLabel(/변환 식/).fill('"작다"');
+  await page.getByLabel('변환 식', { exact: true }).fill('"작다"');
   await save(page);
 
   await page.getByRole('button', { name: '실행', exact: true }).click();
