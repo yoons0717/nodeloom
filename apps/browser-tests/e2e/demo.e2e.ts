@@ -16,9 +16,7 @@ test('데모 모드에서는 로그인 없이 편집하고 저장할 수 있다'
 }) => {
   await page.goto('/login');
   await expect(page).toHaveURL(/\/$/);
-  await expect(
-    page.getByText('데모 · 로그인 없이 누구나 편집할 수 있습니다'),
-  ).toBeVisible();
+  await expect(page.getByText('데모', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '로그아웃' })).toHaveCount(0);
 
   await page.getByRole('button', { name: '새로 만들기' }).click();

@@ -1,6 +1,5 @@
 import { isValidCron, nextCronRuns } from '@nodeloom/core';
 import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/ui/page-header';
 import {
   describeSchedule,
@@ -8,6 +7,7 @@ import {
 } from '@/features/editor/settings/schedule';
 import { LogoutButton } from '@/features/auth/logout-button';
 import { DeleteWorkflowButton } from '@/features/workflows/delete-workflow-button';
+import { DemoBadge } from '@/features/workflows/demo-badge';
 import {
   formatDateTime,
   formatRunTime,
@@ -28,11 +28,7 @@ export default async function WorkflowListPage() {
     <>
       <PageHeader
         title="Nodeloom"
-        status={
-          me.role === 'demo' && (
-            <Badge>데모 · 로그인 없이 누구나 편집할 수 있습니다</Badge>
-          )
-        }
+        status={me.role === 'demo' && <DemoBadge />}
         actions={
           <>
             {me.role === 'admin' && <LogoutButton />}
@@ -46,29 +42,39 @@ export default async function WorkflowListPage() {
             아직 워크플로우가 없습니다. 새로 만들기를 눌러 시작하세요.
           </p>
         ) : (
-          <ul className="flex flex-col divide-y divide-border-subtle rounded-lg border border-border bg-surface">
+          // 열을 행끼리 맞추려고 목록이 grid를 갖고 행은 subgrid로 따른다. md 미만에서는 이름 아래로 접는다.
+          <ul className="flex flex-col divide-y divide-border-subtle rounded-lg border border-border bg-surface md:grid md:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto]">
             {workflows.map((w) => (
               <li
                 key={w.id}
-                className="flex flex-wrap items-center gap-3 px-4 py-3"
+                className="group relative flex flex-col gap-1 px-4 py-3 hover:bg-raised md:col-span-5 md:grid md:grid-cols-subgrid md:items-center md:gap-x-4"
               >
+                {/* 행 전체를 누를 수 있게 링크가 행을 덮는다. 삭제 버튼만 그 위에 둔다. */}
                 <Link
                   href={`/w/${w.id}`}
-                  className="min-w-0 flex-1 truncate font-bold hover:text-primary"
+                  className="truncate font-bold after:absolute after:inset-0 after:rounded-[inherit] focus-visible:outline-none focus-visible:after:ring-3 focus-visible:after:ring-accent-ring"
                 >
                   {w.name}
                 </Link>
-                <ScheduleText cron={w.cron} demo={me.role === 'demo'} />
-                <span className="text-xs text-muted-foreground">
-                  노드 {w.nodeCount}개
-                </span>
-                <span
-                  className="text-xs text-muted-foreground"
-                  title={formatDateTime(w.updatedAt)}
-                >
-                  마지막 수정 {formatRunTime(w.updatedAt)}
-                </span>
-                <DeleteWorkflowButton id={w.id} name={w.name} />
+                {/* TODO: 마지막 실행 상태는 목록 API에 없어서 보여 주지 않는다(M6 6-f). */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 md:contents">
+                  <span className="md:text-right">
+                    <ScheduleText cron={w.cron} demo={me.role === 'demo'} />
+                  </span>
+                  <span className="text-xs text-muted-foreground md:text-right">
+                    노드 {w.nodeCount}개
+                  </span>
+                  <span
+                    className="text-xs text-muted-foreground md:text-right"
+                    title={formatDateTime(w.updatedAt)}
+                  >
+                    {formatRunTime(w.updatedAt)} 수정
+                  </span>
+                </div>
+                {/* 넓은 화면에서는 마우스를 올리거나 포커스가 있을 때만 보인다. 터치 화면(좁은 화면)에서는 늘 보인다. */}
+                <div className="relative z-10 self-start md:self-auto md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 md:has-[[data-confirming]]:opacity-100">
+                  <DeleteWorkflowButton id={w.id} name={w.name} />
+                </div>
               </li>
             ))}
           </ul>
