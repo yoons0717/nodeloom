@@ -5,6 +5,7 @@ import type { Graph } from '@nodeloom/core';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { MobileNavButton } from '@/components/app-sidebar/sidebar-shell';
 import { Input } from '@/components/ui/input';
+import { InfoTip } from '@/components/ui/info-tip';
 import { useEditorStore } from '@/features/editor/store-context';
 import { ApiError, clientApi } from '@/lib/client-api';
 
@@ -23,10 +24,13 @@ export function SaveControls({
   initialName,
   actions,
   after,
+  onDirtyChange,
 }: {
   id: string;
   initialName: string;
   actions?: ReactNode;
+  // 저장하지 않은 변경이 있는지. 좁아져도 에디터를 내리지 않을지 정할 때 쓴다(RESPONSIVE R8).
+  onDirtyChange?: (dirty: boolean) => void;
   after?: (ensureSaved: () => Promise<boolean>) => ReactNode;
 }) {
   const graph = useEditorStore((s) => s.graph);
@@ -51,6 +55,7 @@ export function SaveControls({
         ? '이름은 100자까지 쓸 수 있습니다'
         : undefined;
   const dirty = graphChanged || trimmed !== saved.name;
+  useEffect(() => onDirtyChange?.(dirty), [dirty, onDirtyChange]);
 
   const save = useMutation({
     mutationFn: (body: Body) =>
@@ -200,11 +205,13 @@ function SaveStatus({
     );
   if (error)
     return (
-      <span title={error} className={`${CHIP} bg-danger-soft text-danger-text`}>
+      <span className={`${CHIP} bg-danger-soft text-danger-text`}>
         <span aria-hidden>!</span>
-        <span role="status" className="-ml-1">
-          저장 실패<span className="sr-only"> · {error}</span>
-        </span>
+        <InfoTip content={error}>
+          <span role="status" tabIndex={0} className="-ml-1">
+            저장 실패<span className="sr-only"> · {error}</span>
+          </span>
+        </InfoTip>
         <button
           type="button"
           onClick={onSave}

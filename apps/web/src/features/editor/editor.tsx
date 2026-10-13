@@ -6,6 +6,7 @@ import { Profiler, type ReactNode } from 'react';
 import '@xyflow/react/dist/style.css';
 import { Badge } from '@/components/ui/badge';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { InfoTip } from '@/components/ui/info-tip';
 import { onEditorRender } from './bench';
 import { Canvas } from './canvas';
 import { getGraphIssues } from './graph-issues';
@@ -80,19 +81,21 @@ function TopBar({ toolbar }: { toolbar?: ReactNode }) {
   );
 }
 
-// 특정 노드에 붙지 않는 문제(예: Trigger 개수)의 개수. 마우스를 올리면 문구를 보여 준다.
+// 특정 노드에 붙지 않는 문제(예: Trigger 개수)의 개수. 올리거나 포커스하거나 누르면 문구를 보여 준다.
 export function GraphIssueBadge() {
   // 셀렉터가 매번 새 배열을 돌려주면 Zustand가 계속 바뀐 것으로 보고 무한히 다시 그린다. 그래프만 구독하고 계산은 밖에서 한다.
   const graph = useEditorStore((s) => s.graph);
   const issues = getGraphIssues(graph).graphLevel;
   if (issues.length === 0) return null;
   return (
-    <Badge
-      tone="danger"
-      title={issues.map((i) => i.message).join('\n')}
-      aria-label={`문제 ${issues.length}개: ${issues.map((i) => i.message).join(', ')}`}
-    >
-      문제 {issues.length}
-    </Badge>
+    <InfoTip content={issues.map((i) => i.message).join('\n')}>
+      <Badge
+        tone="danger"
+        tabIndex={0}
+        aria-label={`문제 ${issues.length}개: ${issues.map((i) => i.message).join(', ')}`}
+      >
+        문제 {issues.length}
+      </Badge>
+    </InfoTip>
   );
 }

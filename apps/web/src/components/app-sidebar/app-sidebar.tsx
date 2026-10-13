@@ -59,11 +59,11 @@ export function locate(pathname: string): {
 const FOCUS =
   'outline-none focus-visible:ring-3 focus-visible:ring-accent-ring';
 const ITEM = cn(
-  'flex h-8 min-w-0 items-center gap-2 rounded-md px-2 text-body-sm text-label hover:bg-raised-hover hover:text-foreground',
+  'flex h-8 min-w-0 items-center gap-2 rounded-md px-2 text-body-sm text-label hover:bg-raised-hover hover:text-foreground pointer-coarse:h-11',
   FOCUS,
 );
 const ICON_ITEM = cn(
-  'flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-raised-hover hover:text-foreground',
+  'flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-raised-hover hover:text-foreground pointer-coarse:size-11',
   FOCUS,
 );
 const ACTIVE =
@@ -274,7 +274,7 @@ export function AppSidebar({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className={cn(
-                'h-8 w-full rounded-md border border-border-control bg-bg pr-10 pl-8 text-body-sm placeholder:text-muted-foreground',
+                'h-8 w-full rounded-md border border-border-control bg-bg pr-10 pl-8 text-body-sm placeholder:text-muted-foreground pointer-coarse:h-11 pointer-coarse:text-base',
                 FOCUS,
               )}
             />

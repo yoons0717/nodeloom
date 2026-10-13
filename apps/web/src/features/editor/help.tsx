@@ -68,7 +68,7 @@ function HelpPopover({
       <Popover.Trigger
         ref={trigger}
         aria-label={`${label} 도움말`}
-        className="group -my-1 flex size-6 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-accent-ring"
+        className="group relative -my-1 flex size-6 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-accent-ring pointer-coarse:after:absolute pointer-coarse:after:-inset-2.5"
       >
         <span
           aria-hidden

@@ -11,7 +11,7 @@ import {
 import { useEditorStore } from './store-context';
 
 const BUTTON =
-  'flex h-full w-9 items-center justify-center text-base hover:bg-raised-hover';
+  'flex h-full w-9 items-center justify-center text-base hover:bg-raised-hover pointer-coarse:w-11';
 
 // 캔버스 왼쪽 아래 확대·축소 도구(데모 기준). 배율만 구독하므로 움직일 때 이 부품만 다시 그린다.
 // leading: 확대·축소 앞에 둘 도구(에디터의 되돌리기·다시 하기, M6 6-h).
@@ -21,7 +21,7 @@ export function CanvasControls({ leading }: { leading?: ReactNode }) {
   return (
     <Panel
       position="bottom-left"
-      className="flex h-9 items-center overflow-hidden rounded-md border border-border bg-surface"
+      className="flex h-9 items-center overflow-hidden rounded-md border border-border bg-surface pointer-coarse:h-11 pointer-coarse:rounded-lg"
     >
       {leading && (
         <>

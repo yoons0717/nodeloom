@@ -132,7 +132,7 @@ function Entry({
     <div style={indent}>
       <button
         type="button"
-        className={`rounded-sm text-left hover:bg-raised-hover ${isSelected ? 'bg-accent-soft' : ''}`}
+        className={`rounded-sm text-left hover:bg-raised-hover pointer-coarse:py-1 ${isSelected ? 'bg-accent-soft' : ''}`}
         onClick={() => onSelect?.(path, value)}
       >
         {label}

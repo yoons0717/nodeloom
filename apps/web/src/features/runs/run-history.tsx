@@ -50,7 +50,7 @@ export function RunHistory({
               }
               aria-current={on ? 'page' : undefined}
               className={cn(
-                'flex h-8 items-center gap-2 rounded-full border px-3 text-body-sm',
+                'flex h-8 items-center gap-2 rounded-full border px-3 text-body-sm pointer-coarse:h-11',
                 on
                   ? 'border-accent bg-accent-soft text-foreground'
                   : 'border-border-control text-label hover:bg-raised-hover',

@@ -12,10 +12,10 @@ import { type NodeRunStatus, nodeAttemptsSchema } from './schemas';
 
 // 좁은 화면(터치)에서는 누르기 쉽게 44px, 넓은 화면에서는 28px(M6 6-f).
 const TAB =
-  'flex h-11 items-center gap-1 rounded-sm px-3 text-body-sm text-muted-foreground md:h-7';
+  'flex h-7 items-center gap-1 rounded-sm px-3 text-body-sm text-muted-foreground pointer-coarse:h-11';
 const SEGMENT = 'flex w-fit rounded-md border border-border bg-bg p-0.5';
 const SMALL_BUTTON =
-  'flex h-11 shrink-0 items-center rounded-md px-2.5 text-xs text-label hover:bg-raised-hover md:h-7';
+  'flex h-7 shrink-0 items-center rounded-md px-2.5 text-xs text-label hover:bg-raised-hover pointer-coarse:h-11';
 const TAB_ON = 'bg-raised-hover font-medium text-foreground';
 
 // 고른 노드의 시도별 입력·출력·오류. 입출력은 크기가 커서 폴링에 넣지 않고 고를 때 받는다(DECISIONS B-1).
@@ -144,7 +144,7 @@ export function NodeRunPanel({
       {tab === 'output' && (
         <div className="flex items-start gap-2">
           {/* 버튼 높이(좁은 화면 44, 넓은 화면 28)의 가운데에 첫 줄이 오게 위아래 여백을 준다. */}
-          <p className="min-w-0 flex-1 py-3.5 font-mono text-caption break-all text-muted-foreground md:py-1.5">
+          <p className="min-w-0 flex-1 py-1.5 font-mono text-caption break-all text-muted-foreground pointer-coarse:py-3.5">
             {expression}
             {picked && ` = ${JSON.stringify(picked.value)}`}
           </p>

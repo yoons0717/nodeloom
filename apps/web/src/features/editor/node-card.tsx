@@ -8,6 +8,7 @@ import { formatMs } from '@/features/runs/format';
 import { onNodeRender } from './bench';
 import { NodeGlyph } from './node-glyph';
 import { NODE_META, PORT_LABEL, summarizeNode } from './node-meta';
+import { InfoTip } from '@/components/ui/info-tip';
 
 export type NodeRunView = {
   status: 'RUNNING' | 'SUCCESS' | 'FAILED' | 'SKIPPED';
@@ -73,12 +74,15 @@ export function NodeCard({ data, selected }: NodeProps<CanvasNode>) {
           {/* 상태는 꺾이지 않고, 자리가 모자라면 종류 이름이 줄어든다. */}
           <span className="ml-auto shrink-0 text-caption font-bold whitespace-nowrap">
             {firstIssue ? (
-              <span
-                title={issues.map((i) => i.message).join('\n')}
-                className="rounded-full bg-danger-soft px-1.5 text-danger-text"
-              >
-                ! {issues.length}
-              </span>
+              <InfoTip content={issues.map((i) => i.message).join('\n')}>
+                <span
+                  tabIndex={0}
+                  aria-label={`오류 ${issues.length}개: ${issues.map((i) => i.message).join(', ')}`}
+                  className="rounded-full bg-danger-soft px-1.5 text-danger-text"
+                >
+                  ! {issues.length}
+                </span>
+              </InfoTip>
             ) : run?.status === 'RUNNING' ? (
               <span className="text-accent">● 실행 중</span>
             ) : run?.status === 'SUCCESS' ? (

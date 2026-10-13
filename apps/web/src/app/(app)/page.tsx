@@ -76,8 +76,8 @@ export default async function WorkflowListPage() {
                     {formatRunTime(w.updatedAt)} 수정
                   </span>
                 </div>
-                {/* 넓은 화면에서는 마우스를 올리거나 포커스가 있을 때만 보인다. 터치 화면(좁은 화면)에서는 늘 보인다. */}
-                <div className="relative z-10 -ml-2.5 self-start md:ml-0 md:self-auto md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 md:has-[[data-confirming]]:opacity-100">
+                {/* 넓은 화면이고 마우스가 있으면 올리거나 포커스가 있을 때만 보인다. 터치 기기에서는 폭과 상관없이 늘 보인다(RESPONSIVE R2). */}
+                <div className="relative z-10 -ml-2.5 self-start md:ml-0 md:self-auto md:pointer-fine:opacity-0 md:pointer-fine:group-focus-within:opacity-100 md:pointer-fine:group-hover:opacity-100 md:pointer-fine:has-[[data-confirming]]:opacity-100">
                   <DeleteWorkflowButton id={w.id} name={w.name} />
                 </div>
               </li>
