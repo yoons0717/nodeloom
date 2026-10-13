@@ -17,6 +17,21 @@ describe('parseTemplate', () => {
     ]);
   });
 
+  it('식 안의 중괄호와 문자열 속 }}는 식의 끝으로 보지 않는다', () => {
+    expect(parseTemplate('a={{ $string({"x": {"y": 1}}) }}&b')).toEqual([
+      { kind: 'text', value: 'a=' },
+      { kind: 'expr', value: '$string({"x": {"y": 1}})' },
+      { kind: 'text', value: '&b' },
+    ]);
+    expect(parseTemplate('{{ "}}" & name }}')).toEqual([
+      { kind: 'expr', value: '"}}" & name' },
+    ]);
+    // 닫히지 않은 {{는 글자로 둔다.
+    expect(parseTemplate('a={{ city')).toEqual([
+      { kind: 'text', value: 'a={{ city' },
+    ]);
+  });
+
   it('식이 없는 글자는 그대로 돌려준다', () => {
     expect(parseTemplate('https://h/w')).toEqual([
       { kind: 'text', value: 'https://h/w' },

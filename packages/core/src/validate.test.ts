@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canConnect, validateGraph } from './validate.js';
+import { canConnect, checkGraph, validateGraph } from './validate.js';
 import { edge, graph, node, rainFlow } from './fixtures.test-util.js';
 
 const codes = (g: Parameters<typeof validateGraph>[0]) =>
@@ -18,6 +18,20 @@ describe('validateGraph', () => {
         .filter((i) => i.code === 'invalid_config')
         .map((i) => i.field),
     ).toEqual(['url', 'timeoutSec']);
+  });
+
+  it('GET 요청에 본문이 있으면 본문 칸에 보고한다', () => {
+    const bodyIssue = (method: string, body: string) => {
+      const g = rainFlow();
+      g.nodes[1]!.config = { url: 'https://example.com', method, body };
+      return validateGraph(g).find((i) => i.field === 'body');
+    };
+    expect(bodyIssue('GET', '{ "a": 1 }')).toMatchObject({
+      code: 'invalid_config',
+    });
+    expect(bodyIssue('GET', '  ')).toBeUndefined();
+    expect(bodyIssue('POST', '{ "a": 1 }')).toBeUndefined();
+    expect(bodyIssue('DELETE', '{ "a": 1 }')).toBeUndefined();
   });
 
   it('cron은 분 단위 5자리만 받는다', () => {
@@ -142,6 +156,24 @@ describe('canConnect', () => {
     expect(canConnect(g, out('weather_1'), inp('cond_1'))).toMatchObject({
       ok: false,
       code: 'duplicate_edge',
+    });
+  });
+});
+
+describe('checkGraph', () => {
+  it('형식이 맞고 문제가 없으면 그래프를, 아니면 문제 목록을 돌려준다', () => {
+    expect(checkGraph(rainFlow())).toMatchObject({ ok: true });
+    expect(checkGraph({ nodes: 'x' })).toEqual({
+      ok: false,
+      issues: [
+        { code: 'invalid_graph', message: '그래프 형식이 올바르지 않습니다' },
+      ],
+    });
+    const g = rainFlow();
+    g.nodes.push(node('orphan_1', 'transform', { expression: '1' }));
+    expect(checkGraph(g)).toMatchObject({
+      ok: false,
+      issues: [{ code: 'unreachable' }],
     });
   });
 });

@@ -4,18 +4,39 @@ import type { GraphNode } from './graph.js';
 export type TemplatePart =
   { kind: 'text'; value: string } | { kind: 'expr'; value: string };
 
-const TEMPLATE = /\{\{([\s\S]*?)\}\}/g;
 const NODE_REF = /\$nodes\.([a-z][a-z0-9_]*)/g;
 
-// 문자열 칸의 `{{ 식 }}` 구간을 나눈다(DECISIONS 3-2).
+// `{{`부터 짝이 맞는 `}}`의 위치. 식 안의 중괄호({"a": {"b": 1}})와 문자열 속 `}}`는 건너뛴다. 없으면 -1.
+function closingBraces(input: string, from: number): number {
+  let depth = 0;
+  let quote: string | undefined;
+  for (let i = from; i < input.length; i++) {
+    const c = input[i];
+    if (quote) {
+      if (c === '\\') i++;
+      else if (c === quote) quote = undefined;
+    } else if (c === '"' || c === "'") quote = c;
+    else if (c === '{') depth++;
+    else if (c === '}') {
+      if (depth > 0) depth--;
+      else if (input[i + 1] === '}') return i;
+    }
+  }
+  return -1;
+}
+
+// 문자열 칸의 `{{ 식 }}` 구간을 나눈다(DECISIONS 3-2). 닫히지 않은 `{{`는 글자로 둔다.
 export function parseTemplate(input: string): TemplatePart[] {
   const parts: TemplatePart[] = [];
   let last = 0;
-  for (const m of input.matchAll(TEMPLATE)) {
-    if (m.index > last)
-      parts.push({ kind: 'text', value: input.slice(last, m.index) });
-    parts.push({ kind: 'expr', value: m[1]!.trim() });
-    last = m.index + m[0].length;
+  for (let open = input.indexOf('{{'); open !== -1;) {
+    const close = closingBraces(input, open + 2);
+    if (close === -1) break;
+    if (open > last)
+      parts.push({ kind: 'text', value: input.slice(last, open) });
+    parts.push({ kind: 'expr', value: input.slice(open + 2, close).trim() });
+    last = close + 2;
+    open = input.indexOf('{{', last);
   }
   if (last < input.length)
     parts.push({ kind: 'text', value: input.slice(last) });

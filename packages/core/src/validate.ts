@@ -1,6 +1,7 @@
 import {
   type Graph,
   type GraphNode,
+  graphSchema,
   NODE_KEY_PATTERN,
   NODE_SPECS,
   type PortRef,
@@ -24,7 +25,8 @@ export type IssueCode =
   | 'self_loop'
   | 'duplicate_edge'
   | 'unknown_ref'
-  | 'expression_syntax';
+  | 'expression_syntax'
+  | 'invalid_graph';
 
 export type Issue = {
   code: IssueCode;
@@ -47,6 +49,24 @@ const sameEdge = (
   a.from.port === b.from.port &&
   a.to.node === b.to.node &&
   a.to.port === b.to.port;
+
+// DB에 저장된 그래프를 읽고 검사한다. 수동 실행, 스케줄 실행, 실패 알림 실행이 같이 쓴다(DECISIONS 7-5).
+export function checkGraph(
+  raw: unknown,
+): { ok: true; graph: Graph } | { ok: false; issues: Issue[] } {
+  const parsed = graphSchema.safeParse(raw);
+  if (!parsed.success)
+    return {
+      ok: false,
+      issues: [
+        { code: 'invalid_graph', message: '그래프 형식이 올바르지 않습니다' },
+      ],
+    };
+  const issues = validateGraph(parsed.data);
+  return issues.length > 0
+    ? { ok: false, issues }
+    : { ok: true, graph: parsed.data };
+}
 
 // 그래프 전체를 검사해 문제 목록을 돌려준다. 에디터 배지와 서버의 실행 전 검증이 같이 쓴다(DECISIONS 7-5).
 export function validateGraph(graph: Graph): Issue[] {
