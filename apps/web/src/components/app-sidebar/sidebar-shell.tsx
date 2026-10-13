@@ -3,7 +3,7 @@
 import { Dialog } from '@base-ui/react/dialog';
 import { Menu } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { type ReactNode, useCallback, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { AppSidebar, locate } from './app-sidebar';
@@ -32,6 +32,9 @@ export function SidebarShell({
   const pathname = usePathname();
   const [stored, setStored] = useState(storedCollapsed);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // md – lg에서 겹쳐 연 사이드바. 닫히면 연 버튼으로 포커스를 돌려준다.
+  const [overlay, setOverlay] = useState<{ search: boolean } | null>(null);
+  const opener = useRef<HTMLElement | null>(null);
   const collapsed = resolveCollapsed(stored, pathname);
 
   const setCollapsed = useCallback((v: boolean) => {
@@ -39,7 +42,15 @@ export function SidebarShell({
     document.cookie = `${COLLAPSED_KEY}=${v ? '1' : '0'}; path=/; max-age=31536000; samesite=lax`;
   }, []);
   const value = useMemo(
-    () => ({ collapsed, setCollapsed, openMobile: () => setMobileOpen(true) }),
+    () => ({
+      collapsed,
+      setCollapsed,
+      openMobile: () => setMobileOpen(true),
+      openOverlay: (search = false) => {
+        opener.current = document.activeElement as HTMLElement | null;
+        setOverlay({ search });
+      },
+    }),
     [collapsed, setCollapsed],
   );
 
@@ -56,13 +67,35 @@ export function SidebarShell({
               <Dialog.Backdrop className="fixed inset-0 z-40 bg-scrim md:hidden" />
               <Dialog.Popup
                 aria-label="주 메뉴"
-                className="fixed inset-y-0 left-0 z-50 shadow-md outline-none md:hidden"
+                className="fixed inset-y-0 left-0 z-50 bg-surface pl-[env(safe-area-inset-left)] shadow-md outline-none md:hidden"
               >
                 <AppSidebar
                   role={role}
                   initialWorkflows={initialWorkflows}
                   forceExpanded
                   onNavigate={() => setMobileOpen(false)}
+                />
+              </Dialog.Popup>
+            </Dialog.Portal>
+          </Dialog.Root>
+          {/* md – lg: 레일의 펼치기로 본문 위에 겹쳐 연다. 본문을 밀지 않고, 바깥·Esc·이동으로 닫는다. */}
+          <Dialog.Root
+            open={overlay !== null}
+            onOpenChange={(open) => !open && setOverlay(null)}
+            modal={false}
+          >
+            <Dialog.Portal>
+              <Dialog.Popup
+                aria-label="주 메뉴"
+                finalFocus={opener}
+                className="fixed inset-y-0 left-0 z-40 hidden bg-surface pl-[env(safe-area-inset-left)] shadow-md outline-none md:block xl:hidden"
+              >
+                <AppSidebar
+                  role={role}
+                  initialWorkflows={initialWorkflows}
+                  forceExpanded
+                  autoFocusSearch={overlay?.search}
+                  onNavigate={() => setOverlay(null)}
                 />
               </Dialog.Popup>
             </Dialog.Portal>

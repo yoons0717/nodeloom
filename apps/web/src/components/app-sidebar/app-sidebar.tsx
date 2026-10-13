@@ -76,18 +76,25 @@ export function AppSidebar({
   initialWorkflows,
   forceExpanded = false,
   onNavigate,
+  autoFocusSearch = false,
 }: {
   role: 'admin' | 'demo';
   initialWorkflows: Workflow[];
-  // 모바일 드로어는 늘 펼친 모양이다.
+  // 모바일 드로어와 겹쳐 연 사이드바는 늘 펼친 모양이다.
   forceExpanded?: boolean;
-  // 모바일 드로어에서 이동하면 닫는다.
+  // 드로어·겹쳐 연 사이드바에서 이동하면 닫는다.
   onNavigate?: () => void;
+  // 찾기(⌘K)로 겹쳐 열었으면 찾기 칸에 포커스한다.
+  autoFocusSearch?: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const state = useSidebarState();
   const collapsed = !forceExpanded && (state?.collapsed ?? false);
+  // rail: 레일만, full: 펼친 모양만, responsive: xl 미만은 레일 · xl 이상은 펼친 모양(RESPONSIVE 4-1).
+  // responsive는 둘 다 그리고 CSS로 하나만 보인다. 폭을 JS로 재지 않아 처음 그림이 서버와 같다.
+  const mode =
+    forceExpanded || !state ? 'full' : collapsed ? 'rail' : 'responsive';
   const { section, workflowId } = locate(pathname);
   const search = useRef<HTMLInputElement>(null);
   const focusAfterExpand = useRef(false);
@@ -124,8 +131,9 @@ export function AppSidebar({
     if (!first) void queryClient.invalidateQueries({ queryKey: ['workflows'] });
   }, [summaryKey, queryClient]);
 
-  // 찾기 칸으로. 접혀 있으면 펼친 뒤 포커스한다.
+  // 찾기 칸으로. xl 미만이면 겹쳐 열고, 접혀 있으면 펼친 뒤 포커스한다.
   const focusSearch = () => {
+    if (mode !== 'full' && !isXl()) return state?.openOverlay(true);
     if (collapsed) {
       focusAfterExpand.current = true;
       state?.setCollapsed(false);
@@ -137,6 +145,9 @@ export function AppSidebar({
       search.current?.focus();
     }
   }, [collapsed]);
+  useEffect(() => {
+    if (autoFocusSearch) search.current?.focus();
+  }, [autoFocusSearch]);
 
   // ⌘K / Ctrl+K. 모바일 드로어 쪽(forceExpanded)은 듣지 않는다.
   useEffect(() => {
@@ -158,15 +169,16 @@ export function AppSidebar({
   const toggle = (id: string) =>
     setToggled((t) => ({ ...t, [id]: !isOpen(id) }));
   const failed = summary.data?.failedLast24h ?? 0;
-  const failedBadge = failed > 0 && (
-    <Badge
-      tone="danger"
-      aria-label={`최근 24시간 실패 ${failed}건`}
-      className={collapsed ? 'absolute -top-1 -right-1 px-1' : 'ml-auto'}
-    >
-      {failed}
-    </Badge>
-  );
+  const failedBadge = (rail: boolean) =>
+    failed > 0 && (
+      <Badge
+        tone="danger"
+        aria-label={`최근 24시간 실패 ${failed}건`}
+        className={rail ? 'absolute -top-1 -right-1 px-1' : 'ml-auto'}
+      >
+        {failed}
+      </Badge>
+    );
   const subItems = (id: string, failedCount: number) => [
     {
       href: `/w/${id}`,
@@ -207,21 +219,22 @@ export function AppSidebar({
   const footerError = create.error ?? logout.error;
   const roleLabel = role === 'admin' ? '관리자' : '데모 방문자';
 
-  return (
-    <nav
-      aria-label="주 메뉴"
+  // rail이면 레일(56) 모양, 아니면 펼친(240) 모양의 내용
+  const body = (rail: boolean, className?: string) => (
+    <div
       className={cn(
-        'flex h-full shrink-0 flex-col border-r border-border-subtle bg-surface',
-        collapsed ? 'w-14 items-center' : 'w-60',
+        'flex h-full min-h-0 flex-col',
+        rail && 'items-center',
+        className,
       )}
     >
       <div
         className={cn(
           'flex h-14 shrink-0 items-center gap-2',
-          collapsed ? 'justify-center' : 'px-4',
+          rail ? 'justify-center' : 'px-4',
         )}
       >
-        {!collapsed && (
+        {!rail && (
           <>
             <span
               aria-hidden
@@ -233,22 +246,26 @@ export function AppSidebar({
           </>
         )}
         {state && !forceExpanded && (
-          <Tip label="사이드바 펼치기" enabled={collapsed}>
+          <Tip label="사이드바 펼치기" enabled={rail}>
             <button
               type="button"
-              aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
-              onClick={() => state.setCollapsed(!collapsed)}
-              className={cn(ICON_ITEM, !collapsed && '-mr-2 ml-auto')}
+              aria-label={rail ? '사이드바 펼치기' : '사이드바 접기'}
+              onClick={() =>
+                rail && !isXl()
+                  ? state.openOverlay()
+                  : state.setCollapsed(!rail)
+              }
+              className={cn(ICON_ITEM, !rail && '-mr-2 ml-auto')}
             >
               <span aria-hidden className="text-base">
-                {collapsed ? '»' : '«'}
+                {rail ? '»' : '«'}
               </span>
             </button>
           </Tip>
         )}
       </div>
 
-      {collapsed ? (
+      {rail ? (
         <Tip label="워크플로우 찾기 (⌘K)" enabled>
           <button
             type="button"
@@ -288,7 +305,7 @@ export function AppSidebar({
       <ul
         className={cn(
           'flex flex-col gap-0.5 pb-3',
-          collapsed ? 'items-center' : 'px-3',
+          rail ? 'items-center' : 'px-3',
         )}
       >
         <li>
@@ -297,7 +314,7 @@ export function AppSidebar({
             label="전체 워크플로우"
             icon={<LayoutList className="size-4" />}
             active={section === 'workflows'}
-            collapsed={collapsed}
+            collapsed={rail}
             onNavigate={onNavigate}
           />
         </li>
@@ -307,14 +324,14 @@ export function AppSidebar({
             label="모든 실행"
             icon={<History className="size-4" />}
             active={section === 'runs'}
-            collapsed={collapsed}
+            collapsed={rail}
             onNavigate={onNavigate}
-            extra={failedBadge}
+            extra={failedBadge(rail)}
           />
         </li>
       </ul>
 
-      {collapsed ? (
+      {rail ? (
         // 접힌 상태: 트리는 숨기고 지금 워크플로우의 하위 항목만 아이콘으로.
         current && (
           <ul className="flex flex-col items-center gap-0.5 border-t border-border-subtle pt-3">
@@ -407,10 +424,10 @@ export function AppSidebar({
       <div
         className={cn(
           'mt-auto flex shrink-0 flex-col gap-2 border-t border-border-subtle py-3',
-          collapsed ? 'items-center' : 'px-3',
+          rail ? 'items-center' : 'px-3',
         )}
       >
-        {collapsed ? (
+        {rail ? (
           <Tip label={create.error?.message ?? '새 워크플로우'} enabled>
             <button
               type="button"
@@ -442,21 +459,21 @@ export function AppSidebar({
         <div
           className={cn(
             'flex items-center gap-2',
-            collapsed ? 'flex-col' : 'h-8 px-1',
+            rail ? 'flex-col' : 'h-8 px-1',
           )}
         >
           <span
             aria-hidden
-            title={collapsed ? roleLabel : undefined}
+            title={rail ? roleLabel : undefined}
             className="flex size-6 items-center justify-center rounded-full bg-raised-hover text-caption font-bold text-label"
           >
             {role === 'admin' ? '관' : '데'}
           </span>
-          {!collapsed && (
+          {!rail && (
             <span className="flex-1 text-body-sm text-label">{roleLabel}</span>
           )}
           {role === 'admin' && (
-            <Tip label="로그아웃" enabled={collapsed}>
+            <Tip label="로그아웃" enabled={rail}>
               <button
                 type="button"
                 aria-label="로그아웃"
@@ -472,7 +489,7 @@ export function AppSidebar({
             </Tip>
           )}
         </div>
-        {footerError && !collapsed && (
+        {footerError && !rail && (
           <InlineError
             role="alert"
             message={footerError.message}
@@ -480,7 +497,35 @@ export function AppSidebar({
           />
         )}
       </div>
+    </div>
+  );
+
+  return (
+    <nav
+      aria-label="주 메뉴"
+      data-mode={mode}
+      className={cn(
+        'flex h-full shrink-0 flex-col border-r border-border-subtle bg-surface',
+        mode === 'full' ? 'w-60' : mode === 'rail' ? 'w-14' : 'w-14 xl:w-60',
+      )}
+    >
+      {mode === 'responsive' ? (
+        <>
+          {body(true, 'xl:hidden')}
+          {body(false, 'max-xl:hidden')}
+        </>
+      ) : (
+        body(mode === 'rail')
+      )}
     </nav>
+  );
+}
+
+// 폭이 xl(1280px) 이상인지. 누를 때만 묻는다(처음 그림에는 쓰지 않음). 테스트(jsdom)에는 matchMedia가 없어 넓은 화면으로 본다.
+function isXl() {
+  return (
+    typeof window.matchMedia !== 'function' ||
+    window.matchMedia('(min-width: 1280px)').matches
   );
 }
 

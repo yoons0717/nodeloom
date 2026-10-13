@@ -6,6 +6,7 @@ import {
   fireEvent,
   render,
   screen,
+  within,
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { z } from 'zod';
@@ -228,5 +229,42 @@ describe('접기', () => {
     fireEvent.click(screen.getByRole('button', { name: '사이드바 펼치기' }));
     expect(screen.getByRole('button', { name: '사이드바 접기' })).toBeTruthy();
     expect(document.cookie).toContain(`${COLLAPSED_KEY}=0`);
+  });
+
+  it('md – lg에서는 펼치기로 본문 위에 겹쳐 열고, 이동하면 닫는다', () => {
+    nav.pathname = '/w/w1';
+    document.cookie = `${COLLAPSED_KEY}=; max-age=0; path=/`;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve(Response.json({ failedLast24h: 0, running: 0 })),
+      ),
+    );
+    // xl(1280) 미만
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({ matches: false })),
+    );
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <SidebarShell
+          role="admin"
+          initialWorkflows={[wf('w1', '아침 비 알림')]}
+          storedCollapsed={false}
+        >
+          본문
+        </SidebarShell>
+      </QueryClientProvider>,
+    );
+    fireEvent.click(
+      screen.getAllByRole('button', { name: '사이드바 펼치기' })[0]!,
+    );
+    const overlay = screen.getByRole('dialog', { name: '주 메뉴' });
+    // 저장값은 바꾸지 않는다.
+    expect(document.cookie).not.toContain(COLLAPSED_KEY);
+    fireEvent.click(
+      within(overlay).getByRole('link', { name: /전체 워크플로우/ }),
+    );
+    expect(screen.queryByRole('dialog', { name: '주 메뉴' })).toBeNull();
   });
 });
