@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { JetBrains_Mono, Noto_Sans_KR } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
@@ -16,6 +16,13 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'Nodeloom',
   description: '노드를 이어 반복 작업을 자동화하는 워크플로우 도구',
+};
+
+// 노치·홈 바 영역까지 그리고(RESPONSIVE R7) 드로어 등에 safe-area 여백을 둔다. 확대는 막지 않는다.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

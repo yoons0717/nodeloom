@@ -95,6 +95,7 @@ export function RunHistory({
 }
 
 // 상태 배지 | 시각 | 방식(모든 실행은 워크플로우 이름 · 방식) | 걸린 시간 | › 고정 열.
+// sm(640) 미만은 두 줄: 1줄 배지 · 시각 · (오른쪽) 걸린 시간 · ›, 2줄 워크플로우 이름 · 방식(RESPONSIVE R5).
 // 실패 행은 왼쪽에 빨간 막대와 오류 두 줄.
 function RunRow({ run: r, workflowId }: { run: Run; workflowId?: string }) {
   const at = r.startedAt ?? r.createdAt;
@@ -103,7 +104,7 @@ function RunRow({ run: r, workflowId }: { run: Run; workflowId?: string }) {
     <Link
       href={`/w/${wid}/runs/${r.id}`}
       className={cn(
-        'grid grid-cols-[84px_44px_minmax(0,1fr)_auto_16px] items-center gap-x-3 gap-y-1 px-4 py-3 hover:bg-raised focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent-ring focus-visible:ring-inset',
+        'grid grid-cols-[auto_auto_minmax(0,1fr)_auto_16px] items-center gap-x-3 gap-y-1 px-4 py-3 sm:grid-cols-[84px_44px_minmax(0,1fr)_auto_16px] hover:bg-raised focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent-ring focus-visible:ring-inset',
         r.status === 'FAILED' && 'shadow-[inset_2px_0_0_var(--danger)]',
       )}
     >
@@ -113,13 +114,13 @@ function RunRow({ run: r, workflowId }: { run: Run; workflowId?: string }) {
       <span className="font-mono text-xs text-label" title={formatDateTime(at)}>
         {formatTime(at)}
       </span>
-      <span className="truncate text-xs text-muted-foreground">
+      <span className="col-span-5 row-start-2 truncate text-xs text-muted-foreground sm:col-span-1 sm:col-start-3 sm:row-start-1">
         {!workflowId && r.workflow && (
           <span className="text-body-sm text-label">{r.workflow.name} · </span>
         )}
         {RUN_KIND_LABEL[r.kind]}
       </span>
-      <span className="text-right font-mono text-xs text-muted-foreground">
+      <span className="col-start-4 row-start-1 text-right font-mono text-xs text-muted-foreground">
         {r.status === 'PENDING' ? (
           '대기 중'
         ) : r.status === 'RUNNING' && r.startedAt ? (
@@ -128,11 +129,14 @@ function RunRow({ run: r, workflowId }: { run: Run; workflowId?: string }) {
           formatDuration(r.startedAt, r.finishedAt)
         )}
       </span>
-      <span aria-hidden className="text-muted-foreground">
+      <span
+        aria-hidden
+        className="col-start-5 row-start-1 text-muted-foreground"
+      >
         ›
       </span>
       {r.error && (
-        <span className="col-span-4 col-start-2 line-clamp-2 text-xs text-danger-text">
+        <span className="col-span-5 line-clamp-2 text-xs text-danger-text sm:col-span-4 sm:col-start-2">
           {r.error.message}
         </span>
       )}
