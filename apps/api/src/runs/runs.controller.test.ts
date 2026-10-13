@@ -237,6 +237,30 @@ describe('실행 API', () => {
       });
     });
 
+    it('워크플로우의 실행 기록도 상태로 거르고, 오래된 실패도 찾는다', async () => {
+      const id = await create();
+      await prisma.run.create({
+        data: {
+          workflowId: id,
+          kind: 'SCHEDULE',
+          status: 'FAILED',
+          graph: {},
+          triggerInput: {},
+          finishedAt: new Date(),
+        },
+      });
+      await run(id);
+      const statuses = async (q: string) =>
+        (
+          (await agent.get(`/workflows/${id}/runs${q}`).expect(200)).body as {
+            status: string;
+          }[]
+        ).map((r) => r.status);
+      expect(await statuses('?status=failed')).toEqual(['FAILED']);
+      expect(await statuses('?status=success')).toEqual(['SUCCESS']);
+      expect(await statuses('')).toEqual(['SUCCESS', 'FAILED']);
+    });
+
     it('모든 실행 목록은 워크플로우 이름과 함께 최근 순이고, 상태로 거른다', async () => {
       const ok = await create();
       await agent

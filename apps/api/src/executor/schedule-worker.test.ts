@@ -1,4 +1,5 @@
 // 실제 Postgres 18 컨테이너와 pg-boss 시험용 시계로 스케줄 워커를 확인한다.
+import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import { GRAPH_SCHEMA_VERSION, type Graph } from '@nodeloom/core';
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
@@ -95,7 +96,11 @@ describe('ScheduleWorker', () => {
       data: { failureWorkflowId: alert },
     });
 
-    await worker.handle({ workflowId: id }, new Date(clock.now()));
+    await worker.handle(
+      { workflowId: id },
+      new Date(clock.now()),
+      randomUUID(),
+    );
 
     expect(await runsOf(id)).toMatchObject([
       {
@@ -111,10 +116,43 @@ describe('ScheduleWorker', () => {
     expect(await runsOf(alert)).toMatchObject([{ kind: 'FAILURE' }]);
   });
 
+  it('실패 알림을 만들다 오류가 나 같은 회차를 다시 받아도 FAILED 기록과 알림은 하나씩', async () => {
+    const alert = await save(flow(null));
+    const g = flow('0 7 * * *');
+    g.nodes.push(transform('orphan_1'));
+    const id = await save(g);
+    await prisma.workflow.update({
+      where: { id },
+      data: { failureWorkflowId: alert },
+    });
+    const { QueueService } = await import('./queue.js');
+    const queue = app.get(QueueService);
+    const spy = vi
+      .spyOn(queue, 'enqueueRun')
+      .mockRejectedValueOnce(new Error('db down'));
+    const createdOn = new Date(clock.now());
+    const jobId = randomUUID();
+    await expect(
+      worker.handle({ workflowId: id }, createdOn, jobId),
+    ).rejects.toThrow('db down');
+    spy.mockRestore();
+    await worker.handle({ workflowId: id }, createdOn, jobId);
+    expect(await runsOf(id)).toHaveLength(1);
+    expect(await runsOf(alert)).toHaveLength(1);
+  });
+
   it('이미 실행 중이면 이번 회차를 건너뛴다', async () => {
     const id = await save(flow('0 7 * * *'));
-    await worker.handle({ workflowId: id }, new Date(clock.now()));
-    await worker.handle({ workflowId: id }, new Date(clock.now()));
+    await worker.handle(
+      { workflowId: id },
+      new Date(clock.now()),
+      randomUUID(),
+    );
+    await worker.handle(
+      { workflowId: id },
+      new Date(clock.now()),
+      randomUUID(),
+    );
     expect(await runsOf(id)).toHaveLength(1);
   });
 
@@ -123,6 +161,7 @@ describe('ScheduleWorker', () => {
     await worker.handle(
       { workflowId: id },
       new Date(clock.now() - 10 * 60_000),
+      randomUUID(),
     );
     expect(await runsOf(id)).toEqual([]);
 
@@ -130,6 +169,7 @@ describe('ScheduleWorker', () => {
       worker.handle(
         { workflowId: '00000000-0000-0000-0000-000000000000' },
         new Date(clock.now()),
+        randomUUID(),
       ),
     ).resolves.toBeUndefined();
   });

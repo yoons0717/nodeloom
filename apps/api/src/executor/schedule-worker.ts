@@ -4,7 +4,7 @@ import {
   Logger,
   type OnApplicationBootstrap,
 } from '@nestjs/common';
-import { graphSchema, validateGraph } from '@nodeloom/core';
+import { checkGraph } from '@nodeloom/core';
 import type { JobWithMetadata } from 'pg-boss';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma.service.js';
@@ -30,12 +30,13 @@ export class ScheduleWorker implements OnApplicationBootstrap {
       SCHEDULE_QUEUE,
       { includeMetadata: true },
       async (jobs: JobWithMetadata<ScheduleJob>[]) => {
-        for (const job of jobs) await this.handle(job.data, job.createdOn);
+        for (const job of jobs)
+          await this.handle(job.data, job.createdOn, job.id);
       },
     );
   }
 
-  async handle({ workflowId }: ScheduleJob, createdOn: Date) {
+  async handle({ workflowId }: ScheduleJob, createdOn: Date, jobId: string) {
     // 시험용 시계로 돌릴 때도 같은 시각으로 비교하도록 pg-boss의 시계를 쓴다.
     if (this.queue.clock.now() - createdOn.getTime() > STALE_MS) {
       this.logger.warn(`skip stale schedule job workflowId=${workflowId}`);
@@ -47,18 +48,20 @@ export class ScheduleWorker implements OnApplicationBootstrap {
     });
     if (!workflow) return;
 
-    const graph = graphSchema.safeParse(workflow.graph);
-    const issues = graph.success
-      ? validateGraph(graph.data)
-      : [{ code: 'invalid_graph', message: '그래프 형식이 올바르지 않습니다' }];
+    const checked = checkGraph(workflow.graph);
     // 검사에 실패하면 실행하지 않고 FAILED로 남겨 실패 알림을 보낸다(DECISIONS 7-5).
-    if (!graph.success || issues.length > 0) {
+    if (!checked.ok) {
+      const { issues } = checked;
       const error = {
         code: 'INVALID_GRAPH',
         message: `검사 오류 ${issues.length}개가 있어 실행하지 않았습니다`,
       };
-      const run = await this.prisma.run.create({
-        data: {
+      // 실행 id를 job id로 정해, 알림을 만들다 오류가 나 같은 회차를 다시 받아도 기록이 하나만 남게 한다.
+      const run = await this.prisma.run.upsert({
+        where: { id: jobId },
+        update: {},
+        create: {
+          id: jobId,
           workflowId,
           kind: 'SCHEDULE',
           status: 'FAILED',
@@ -76,7 +79,7 @@ export class ScheduleWorker implements OnApplicationBootstrap {
       await this.queue.enqueueRun({
         workflowId,
         kind: 'SCHEDULE',
-        graph: graph.data,
+        graph: checked.graph,
         triggerInput: {},
       });
     } catch (e) {

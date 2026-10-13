@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import {
   buildInput,
+  checkGraph,
   decideNode,
   type GraphNode,
   graphSchema,
   NODE_SPECS,
   type NodeRunState,
-  validateGraph,
 } from '@nodeloom/core';
 import { env, secrets } from '../env.js';
 import { Prisma, type Run } from '../generated/prisma/client.js';
@@ -35,6 +35,11 @@ export type RunError = { code: string; message: string; nodeKey?: string };
 const ABORTED: RunError = {
   code: 'RUN_ABORTED',
   message: '실행 엔진이 반복해서 멈춰 실행을 중단했습니다',
+};
+
+// 엔진이 멈춰 끝나지 않은 노드 시도에 남기는 오류
+const STALE_ATTEMPT = {
+  message: '실행 엔진이 멈춰 이 시도가 끝나지 않았습니다',
 };
 
 @Injectable()
@@ -79,12 +84,12 @@ export class RunExecutor implements OnApplicationBootstrap {
         finishedAt: new Date(),
       },
     });
-    if (count === 0) return;
-    const run = await this.prisma.run.findUniqueOrThrow({
-      where: { id: runId },
-    });
-    this.logger.error(`run aborted after retries runId=${runId}`);
-    if (run.kind !== 'FAILURE') await this.startFailureRun(run, ABORTED);
+    if (count > 0)
+      this.logger.error(`run aborted after retries runId=${runId}`);
+    await this.closeStaleAttempts(runId);
+    const run = await this.prisma.run.findUnique({ where: { id: runId } });
+    // 지난번에 알림을 만들다 실패했으면 이번에 만든다.
+    if (run) await this.alertIfFailed(run);
   }
 
   // 실행 하나를 끝까지 돌린다. 서버가 죽었다 다시 불려도 이어서 실행한다(DECISIONS 7-1).
@@ -94,8 +99,12 @@ export class RunExecutor implements OnApplicationBootstrap {
       where: { id: runId },
       include: { nodeRuns: { orderBy: { attempt: 'asc' } } },
     });
-    if (!run || run.status === 'SUCCESS' || run.status === 'FAILED') return;
+    if (!run || run.status === 'SUCCESS') return;
+    // 이미 끝났는데 job을 다시 받았다 = 끝낸 뒤 실패 알림을 만들다 오류가 났을 수 있다.
+    if (run.status === 'FAILED') return this.alertIfFailed(run);
 
+    // 멈춘 엔진이 실행 중으로 남긴 시도를 닫는다. 그 노드는 아래에서 다음 시도 번호로 다시 실행한다.
+    await this.closeStaleAttempts(runId);
     const startedAt = run.startedAt ?? new Date();
     await this.prisma.run.update({
       where: { id: runId },
@@ -281,6 +290,19 @@ export class RunExecutor implements OnApplicationBootstrap {
     if (error && run.kind !== 'FAILURE') await this.startFailureRun(run, error);
   }
 
+  private closeStaleAttempts(runId: string) {
+    return this.prisma.nodeRun.updateMany({
+      where: { runId, status: 'RUNNING' },
+      data: { status: 'FAILED', error: STALE_ATTEMPT, finishedAt: new Date() },
+    });
+  }
+
+  // 실패한 실행의 실패 알림을 만든다. 실패 알림 실행이 실패하면 다시 알리지 않는다(DECISIONS 7-4).
+  private async alertIfFailed(run: Run) {
+    if (run.status === 'FAILED' && run.kind !== 'FAILURE' && run.error)
+      await this.startFailureRun(run, run.error as RunError);
+  }
+
   // 1·2·4초…(최대 30초) + 흔들림(DECISIONS 7-3)
   private backoffMs(tries: number) {
     const base = Math.min(this.retryBaseMs * 2 ** (tries - 1), 30_000);
@@ -296,6 +318,16 @@ export class RunExecutor implements OnApplicationBootstrap {
     });
     const target = workflow?.failureWorkflow;
     if (!workflow || !target) return;
+    // job을 다시 받아도 한 번만 알린다. 알림 실행의 Trigger 입력에 원래 실행 id가 들어 있다.
+    const sent = await this.prisma.run.findFirst({
+      where: {
+        workflowId: target.id,
+        kind: 'FAILURE',
+        triggerInput: { path: ['runId'], equals: run.id },
+      },
+      select: { id: true },
+    });
+    if (sent) return;
 
     const triggerInput = {
       workflow: { id: workflow.id, name: workflow.name },
@@ -303,11 +335,8 @@ export class RunExecutor implements OnApplicationBootstrap {
       failedNode: error.nodeKey ?? null,
       error: error.message,
     };
-    const graph = graphSchema.safeParse(target.graph);
-    const issues = graph.success
-      ? validateGraph(graph.data)
-      : [{ code: 'invalid_graph', message: '그래프 형식이 올바르지 않습니다' }];
-    if (!graph.success || issues.length > 0) {
+    const checked = checkGraph(target.graph);
+    if (!checked.ok) {
       await this.prisma.run.create({
         data: {
           workflowId: target.id,
@@ -319,7 +348,7 @@ export class RunExecutor implements OnApplicationBootstrap {
             code: 'INVALID_GRAPH',
             message:
               '실패 알림 워크플로우에 검사 오류가 있어 실행하지 않았습니다',
-            issues,
+            issues: checked.issues,
           }),
           finishedAt: new Date(),
         },
@@ -329,7 +358,7 @@ export class RunExecutor implements OnApplicationBootstrap {
     await this.queue.enqueueRun({
       workflowId: target.id,
       kind: 'FAILURE',
-      graph: graph.data,
+      graph: checked.graph,
       triggerInput,
     });
   }

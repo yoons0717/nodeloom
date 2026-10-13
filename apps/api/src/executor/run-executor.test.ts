@@ -308,7 +308,8 @@ describe('실행 엔진', () => {
       run.nodeRuns.map((r) => [r.nodeKey, r.attempt, r.status, r.output]),
     ).toEqual([
       ['a', 1, 'SUCCESS', 41],
-      ['b', 1, 'RUNNING', null],
+      // 멈춘 엔진이 남긴 시도는 실패로 닫는다.
+      ['b', 1, 'FAILED', null],
       ['b', 2, 'SUCCESS', 42],
       ['trigger', 1, 'SUCCESS', { v: 1 }],
     ]);
@@ -387,6 +388,59 @@ describe('실행 엔진', () => {
         nodeRuns: [],
       });
     });
+    it('실패 알림을 만들다 오류가 나도 job을 다시 받으면 한 번만 알린다', async () => {
+      const { QueueService } = await import('./queue.js');
+      const queue = app.get(QueueService);
+      const alertId = await createWorkflow(g([trigger()], []));
+      const { runId } = await createRun(failing(), {
+        failureWorkflowId: alertId,
+      });
+      const spy = vi
+        .spyOn(queue, 'enqueueRun')
+        .mockRejectedValueOnce(new Error('db down'));
+      await expect(executor.execute(runId)).rejects.toThrow('db down');
+      spy.mockRestore();
+      // pg-boss가 job을 다시 꺼낸 경우. 실행은 이미 FAILED다.
+      await executor.execute(runId);
+      await executor.execute(runId);
+      expect(await failureRuns(alertId)).toHaveLength(1);
+    });
+
+    it('중단할 때 실패 알림을 만들다 오류가 나도 다시 받으면 한 번만 알린다', async () => {
+      const { QueueService } = await import('./queue.js');
+      const queue = app.get(QueueService);
+      const alertId = await createWorkflow(g([trigger()], []));
+      const { runId } = await createRun(g([trigger()], []), {
+        failureWorkflowId: alertId,
+      });
+      const spy = vi
+        .spyOn(queue, 'enqueueRun')
+        .mockRejectedValueOnce(new Error('db down'));
+      await prisma.nodeRun.create({
+        data: {
+          runId,
+          nodeId: 'trigger',
+          nodeKey: 'trigger',
+          attempt: 1,
+          status: 'RUNNING',
+        },
+      });
+      await expect(executor.abort(runId)).rejects.toThrow('db down');
+      spy.mockRestore();
+      await executor.abort(runId);
+      await executor.abort(runId);
+      expect(await failureRuns(alertId)).toHaveLength(1);
+      // 실행 중으로 남아 있던 노드 기록도 닫는다.
+      expect(await prisma.nodeRun.findMany({ where: { runId } })).toMatchObject(
+        [
+          {
+            status: 'FAILED',
+            error: { message: '실행 엔진이 멈춰 이 시도가 끝나지 않았습니다' },
+          },
+        ],
+      );
+    });
+
     it('실행 job이 시도 횟수를 다 쓰면 Run을 FAILED로 끝내고 실패 알림을 실행한다', async () => {
       const { QueueService } = await import('./queue.js');
       const queue = app.get(QueueService);

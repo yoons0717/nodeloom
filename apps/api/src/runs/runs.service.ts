@@ -3,9 +3,21 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { graphSchema, NODE_SPECS, validateGraph } from '@nodeloom/core';
+import { checkGraph, graphSchema, NODE_SPECS } from '@nodeloom/core';
 import { QueueService } from '../executor/queue.js';
 import { PrismaService } from '../prisma.service.js';
+
+// 실행 기록 화면의 상태 거르기(?status=). 대기 중도 "실행 중"으로 친다.
+function statusFilter(filter: string | undefined) {
+  switch (filter) {
+    case 'failed':
+      return { equals: 'FAILED' as const };
+    case 'success':
+      return { equals: 'SUCCESS' as const };
+    case 'running':
+      return { in: ['PENDING' as const, 'RUNNING' as const] };
+  }
+}
 
 @Injectable()
 export class RunsService {
@@ -21,14 +33,14 @@ export class RunsService {
     });
     if (!workflow) throw new NotFoundException('워크플로우를 찾을 수 없습니다');
 
-    const graph = graphSchema.parse(workflow.graph);
-    const issues = validateGraph(graph);
-    if (issues.length > 0) {
+    const checked = checkGraph(workflow.graph);
+    if (!checked.ok) {
       throw new UnprocessableEntityException({
-        message: `검사 오류 ${issues.length}개가 있어 실행할 수 없습니다`,
-        issues,
+        message: `검사 오류 ${checked.issues.length}개가 있어 실행할 수 없습니다`,
+        issues: checked.issues,
       });
     }
+    const { graph } = checked;
     // 검사를 통과했으면 Trigger는 정확히 하나다(DECISIONS A-4). 수동 실행의 입력은 테스트 입력(B-10).
     const trigger = graph.nodes.find((n) => n.type === 'trigger')!;
     const { testInput } = NODE_SPECS.trigger.config.parse(trigger.config);
@@ -41,15 +53,15 @@ export class RunsService {
     return { runId };
   }
 
-  // 목록은 최근 50개(M5 작은 결정 ③). 30일 보존이라 페이지 넘김 없이 충분하다.
-  async list(workflowId: string) {
+  // 목록은 최근 50개(M5 작은 결정 ③). 상태로 거르면 그 상태의 최근 50개.
+  async list(workflowId: string, filter?: string) {
     const workflow = await this.prisma.workflow.findUnique({
       where: { id: workflowId },
       select: { id: true },
     });
     if (!workflow) throw new NotFoundException('워크플로우를 찾을 수 없습니다');
     return this.prisma.run.findMany({
-      where: { workflowId },
+      where: { workflowId, status: statusFilter(filter) },
       orderBy: { createdAt: 'desc' },
       take: 50,
       select: {
@@ -66,16 +78,8 @@ export class RunsService {
 
   // 모든 워크플로우의 최근 50건(M6 6-g "모든 실행"). 상태로 거른다. 입출력·그래프는 넣지 않는다.
   allRuns(filter: string | undefined) {
-    const status =
-      filter === 'failed'
-        ? { equals: 'FAILED' as const }
-        : filter === 'success'
-          ? { equals: 'SUCCESS' as const }
-          : filter === 'running'
-            ? { in: ['PENDING' as const, 'RUNNING' as const] }
-            : undefined;
     return this.prisma.run.findMany({
-      where: status ? { status } : undefined,
+      where: { status: statusFilter(filter) },
       orderBy: { createdAt: 'desc' },
       take: 50,
       select: {

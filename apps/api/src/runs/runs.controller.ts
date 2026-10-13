@@ -23,8 +23,8 @@ export class RunsController {
   }
 
   @Get('workflows/:id/runs')
-  list(@Param('id', id) workflowId: string) {
-    return this.runs.list(workflowId);
+  list(@Param('id', id) workflowId: string, @Query('status') status?: string) {
+    return this.runs.list(workflowId, status);
   }
 
   // runs/:id보다 먼저 둔다. 뒤에 두면 summary가 실행 id로 읽힌다.
