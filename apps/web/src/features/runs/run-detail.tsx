@@ -10,7 +10,7 @@ import {
 import Link from 'next/link';
 // 실행 상세 주소로 바로 들어와도 캔버스가 그려지도록 React Flow 기본 스타일을 여기서도 불러온다.
 import '@xyflow/react/dist/style.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
@@ -69,6 +69,12 @@ export function RunDetail({
     void queryClient.invalidateQueries({ queryKey: ['run-summary'] });
   }, [done, queryClient]);
   const nodeRuns = new Map(p.nodes.map((n) => [n.nodeId, n]));
+  // 캔버스 아래에 쌓인 배치(lg 미만)에서는 노드를 고르면 패널 맨 위로 올린다(RESPONSIVE 4-4).
+  const panel = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (panel.current && !window.matchMedia('(min-width: 1024px)').matches)
+      panel.current.scrollTop = 0;
+  }, [selectedId]);
 
   const nodes: CanvasNode[] = run.graph.nodes.map((n) => {
     const r = nodeRuns.get(n.id);
@@ -130,6 +136,7 @@ export function RunDetail({
         actions={
           <Button
             variant="outline"
+            className="pointer-coarse:h-11"
             render={<Link href={`/w/${run.workflowId}`} />}
             nativeButton={false}
           >
@@ -142,8 +149,9 @@ export function RunDetail({
       <p className="border-b border-border-subtle bg-surface px-4 py-2 text-xs text-muted-foreground">
         {summary.join(' · ')}
       </p>
-      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-        <div className="h-[50vh] min-w-0 md:h-auto md:flex-1">
+      {/* lg 미만은 캔버스 아래에 패널을 쌓고 패널만 스크롤한다. md – lg는 패널을 두 칸으로 나눈다(RESPONSIVE 4-4). */}
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+        <div className="h-[45svh] min-h-64 min-w-0 shrink-0 lg:h-auto lg:flex-1 lg:shrink">
           <ReactFlowProvider>
             <ReactFlow<CanvasNode>
               nodes={nodes}
@@ -163,20 +171,25 @@ export function RunDetail({
             </ReactFlow>
           </ReactFlowProvider>
         </div>
-        <aside className="flex min-h-0 w-full flex-col border-t border-border-subtle bg-surface md:w-96 md:border-t-0 md:border-l">
-          {p.error && (
-            <InlineError
-              className="border-b border-border-subtle p-4"
-              message={p.error.message}
-              issues={p.error.issues}
+        <aside
+          ref={panel}
+          className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto border-t border-border-subtle bg-surface md:grid md:grid-cols-2 md:content-start lg:flex lg:w-80 lg:flex-none lg:overflow-visible lg:border-t-0 lg:border-l xl:w-96"
+        >
+          <div className="md:max-lg:border-r md:max-lg:border-border-subtle">
+            {p.error && (
+              <InlineError
+                className="border-b border-border-subtle p-4"
+                message={p.error.message}
+                issues={p.error.issues}
+              />
+            )}
+            <RunTimeline
+              graph={run.graph}
+              nodes={p.nodes}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
             />
-          )}
-          <RunTimeline
-            graph={run.graph}
-            nodes={p.nodes}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-          />
+          </div>
           {selected ? (
             <NodeRunPanel
               key={selected.id}
