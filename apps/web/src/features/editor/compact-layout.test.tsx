@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactFlowProvider } from '@xyflow/react';
+import { ReactFlowProvider, useStoreApi } from '@xyflow/react';
 import {
   cleanup,
   fireEvent,
@@ -28,7 +28,8 @@ function Probe() {
   return (
     <p data-testid="probe">
       {graph.nodes.length}:{last.type}:
-      {selection.nodeIds[0] === last.id ? '선택' : '선택 없음'}
+      {selection.nodeIds[0] === last.id ? '선택' : '선택 없음'}:
+      {last.position.x},{last.position.y}
     </p>
   );
 }
@@ -71,7 +72,23 @@ function renderInEditor(children: ReactNode) {
   );
 }
 
-const probe = () => screen.getByTestId('probe').textContent;
+const probe = () =>
+  screen.getByTestId('probe').textContent.replace(/:-?\d+,-?\d+$/, '');
+const position = () => screen.getByTestId('probe').textContent.split(':')[3];
+
+// 화면에서 (0, 0)부터 656×800인 캔버스. 768에서 사이드바·팔레트 레일(56 + 56)을 뺀 폭이다.
+function FakeCanvas() {
+  const flow = useStoreApi();
+  useEffect(() => {
+    flow.setState({
+      domNode: {
+        getBoundingClientRect: () =>
+          ({ x: 0, y: 0, left: 0, top: 0, width: 656, height: 800 }) as DOMRect,
+      } as HTMLDivElement,
+    });
+  }, [flow]);
+  return null;
+}
 
 describe('간단 배치(md – lg)', () => {
   it('팔레트 레일의 "캔버스에 추가"는 노드를 추가하고 그 노드를 고른다', () => {
@@ -84,6 +101,39 @@ describe('간단 배치(md – lg)', () => {
       }),
     );
     expect(probe()).toBe('2:http:선택');
+  });
+
+  it('캔버스에 추가하면 겹쳐 열릴 설정 패널(320)을 뺀 보이는 영역 가운데에 놓는다', () => {
+    renderInEditor(
+      <>
+        <FakeCanvas />
+        <Palette />
+      </>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'HTTP' }));
+    fireEvent.click(
+      within(screen.getByRole('dialog', { name: 'HTTP' })).getByRole('button', {
+        name: /캔버스에 추가/,
+      }),
+    );
+    // 보이는 폭 336의 가운데 168에서 카드 반(68)을 빼고 16 격자에 맞춘 96, 높이 800의 가운데 400에서 42를 뺀 358 → 352
+    expect(position()).toBe('96,352');
+  });
+
+  it('패널 안 선택 목록에서 누른 Esc는 패널을 닫지 않는다', () => {
+    renderInEditor(
+      <>
+        <SelectFirst />
+        <SettingsPanel />
+        <div role="listbox">
+          <button type="button">GET</button>
+        </div>
+      </>,
+    );
+    fireEvent.keyDown(screen.getByRole('button', { name: 'GET' }), {
+      key: 'Escape',
+    });
+    expect(screen.getByRole('heading', { name: '시작' })).toBeTruthy();
   });
 
   it('겹친 설정 패널은 Esc와 닫기 버튼으로 닫힌다(선택 해제)', () => {

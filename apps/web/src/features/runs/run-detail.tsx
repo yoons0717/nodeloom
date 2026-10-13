@@ -19,6 +19,7 @@ import { CanvasControls } from '@/features/editor/canvas-controls';
 import { type CanvasNode, NodeCard } from '@/features/editor/node-card';
 import { formatRunTime } from '@/features/workflows/format';
 import { clientApi } from '@/lib/client-api';
+import { isAtLeast } from '@/lib/media';
 import {
   formatDuration,
   RUN_KIND_LABEL,
@@ -72,8 +73,7 @@ export function RunDetail({
   // 캔버스 아래에 쌓인 배치(lg 미만)에서는 노드를 고르면 패널 맨 위로 올린다(RESPONSIVE 4-4).
   const panel = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (panel.current && !window.matchMedia('(min-width: 1024px)').matches)
-      panel.current.scrollTop = 0;
+    if (panel.current && !isAtLeast('lg')) panel.current.scrollTop = 0;
   }, [selectedId]);
 
   const nodes: CanvasNode[] = run.graph.nodes.map((n) => {

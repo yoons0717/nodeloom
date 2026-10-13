@@ -33,7 +33,7 @@ import { runSummarySchema } from '@/features/runs/schemas';
 import { useCreateWorkflow } from '@/features/workflows/new-workflow-button';
 import { workflowListSchema } from '@/features/workflows/schemas';
 import { clientApi } from '@/lib/client-api';
-import { isXl } from '@/lib/media';
+import { isAtLeast } from '@/lib/media';
 import { cn } from '@/lib/utils';
 import { useSidebarState } from './sidebar-context';
 
@@ -134,7 +134,8 @@ export function AppSidebar({
 
   // 찾기 칸으로. xl 미만이면 겹쳐 열고, 접혀 있으면 펼친 뒤 포커스한다.
   const focusSearch = () => {
-    if (mode !== 'full' && !isXl()) return state?.openOverlay(true);
+    if (mode !== 'full' && !isAtLeast('xl'))
+      return state?.openOverlay({ search: true });
     if (collapsed) {
       focusAfterExpand.current = true;
       state?.setCollapsed(false);
@@ -251,9 +252,9 @@ export function AppSidebar({
             <button
               type="button"
               aria-label={rail ? '사이드바 펼치기' : '사이드바 접기'}
-              onClick={() =>
-                rail && !isXl()
-                  ? state.openOverlay()
+              onClick={(e) =>
+                rail && !isAtLeast('xl')
+                  ? state.openOverlay({ opener: e.currentTarget })
                   : state.setCollapsed(!rail)
               }
               className={cn(ICON_ITEM, !rail && '-mr-2 ml-auto')}

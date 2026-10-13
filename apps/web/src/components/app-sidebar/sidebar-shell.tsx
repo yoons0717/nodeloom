@@ -8,7 +8,11 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { AppSidebar, locate } from './app-sidebar';
 import { COLLAPSED_KEY } from './sidebar-constants';
-import { SidebarContext, useSidebarState } from './sidebar-context';
+import {
+  SidebarContext,
+  type SidebarState,
+  useSidebarState,
+} from './sidebar-context';
 
 export { COLLAPSED_KEY };
 
@@ -41,13 +45,13 @@ export function SidebarShell({
     setStored(v);
     document.cookie = `${COLLAPSED_KEY}=${v ? '1' : '0'}; path=/; max-age=31536000; samesite=lax`;
   }, []);
-  const value = useMemo(
+  const value = useMemo<SidebarState>(
     () => ({
       collapsed,
       setCollapsed,
       openMobile: () => setMobileOpen(true),
-      openOverlay: (search = false) => {
-        opener.current = document.activeElement as HTMLElement | null;
+      openOverlay: ({ search = false, opener: from } = {}) => {
+        opener.current = from ?? (document.activeElement as HTMLElement | null);
         setOverlay({ search });
       },
     }),

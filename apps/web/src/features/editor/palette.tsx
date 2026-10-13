@@ -6,7 +6,7 @@ import { useReactFlow, useStoreApi } from '@xyflow/react';
 import { type DragEvent, useEffect, useRef, useState } from 'react';
 import { buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { usePointerFine } from '@/lib/media';
+import { isAtLeast, usePointerFine } from '@/lib/media';
 import { cn } from '@/lib/utils';
 import { GRID } from './canvas';
 import { addNode, newNode } from './commands';
@@ -18,8 +18,11 @@ import { useEditorStore } from './store-context';
 const TYPES = Object.keys(NODE_SPECS) as NodeType[];
 // 노드 카드 크기(DESIGN.md). 카드 가운데가 캔버스 가운데에 오게 놓는다.
 const CARD = { width: 136, height: 84 };
+// md – lg에서 노드를 고르면 캔버스 오른쪽 위에 겹쳐 열리는 설정 패널 폭(w-80)
+const OVERLAY_PANEL = 320;
 
 // 지금 보이는 캔버스 가운데에 노드를 놓고 고른다(RESPONSIVE R9). 끌어다 놓기를 못 쓰는 터치 기기에서도 넣을 수 있게.
+// md – lg에서는 추가하자마자 설정 패널이 겹쳐 열리므로 그 폭을 뺀 영역의 가운데에 놓는다.
 function useAddAtCenter() {
   const graph = useEditorStore((s) => s.graph);
   const execute = useEditorStore((s) => s.execute);
@@ -30,7 +33,9 @@ function useAddAtCenter() {
     const rect = flow.getState().domNode?.getBoundingClientRect();
     const center = rect
       ? screenToFlowPosition({
-          x: rect.left + rect.width / 2,
+          x:
+            rect.left +
+            (rect.width - (isAtLeast('xl') ? 0 : OVERLAY_PANEL)) / 2,
           y: rect.top + rect.height / 2,
         })
       : { x: 0, y: 0 };

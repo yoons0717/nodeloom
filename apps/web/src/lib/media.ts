@@ -1,5 +1,11 @@
 import { useSyncExternalStore } from 'react';
 
+// 폭 단계(DESIGN.md "반응형"). Tailwind md · lg · xl과 같은 값이다.
+const WIDTH = { md: 768, lg: 1024, xl: 1280 } as const;
+type Width = keyof typeof WIDTH;
+
+export const minWidth = (step: Width) => `(min-width: ${WIDTH[step]}px)`;
+
 // 폭과 입력 방식 질의(RESPONSIVE 3장). 처음 그림은 CSS로 나누고, 여기 값은 누를 때나 마운트 뒤에만 쓴다.
 // 테스트(jsdom)처럼 matchMedia가 없으면 fallback을 돌려준다.
 function matches(query: string, fallback: boolean) {
@@ -9,9 +15,9 @@ function matches(query: string, fallback: boolean) {
     : window.matchMedia(query).matches;
 }
 
-// xl(1280px) 이상: 에디터 3열, 사이드바 저장값을 따른다.
-export function isXl() {
-  return matches('(min-width: 1280px)', true);
+// 폭이 그 단계 이상인지. matchMedia가 없으면 넓은 화면으로 본다.
+export function isAtLeast(step: Width) {
+  return matches(minWidth(step), true);
 }
 
 const FINE = '(pointer: fine)';

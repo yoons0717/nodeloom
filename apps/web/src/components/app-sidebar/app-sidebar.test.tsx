@@ -267,4 +267,38 @@ describe('접기', () => {
     );
     expect(screen.queryByRole('dialog', { name: '주 메뉴' })).toBeNull();
   });
+
+  it('겹쳐 연 사이드바를 Esc로 닫으면 누른 펼치기 버튼으로 포커스가 돌아온다', async () => {
+    nav.pathname = '/w/w1';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve(Response.json({ failedLast24h: 0, running: 0 })),
+      ),
+    );
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({ matches: false })),
+    );
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <SidebarShell
+          role="admin"
+          initialWorkflows={[wf('w1', '아침 비 알림')]}
+          storedCollapsed={false}
+        >
+          본문
+        </SidebarShell>
+      </QueryClientProvider>,
+    );
+    // 터치(iPad Safari)처럼 눌러도 버튼에 포커스가 가지 않는 경우
+    const expand = screen.getAllByRole('button', {
+      name: '사이드바 펼치기',
+    })[0]!;
+    fireEvent.click(expand);
+    fireEvent.keyDown(screen.getByRole('dialog', { name: '주 메뉴' }), {
+      key: 'Escape',
+    });
+    await vi.waitFor(() => expect(document.activeElement).toBe(expand));
+  });
 });

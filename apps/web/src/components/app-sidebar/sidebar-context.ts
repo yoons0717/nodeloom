@@ -7,7 +7,8 @@ export type SidebarState = {
   setCollapsed: (v: boolean) => void;
   openMobile: () => void;
   // md – lg에서 펼친 사이드바를 본문 위에 겹쳐 연다(RESPONSIVE 4-1). search면 찾기 칸에 포커스한다.
-  openOverlay: (search?: boolean) => void;
+  // opener: 닫힌 뒤 포커스를 돌려줄 버튼. 터치(iPad Safari)에서는 눌러도 버튼에 포커스가 가지 않아 직접 넘긴다.
+  openOverlay: (options?: { search?: boolean; opener?: HTMLElement }) => void;
 };
 
 export const SidebarContext = createContext<SidebarState | null>(null);

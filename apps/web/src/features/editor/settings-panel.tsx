@@ -1,11 +1,11 @@
 'use client';
 
 import type { GraphNode, NodeType } from '@nodeloom/core';
-import { type ComponentType, useEffect } from 'react';
+import { type ComponentType, useCallback, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { isXl } from '@/lib/media';
+import { isAtLeast } from '@/lib/media';
 import { cn } from '@/lib/utils';
 import { renameNode, updateConfig } from './commands';
 import { getGraphIssues } from './graph-issues';
@@ -38,21 +38,24 @@ export function SettingsPanel() {
       ? graph.nodes.find((n) => n.id === selection.nodeIds[0])
       : undefined;
   const open = node !== undefined;
-  const close = () => setSelection({ nodeIds: [], edgeIds: [] });
+  const close = useCallback(
+    () => setSelection({ nodeIds: [], edgeIds: [] }),
+    [setSelection],
+  );
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      // 도움말 같은 팝오버 안의 Esc는 그 팝오버만 닫는다.
+      // 도움말·선택 목록 같은 떠 있는 부품 안의 Esc는 그 부품만 닫는다.
       const inPopup = (e.target as Element | null)?.closest?.(
-        '[role="dialog"]',
+        '[role="dialog"], [role="listbox"], [role="menu"]',
       );
-      if (e.key !== 'Escape' || isXl() || inPopup) return;
-      setSelection({ nodeIds: [], edgeIds: [] });
+      if (e.key !== 'Escape' || isAtLeast('xl') || inPopup) return;
+      close();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, setSelection]);
+  }, [open, close]);
 
   return (
     <aside
