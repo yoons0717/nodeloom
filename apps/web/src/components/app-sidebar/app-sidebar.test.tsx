@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { z } from 'zod';
 import { workflowListSchema } from '@/features/workflows/schemas';
@@ -107,6 +113,69 @@ describe('AppSidebar', () => {
     expect(screen.getByLabelText('실패 2건')).toBeTruthy();
   });
 
+  it('새 워크플로우와 로그아웃이 실패하면 사유를 보여 준다', async () => {
+    renderSidebar('/');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string, init?: RequestInit) =>
+        Promise.resolve(
+          init?.method === 'POST'
+            ? Response.json(
+                {
+                  message: url.includes('logout')
+                    ? '로그아웃하지 못했습니다'
+                    : '데모에서는 워크플로우를 20개까지 만들 수 있습니다',
+                },
+                { status: url.includes('logout') ? 500 : 403 },
+              )
+            : Response.json({ failedLast24h: 0, running: 0 }),
+        ),
+      ),
+    );
+    fireEvent.click(screen.getByRole('button', { name: /새 워크플로우/ }));
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      '20개까지',
+    );
+    fireEvent.click(screen.getByRole('button', { name: '로그아웃' }));
+    await vi.waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toContain(
+        '로그아웃하지 못했습니다',
+      ),
+    );
+  });
+
+  it('실행 요약이 바뀌면 워크플로우 목록(상태 표시)도 다시 불러온다', async () => {
+    nav.pathname = '/';
+    const fetch = vi.fn((url: string) =>
+      Promise.resolve(
+        url.endsWith('/workflows')
+          ? Response.json([wf('w1', '아침 비 알림')])
+          : Response.json({ failedLast24h: 0, running: 1 }),
+      ),
+    );
+    vi.stubGlobal('fetch', fetch);
+    const client = new QueryClient();
+    render(
+      <QueryClientProvider client={client}>
+        <AppSidebar
+          role="admin"
+          initialWorkflows={[wf('w1', '아침 비 알림')]}
+        />
+      </QueryClientProvider>,
+    );
+    await vi.waitFor(() =>
+      expect(client.getQueryData(['run-summary'])).toBeTruthy(),
+    );
+    const listCalls = () =>
+      fetch.mock.calls.filter(([u]) => u.endsWith('/workflows')).length;
+    const before = listCalls();
+    // 스케줄 실행이 끝나 실행 중이 0이 되고 실패가 하나 늘었다.
+    act(() => {
+      client.setQueryData(['run-summary'], { failedLast24h: 1, running: 0 });
+    });
+    await vi.waitFor(() => expect(listCalls()).toBe(before + 1));
+  });
+
   it('화살표는 이동 없이 펼치기만 하고, 찾기는 이름으로 거른다', () => {
     renderSidebar('/');
     fireEvent.click(screen.getByRole('button', { name: '평일 보고 펼치기' }));
@@ -130,7 +199,7 @@ describe('접기', () => {
     expect(resolveCollapsed(true, '/')).toBe(true);
   });
 
-  it('에디터에서 접힌 채 시작하고, 펼치면 그 선택을 쿠키와 localStorage에 남긴다', () => {
+  it('에디터에서 접힌 채 시작하고, 펼치면 그 선택을 쿠키에 남긴다', () => {
     nav.pathname = '/w/w1';
     vi.stubGlobal(
       'fetch',
@@ -159,6 +228,5 @@ describe('접기', () => {
     fireEvent.click(screen.getByRole('button', { name: '사이드바 펼치기' }));
     expect(screen.getByRole('button', { name: '사이드바 접기' })).toBeTruthy();
     expect(document.cookie).toContain(`${COLLAPSED_KEY}=0`);
-    expect(localStorage.getItem(COLLAPSED_KEY)).toBe('0');
   });
 });

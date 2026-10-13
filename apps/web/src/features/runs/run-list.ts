@@ -23,20 +23,6 @@ export function parseRunFilter(value: unknown): RunFilter {
     : 'all';
 }
 
-// 대기 중도 "실행 중"으로 친다(아직 끝나지 않음).
-export function matchesFilter(run: RunListItem, filter: RunFilter) {
-  switch (filter) {
-    case 'all':
-      return true;
-    case 'failed':
-      return run.status === 'FAILED';
-    case 'success':
-      return run.status === 'SUCCESS';
-    case 'running':
-      return run.status === 'PENDING' || run.status === 'RUNNING';
-  }
-}
-
 const dayLabelFormatter = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'UTC',
   month: 'long',

@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { useEditorStore } from '@/features/editor/store-context';
 import { ApiError, clientApi } from '@/lib/client-api';
 
-type Saved = { name: string; graph: Graph; json: string };
+type Body = { name: string; graph: Graph };
+type Saved = Body & { json: string };
 
 const LEAVE_MESSAGE =
   '저장하지 않은 변경 사항이 있습니다. 이 페이지를 나갈까요?';
@@ -52,7 +53,7 @@ export function SaveControls({
   const dirty = graphChanged || trimmed !== saved.name;
 
   const save = useMutation({
-    mutationFn: (body: { name: string; graph: Graph }) =>
+    mutationFn: (body: Body) =>
       clientApi(`/workflows/${id}`, {
         method: 'PUT',
         body: JSON.stringify(body),
@@ -60,20 +61,38 @@ export function SaveControls({
     onSuccess: (_, body) => {
       // 이름이 바뀌었을 수 있으니 사이드바 목록을 다시 불러온다(M6 6-g).
       void queryClient.invalidateQueries({ queryKey: ['workflows'] });
+      // 이름 칸은 건드리지 않는다. 저장하는 동안 이어서 입력한 글자가 지워지지 않게.
       setSaved({ ...body, json: JSON.stringify(body.graph) });
-      setName(body.name);
     },
   });
+  // 진행 중인 저장. 실행이 저장을 기다릴 때 같은 내용을 한 번 더 보내지 않게 한다.
+  const [inflight, setInflight] = useState<{
+    body: Body;
+    done: Promise<unknown>;
+  } | null>(null);
+  const send = (body: Body) => {
+    const done = save.mutateAsync(body);
+    setInflight({ body, done });
+    return done;
+  };
   const canSave = dirty && !nameError && !save.isPending;
   const submit = () => {
-    if (canSave) save.mutate({ name: trimmed, graph });
+    // 실패 사유는 save.error로 저장 상태 칸에 나온다.
+    if (canSave) send({ name: trimmed, graph }).catch(() => {});
   };
   // 저장할 것이 없으면 바로 true. 저장에 실패하면 false이고 사유는 저장 상태 칸에 나온다.
   const ensureSaved = async () => {
     if (!dirty) return true;
     if (nameError) return false;
     try {
-      await save.mutateAsync({ name: trimmed, graph });
+      const current = save.isPending ? inflight : null;
+      if (current) {
+        await current.done;
+        // 기다린 저장이 지금 내용 그대로면 끝. 그사이 바뀌었으면 이어서 한 번 더 저장한다.
+        if (current.body.name === trimmed && current.body.graph === graph)
+          return true;
+      }
+      await send({ name: trimmed, graph });
       return true;
     } catch {
       return false;

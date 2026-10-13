@@ -17,7 +17,7 @@ export function resolveCollapsed(stored: boolean | null, pathname: string) {
   return stored ?? locate(pathname).section === 'edit';
 }
 
-// 사이드바와 본문 틀. 접힘 상태는 쿠키(서버가 처음 그릴 때 읽어 hydration이 어긋나지 않게)와 localStorage에 둔다.
+// 사이드바와 본문 틀. 접힘 상태는 쿠키에 둔다(서버가 처음 그릴 때 읽어 hydration이 어긋나지 않게).
 export function SidebarShell({
   role,
   initialWorkflows,
@@ -37,11 +37,6 @@ export function SidebarShell({
   const setCollapsed = useCallback((v: boolean) => {
     setStored(v);
     document.cookie = `${COLLAPSED_KEY}=${v ? '1' : '0'}; path=/; max-age=31536000; samesite=lax`;
-    try {
-      localStorage.setItem(COLLAPSED_KEY, v ? '1' : '0');
-    } catch {
-      // 사생활 보호 모드 등에서는 쿠키만으로 충분하다.
-    }
   }, []);
   const value = useMemo(
     () => ({ collapsed, setCollapsed, openMobile: () => setMobileOpen(true) }),

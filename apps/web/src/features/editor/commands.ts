@@ -97,14 +97,6 @@ function collect<T>(list: T[], pick: (item: T) => boolean) {
   return list.flatMap((item, index) => (pick(item) ? [{ index, item }] : []));
 }
 
-export function deleteEdges(graph: Graph, edgeIds: string[]): Command {
-  return deleteElements(graph, [], edgeIds);
-}
-
-export function deleteNodes(graph: Graph, nodeIds: string[]): Command {
-  return deleteElements(graph, nodeIds, []);
-}
-
 // 선택한 노드와 연결을 한 번에 지운다(Undo 한 번에 되돌아감). 노드를 지우면 붙어 있던 연결도 함께 지운다.
 // 되돌릴 때 노드와 연결을 원래 자리로 복원한다.
 export function deleteElements(

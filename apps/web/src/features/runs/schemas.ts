@@ -85,7 +85,6 @@ export const allRunsSchema = z.array(
     workflow: z.object({ id: z.string(), name: z.string() }),
   }),
 );
-export type AllRunsItem = z.output<typeof allRunsSchema>[number];
 
 export const runSummarySchema = z.object({
   failedLast24h: z.number(),

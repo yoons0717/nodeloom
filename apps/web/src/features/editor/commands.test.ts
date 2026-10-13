@@ -4,8 +4,7 @@ import {
   addNode,
   connect,
   createInitialGraph,
-  deleteEdges,
-  deleteNodes,
+  deleteElements,
   moveNodes,
   newNode,
   renameNode,
@@ -72,8 +71,8 @@ describe('Command.revert', () => {
           to: { node: g.nodes[2]!.id, port: 'in' },
         }),
     ],
-    ['연결 삭제', (g) => deleteEdges(g, ['e1'])],
-    ['노드 삭제', (g) => deleteNodes(g, [g.nodes[1]!.id])],
+    ['연결 삭제', (g) => deleteElements(g, [], ['e1'])],
+    ['노드 삭제', (g) => deleteElements(g, [g.nodes[1]!.id], [])],
     [
       '설정 변경(새 칸)',
       (g) => updateConfig(g, g.nodes[1]!.id, 'url', 'https://x'),
@@ -91,17 +90,17 @@ describe('Command.revert', () => {
   });
 });
 
-describe('deleteNodes', () => {
+describe('deleteElements', () => {
   it('노드를 지우면 붙어 있던 연결도 함께 지운다', () => {
     const g = sample();
-    const after = deleteNodes(g, [g.nodes[1]!.id]).apply(g);
+    const after = deleteElements(g, [g.nodes[1]!.id], []).apply(g);
     expect(after.nodes).toHaveLength(2);
     expect(after.edges).toEqual([]);
   });
 
   it('되돌리면 노드와 연결이 원래 순서대로 돌아온다', () => {
     const g = sample();
-    const command = deleteNodes(g, [g.nodes[1]!.id]);
+    const command = deleteElements(g, [g.nodes[1]!.id], []);
     const restored = command.revert(command.apply(g));
     expect(restored.nodes.map((n) => n.id)).toEqual(g.nodes.map((n) => n.id));
     expect(restored.edges.map((e) => e.id)).toEqual(['e1', 'e2']);

@@ -12,7 +12,6 @@ import {
 import {
   EMPTY_FILTER_MESSAGE,
   groupRunsByDay,
-  matchesFilter,
   type RunFilter,
   RUN_FILTERS,
 } from './run-list';
@@ -24,6 +23,7 @@ const LIMIT = 50;
 type Run = RunListItem & { workflow?: { id: string; name: string } };
 
 // 워크플로우 하나의 실행 기록과 모든 실행이 함께 쓰는 목록: 상태 거르기 칩, 날짜별 묶음, 행.
+// runs는 서버가 상태로 거른 최근 50건이다(?status=). 그래서 칩에는 개수를 붙이지 않는다.
 // workflowId가 없으면(모든 실행) 행마다 워크플로우 이름을 보여 준다.
 export function RunHistory({
   runs,
@@ -36,13 +36,11 @@ export function RunHistory({
   basePath: string;
   workflowId?: string;
 }) {
-  const visible = runs.filter((r) => matchesFilter(r, filter));
-  const groups = groupRunsByDay(visible, new Date());
+  const groups = groupRunsByDay(runs, new Date());
   return (
     <>
       <nav aria-label="상태 거르기" className="flex flex-wrap gap-2">
         {RUN_FILTERS.map((f) => {
-          const count = runs.filter((r) => matchesFilter(r, f.value)).length;
           const on = f.value === filter;
           return (
             <Link
@@ -59,14 +57,11 @@ export function RunHistory({
               )}
             >
               {f.label}
-              <span className="font-mono text-caption text-muted-foreground">
-                {count}
-              </span>
             </Link>
           );
         })}
       </nav>
-      {visible.length === 0 ? (
+      {runs.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border px-6 py-12 text-center text-sm text-muted-foreground">
           {filter !== 'all' && EMPTY_FILTER_MESSAGE[filter]}
         </p>

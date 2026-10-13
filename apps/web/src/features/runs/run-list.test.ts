@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { groupRunsByDay, matchesFilter, parseRunFilter } from './run-list';
+import { groupRunsByDay, parseRunFilter } from './run-list';
 import type { RunListItem } from './schemas';
 
 const run = (
@@ -36,10 +36,8 @@ describe('groupRunsByDay', () => {
   });
 });
 
-describe('matchesFilter', () => {
-  it('실행 중 거르기는 대기 중도 포함하고, 알 수 없는 값은 전체로 본다', () => {
-    expect(matchesFilter(run('a', '', 'PENDING'), 'running')).toBe(true);
-    expect(matchesFilter(run('a', '', 'FAILED'), 'success')).toBe(false);
+describe('parseRunFilter', () => {
+  it('알 수 없는 값은 전체로 본다', () => {
     expect(parseRunFilter('failed')).toBe('failed');
     expect(parseRunFilter('nope')).toBe('all');
     expect(parseRunFilter(undefined)).toBe('all');

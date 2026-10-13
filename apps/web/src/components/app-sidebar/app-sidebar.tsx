@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ChevronRight,
   History,
@@ -23,6 +23,7 @@ import {
 import type { z } from 'zod';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { InlineError } from '@/components/ui/inline-error';
 import {
   Tooltip,
   TooltipContent,
@@ -103,13 +104,25 @@ export function AppSidebar({
       workflowListSchema.parse(await clientApi('/workflows')),
     initialData: initialWorkflows,
   });
-  // 끝나지 않은 실행이 있을 때만 30초마다 다시 불러온다.
+  // 끝나지 않은 실행이 있으면 30초, 없으면 1분마다 다시 불러온다. 혼자 시작된 스케줄 실행도 알아채게.
   const summary = useQuery({
     queryKey: ['run-summary'],
     queryFn: async () =>
       runSummarySchema.parse(await clientApi('/runs/summary')),
-    refetchInterval: (q) => (q.state.data?.running ? 30_000 : false),
+    refetchInterval: (q) => (q.state.data?.running ? 30_000 : 60_000),
   });
+  // 요약이 바뀌면(실행이 끝남, 실패가 늘거나 24시간이 지나 줄어듦) 트리의 상태 표시도 다시 불러온다.
+  const queryClient = useQueryClient();
+  const summaryKey = summary.data
+    ? `${summary.data.running}:${summary.data.failedLast24h}`
+    : undefined;
+  const lastSummaryKey = useRef(summaryKey);
+  useEffect(() => {
+    if (summaryKey === lastSummaryKey.current) return;
+    const first = lastSummaryKey.current === undefined;
+    lastSummaryKey.current = summaryKey;
+    if (!first) void queryClient.invalidateQueries({ queryKey: ['workflows'] });
+  }, [summaryKey, queryClient]);
 
   // 찾기 칸으로. 접혀 있으면 펼친 뒤 포커스한다.
   const focusSearch = () => {
@@ -183,12 +196,15 @@ export function AppSidebar({
     },
   ];
   const current = workflows.data.find((w) => w.id === workflowId);
-  const logout = () => {
-    void clientApi('/auth/logout', { method: 'POST' }).then(() => {
+  const logout = useMutation({
+    mutationFn: () => clientApi('/auth/logout', { method: 'POST' }),
+    onSuccess: () => {
       router.replace('/login');
       router.refresh();
-    });
-  };
+    },
+  });
+  // 만들기·로그아웃 실패 사유. 새로 누르면 다른 쪽 사유는 지운다. 접힌 상태에서는 버튼 툴팁으로 보여 준다.
+  const footerError = create.error ?? logout.error;
   const roleLabel = role === 'admin' ? '관리자' : '데모 방문자';
 
   return (
@@ -395,11 +411,14 @@ export function AppSidebar({
         )}
       >
         {collapsed ? (
-          <Tip label="새 워크플로우" enabled>
+          <Tip label={create.error?.message ?? '새 워크플로우'} enabled>
             <button
               type="button"
               aria-label="새 워크플로우"
-              onClick={() => create.mutate()}
+              onClick={() => {
+                logout.reset();
+                create.mutate();
+              }}
               disabled={create.isPending}
               className={ICON_ITEM}
             >
@@ -410,7 +429,10 @@ export function AppSidebar({
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => create.mutate()}
+            onClick={() => {
+              logout.reset();
+              create.mutate();
+            }}
             disabled={create.isPending}
           >
             <Plus aria-hidden />
@@ -438,7 +460,11 @@ export function AppSidebar({
               <button
                 type="button"
                 aria-label="로그아웃"
-                onClick={logout}
+                onClick={() => {
+                  create.reset();
+                  logout.mutate();
+                }}
+                disabled={logout.isPending}
                 className={ICON_ITEM}
               >
                 <LogOut className="size-4" />
@@ -446,6 +472,13 @@ export function AppSidebar({
             </Tip>
           )}
         </div>
+        {footerError && !collapsed && (
+          <InlineError
+            role="alert"
+            message={footerError.message}
+            className="text-xs"
+          />
+        )}
       </div>
     </nav>
   );

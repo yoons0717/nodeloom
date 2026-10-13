@@ -132,3 +132,59 @@ describe('SaveControls', () => {
     confirm.mockRestore();
   });
 });
+
+// 저장(PUT)이 끝나는 시점을 테스트가 정한다.
+function stubSlowSave() {
+  const finish: (() => void)[] = [];
+  const fetchMock = vi.fn(
+    () =>
+      new Promise<Response>((resolve) =>
+        finish.push(() => resolve(new Response(null, { status: 204 }))),
+      ),
+  );
+  vi.stubGlobal('fetch', fetchMock);
+  return { fetchMock, finish };
+}
+
+function renderWithRun(
+  after?: (ensureSaved: () => Promise<boolean>) => React.ReactNode,
+) {
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <EditorStoreProvider initial={createInitialGraph()}>
+        <SaveControls id="wf-1" initialName="아침 알림" after={after} />
+      </EditorStoreProvider>
+    </QueryClientProvider>,
+  );
+  return screen.getByLabelText<HTMLInputElement>('워크플로우 이름');
+}
+
+describe('SaveControls 저장 중', () => {
+  it('저장 중에 이어서 입력한 이름을 저장이 끝나도 지우지 않는다', async () => {
+    const { finish } = stubSlowSave();
+    const name = renderWithRun();
+    fireEvent.change(name, { target: { value: '아침 비 알림' } });
+    fireEvent.keyDown(window, { key: 's', metaKey: true });
+    await waitFor(() => expect(finish).toHaveLength(1));
+    fireEvent.change(name, { target: { value: '아침 비 알림 2' } });
+    finish[0]!();
+    await waitFor(() => expect(screen.getByText('저장 안 됨')).toBeTruthy());
+    expect(name.value).toBe('아침 비 알림 2');
+  });
+
+  it('저장 중에 실행하면 저장을 한 번 더 보내지 않고 끝나기를 기다린다', async () => {
+    const { fetchMock, finish } = stubSlowSave();
+    let ensure!: () => Promise<boolean>;
+    const name = renderWithRun((ensureSaved) => {
+      ensure = ensureSaved;
+      return null;
+    });
+    fireEvent.change(name, { target: { value: '아침 비 알림' } });
+    fireEvent.keyDown(window, { key: 's', metaKey: true });
+    await waitFor(() => expect(finish).toHaveLength(1));
+    const saved = ensure();
+    finish.forEach((f) => f());
+    expect(await saved).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
