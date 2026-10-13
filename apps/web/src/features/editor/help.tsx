@@ -21,6 +21,12 @@ const RULES: [use: string, mean: string, example: string][] = [
 
 const JSONATA_DOCS = 'https://docs.jsonata.org/overview.html';
 
+// 도움말 팝오버와 노드 목록 레일 팝오버가 같이 쓰는 바탕·화살표(DESIGN.md)
+export const HELP_POPUP =
+  'relative flex flex-col rounded-[10px] border border-help-border bg-help text-foreground shadow-help outline-none';
+export const HELP_ARROW =
+  'size-2.5 rotate-45 border-help-border bg-help data-[side=left]:-right-1.5 data-[side=left]:border-t data-[side=left]:border-r data-[side=right]:-left-1.5 data-[side=right]:border-b data-[side=right]:border-l';
+
 // 도움말 팝오버(M6 6-i, DESIGN.md). 식을 보면서 입력하도록 바깥을 누르거나 포커스가 나가도 닫지 않고, × 또는 Esc로 닫는다.
 // 팝오버는 (?)가 든 패널(data-help-edge) 바깥에 붙고, 화살표는 (?) 높이를 가리킨다.
 function HelpPopover({
@@ -86,12 +92,9 @@ function HelpPopover({
           className="z-50"
         >
           <Popover.Popup
-            className={cn(
-              'relative flex max-h-(--available-height) flex-col rounded-[10px] border border-help-border bg-help text-foreground shadow-help outline-none',
-              className,
-            )}
+            className={cn(HELP_POPUP, 'max-h-(--available-height)', className)}
           >
-            <Popover.Arrow className="size-2.5 rotate-45 border-help-border bg-help data-[side=left]:-right-1.5 data-[side=left]:border-t data-[side=left]:border-r data-[side=right]:-left-1.5 data-[side=right]:border-b data-[side=right]:border-l" />
+            <Popover.Arrow className={HELP_ARROW} />
             <div className="flex shrink-0 items-center gap-2 pt-3 pr-3 pl-4">
               {icon}
               <Popover.Title className="min-w-0 flex-1 truncate text-sm font-bold">
@@ -128,7 +131,7 @@ export function ExpressionHelp({
       title={title}
       side="left"
       sideOffset={12}
-      className="max-h-[min(640px,var(--available-height))] w-[440px]"
+      className="max-h-[min(640px,var(--available-height))] w-[min(440px,var(--available-width))]"
     >
       <div className="flex shrink-0 flex-col gap-2.5 px-4 pt-2 pb-3.5 text-body-sm text-label">
         {children}
@@ -194,7 +197,7 @@ export function NodeHelp({ type }: { type: NodeType }) {
       icon={<NodeGlyph type={type} size="xs" />}
       side="right"
       sideOffset={8}
-      className="w-[340px]"
+      className="w-[min(340px,var(--available-width))]"
     >
       <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3.5 gap-y-2 px-4 pt-2.5 pb-3.5 text-body-sm">
         <dt className="text-xs leading-5 text-muted-foreground">하는 일</dt>

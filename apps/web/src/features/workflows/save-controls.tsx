@@ -55,7 +55,9 @@ export function SaveControls({
         ? '이름은 100자까지 쓸 수 있습니다'
         : undefined;
   const dirty = graphChanged || trimmed !== saved.name;
-  useEffect(() => onDirtyChange?.(dirty), [dirty, onDirtyChange]);
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
 
   const save = useMutation({
     mutationFn: (body: Body) =>
@@ -152,7 +154,7 @@ export function SaveControls({
         aria-label="워크플로우 이름"
         aria-invalid={nameError ? true : undefined}
         title={nameError}
-        className="field-sizing-content h-9 w-auto max-w-72 min-w-24 border-transparent bg-transparent text-base font-bold hover:border-border-control"
+        className="field-sizing-content h-9 w-auto max-w-48 min-w-24 xl:max-w-72 border-transparent bg-transparent text-base font-bold hover:border-border-control"
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
@@ -225,7 +227,8 @@ function SaveStatus({
     return (
       <span className={`${CHIP} bg-warning-soft text-warning-text`}>
         <span aria-hidden>●</span>
-        <span role="status" className="-ml-1">
+        {/* md – lg에서는 ●만 보인다(RESPONSIVE 4-2). 글자는 스크린 리더에 남긴다. */}
+        <span role="status" className="-ml-1 max-xl:sr-only">
           저장 안 됨
         </span>
         <button

@@ -33,6 +33,7 @@ import { runSummarySchema } from '@/features/runs/schemas';
 import { useCreateWorkflow } from '@/features/workflows/new-workflow-button';
 import { workflowListSchema } from '@/features/workflows/schemas';
 import { clientApi } from '@/lib/client-api';
+import { isXl } from '@/lib/media';
 import { cn } from '@/lib/utils';
 import { useSidebarState } from './sidebar-context';
 
@@ -518,14 +519,6 @@ export function AppSidebar({
         body(mode === 'rail')
       )}
     </nav>
-  );
-}
-
-// 폭이 xl(1280px) 이상인지. 누를 때만 묻는다(처음 그림에는 쓰지 않음). 테스트(jsdom)에는 matchMedia가 없어 넓은 화면으로 본다.
-function isXl() {
-  return (
-    typeof window.matchMedia !== 'function' ||
-    window.matchMedia('(min-width: 1280px)').matches
   );
 }
 

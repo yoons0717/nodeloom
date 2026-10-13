@@ -112,3 +112,36 @@ test('Condition이 고른 갈래만 실행되고, 상세 화면에서 고른 쪽
   // 출력 패널의 JSON 보기(값은 눌러서 고를 수 있는 버튼)
   await expect(page.getByRole('button', { name: '"크다"' })).toBeVisible();
 });
+
+// 태블릿 세로(768): 팔레트는 레일, 설정 패널은 캔버스 위에 겹쳐 열린다(RESPONSIVE 4-3).
+test.describe('768px 간단 배치', () => {
+  test.use({ viewport: { width: 768, height: 1024 } });
+
+  test('팔레트 레일로 노드를 추가하면 설정 패널이 겹쳐 열리고 Esc로 닫힌다', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: '새로 만들기' }).click();
+    await expect(page).toHaveURL(/\/w\/[0-9a-f-]+$/);
+    await expect(nodes(page)).toHaveCount(1);
+
+    await page
+      .getByRole('complementary', { name: '노드 목록' })
+      .getByRole('button', { name: 'HTTP', exact: true })
+      .click();
+    await page
+      .getByRole('dialog', { name: 'HTTP' })
+      .getByRole('button', { name: /캔버스에 추가/ })
+      .click();
+    await expect(nodes(page)).toHaveCount(2);
+
+    const panel = page.getByRole('complementary', { name: '노드 설정' });
+    await expect(
+      panel.getByRole('heading', { name: 'HTTP 요청' }),
+    ).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+
+    await save(page);
+  });
+});

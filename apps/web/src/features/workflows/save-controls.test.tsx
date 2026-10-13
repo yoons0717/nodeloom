@@ -82,6 +82,30 @@ describe('SaveControls', () => {
     });
   });
 
+  it('저장 안 된 변경이 생기고 없어질 때마다 onDirtyChange로 알린다', () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.resolve(new Response(null, { status: 204 }))),
+    );
+    const seen: boolean[] = [];
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <EditorStoreProvider initial={createInitialGraph()}>
+          {/* 값을 돌려주는 콜백도 받는다(effect 정리 함수로 쓰이면 안 된다). */}
+          <SaveControls
+            id="wf-1"
+            initialName="아침 비 알림"
+            onDirtyChange={(d) => seen.push(d)}
+          />
+          <Actions />
+        </EditorStoreProvider>
+      </QueryClientProvider>,
+    );
+    fireEvent.click(screen.getByText('노드 추가'));
+    fireEvent.click(screen.getByText('되돌리기'));
+    expect(seen).toEqual([false, true, false]);
+  });
+
   it('되돌려서 저장한 상태와 내용이 같아지면 다시 저장됨으로 본다', () => {
     renderControls();
     fireEvent.click(screen.getByText('노드 추가'));

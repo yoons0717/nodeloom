@@ -58,7 +58,9 @@ export function WorkflowEditor({ workflow }: { workflow: Workflow }) {
               <SaveControls
                 id={workflow.id}
                 initialName={workflow.name}
-                onDirtyChange={(d) => (dirty.current = d)}
+                onDirtyChange={(d) => {
+                  dirty.current = d;
+                }}
                 actions={<GraphIssueBadge />}
                 after={(ensureSaved) => (
                   <RunControls

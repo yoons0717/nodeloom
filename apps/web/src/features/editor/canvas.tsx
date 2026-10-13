@@ -34,7 +34,7 @@ const nodeTypes = {
   transform: NodeCard,
   condition: NodeCard,
 };
-const GRID: [number, number] = [16, 16];
+export const GRID: [number, number] = [16, 16];
 
 // React Flow의 연결 정보(source/target)를 core의 포트 표기(from/to)로 바꾼다.
 function toPorts(c: {

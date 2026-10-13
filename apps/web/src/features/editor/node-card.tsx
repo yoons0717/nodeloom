@@ -77,7 +77,8 @@ export function NodeCard({ data, selected }: NodeProps<CanvasNode>) {
               <InfoTip content={issues.map((i) => i.message).join('\n')}>
                 <span
                   tabIndex={0}
-                  aria-label={`오류 ${issues.length}개: ${issues.map((i) => i.message).join(', ')}`}
+                  // 문구는 카드 셋째 줄과 설정 패널에 있다. 칸 이름과 겹치지 않게 개수만 읽는다.
+                  aria-label={`오류 ${issues.length}개`}
                   className="rounded-full bg-danger-soft px-1.5 text-danger-text"
                 >
                   ! {issues.length}

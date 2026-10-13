@@ -1,10 +1,12 @@
 'use client';
 
 import type { GraphNode, NodeType } from '@nodeloom/core';
-import type { ComponentType } from 'react';
+import { type ComponentType, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { isXl } from '@/lib/media';
+import { cn } from '@/lib/utils';
 import { renameNode, updateConfig } from './commands';
 import { getGraphIssues } from './graph-issues';
 import { NodeGlyph } from './node-glyph';
@@ -24,25 +26,48 @@ const SETTINGS: Record<NodeType, ComponentType<SettingsProps>> = {
   condition: ConditionSettings,
 };
 
+// xl 이상은 캔버스 오른쪽에 나란히(320). md – lg는 노드를 고르면 캔버스 위 오른쪽에 겹쳐 연다(RESPONSIVE 4-3).
+// 겹친 패널은 모달이 아니라 열려 있어도 캔버스를 움직일 수 있고, 선택 해제·닫기 버튼·Esc로 닫힌다.
 export function SettingsPanel() {
   const graph = useEditorStore((s) => s.graph);
   const selection = useEditorStore((s) => s.selection);
+  const setSelection = useEditorStore((s) => s.setSelection);
   // 노드를 정확히 하나 골랐을 때만 설정을 보여 준다.
   const node =
     selection.nodeIds.length === 1
       ? graph.nodes.find((n) => n.id === selection.nodeIds[0])
       : undefined;
+  const open = node !== undefined;
+  const close = () => setSelection({ nodeIds: [], edgeIds: [] });
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      // 도움말 같은 팝오버 안의 Esc는 그 팝오버만 닫는다.
+      const inPopup = (e.target as Element | null)?.closest?.(
+        '[role="dialog"]',
+      );
+      if (e.key !== 'Escape' || isXl() || inPopup) return;
+      setSelection({ nodeIds: [], edgeIds: [] });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, setSelection]);
 
   return (
     <aside
       aria-label="노드 설정"
       data-help-edge
-      className="flex w-80 shrink-0 flex-col border-l border-border-subtle bg-surface"
+      className={cn(
+        'flex w-80 shrink-0 flex-col xl:border-l xl:border-border-subtle xl:bg-surface',
+        'max-xl:absolute max-xl:inset-y-0 max-xl:right-0 max-xl:z-20 max-xl:border-l max-xl:border-help-border max-xl:bg-overlay max-xl:shadow-panel',
+        !open && 'max-xl:hidden',
+      )}
     >
       {node ? (
         <ScrollArea className="min-h-0 flex-1">
           {/* 노드가 바뀌면 입력 중이던 내용을 버리고 새로 그린다. */}
-          <NodeSettings key={node.id} node={node} />
+          <NodeSettings key={node.id} node={node} onClose={close} />
         </ScrollArea>
       ) : (
         <p className="p-4 text-xs text-muted-foreground">
@@ -53,7 +78,13 @@ export function SettingsPanel() {
   );
 }
 
-function NodeSettings({ node }: { node: GraphNode }) {
+function NodeSettings({
+  node,
+  onClose,
+}: {
+  node: GraphNode;
+  onClose: () => void;
+}) {
   const graph = useEditorStore((s) => s.graph);
   const execute = useEditorStore((s) => s.execute);
   const issues = getGraphIssues(graph).byNode.get(node.id) ?? [];
@@ -68,15 +99,26 @@ function NodeSettings({ node }: { node: GraphNode }) {
   return (
     <>
       {/* 머리: 종류, 제목, 다른 노드에서 읽는 이름. 참조 키는 카드 대신 여기에 보인다. */}
-      <div className="flex flex-col gap-2 border-b border-border-subtle p-4">
-        <span
-          className={`flex h-6 w-fit items-center gap-1.5 rounded-md pr-2 pl-1 text-xs font-medium ${meta.chipClass}`}
-        >
-          <span aria-hidden className="w-4 text-center">
-            {meta.glyph}
+      <div className="flex flex-col gap-2 border-b border-border-subtle p-4 max-xl:border-help-border">
+        <div className="flex items-center">
+          <span
+            className={`flex h-6 w-fit items-center gap-1.5 rounded-md pr-2 pl-1 text-xs font-medium ${meta.chipClass}`}
+          >
+            <span aria-hidden className="w-4 text-center">
+              {meta.glyph}
+            </span>
+            {meta.label}
           </span>
-          {meta.label}
-        </span>
+          {/* 겹쳐 연 패널(md – lg)에서만 보인다. */}
+          <button
+            type="button"
+            aria-label="설정 닫기"
+            onClick={onClose}
+            className="-m-2.5 ml-auto flex size-11 items-center justify-center rounded-md text-lg text-muted-foreground outline-none hover:bg-raised-hover hover:text-foreground focus-visible:ring-3 focus-visible:ring-accent-ring xl:hidden"
+          >
+            ×
+          </button>
+        </div>
         <h2 className="truncate text-base font-bold">{node.title}</h2>
         <p className="font-mono text-xs text-muted-foreground">
           $nodes.{node.key}
