@@ -46,6 +46,27 @@ describe('topoSort', () => {
     expect(topoSort(g)).toEqual({ ok: false, cycle: ['weather_1', 'merge_1'] });
   });
 
+  it('순환 뒤에 노드가 여러 개 이어 붙어 있어도 순환에 걸린 노드만 돌려준다', () => {
+    // trigger → a ⇄ b → t_1 → t_2
+    const g = graph(
+      [
+        node('trigger_1', 'trigger'),
+        node('a_1', 'transform', { expression: '1' }),
+        node('b_1', 'transform', { expression: '1' }),
+        node('t_1', 'transform', { expression: '1' }),
+        node('t_2', 'transform', { expression: '1' }),
+      ],
+      [
+        edge('trigger_1', 'a_1'),
+        edge('a_1', 'b_1'),
+        edge('b_1', 'a_1'),
+        edge('b_1', 't_1'),
+        edge('t_1', 't_2'),
+      ],
+    );
+    expect(topoSort(g)).toEqual({ ok: false, cycle: ['a_1', 'b_1'] });
+  });
+
   it('자기 연결도 순환으로 본다', () => {
     const g = rainFlow();
     g.edges.push(edge('msg_1', 'msg_1'));

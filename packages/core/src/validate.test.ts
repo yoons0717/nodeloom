@@ -59,11 +59,31 @@ describe('validateGraph', () => {
     );
   });
 
+  it('참조 키 끝에 허용되지 않는 글자가 있으면 보고한다', () => {
+    const g = rainFlow();
+    g.nodes[1]!.key = 'http_1-x';
+    expect(codes(g)).toContain('invalid_key');
+  });
+
+  it('한 칸에 오류가 여러 개여도 그 칸은 한 번만 보고한다', () => {
+    const g = rainFlow();
+    // 쿼리 값 두 개가 모두 문자열이 아니다.
+    g.nodes[1]!.config = { url: 'https://example.com', query: { a: 1, b: 2 } };
+    expect(validateGraph(g).filter((i) => i.field === 'query')).toHaveLength(1);
+  });
+
   it('Trigger는 정확히 1개여야 한다', () => {
     const g = rainFlow();
     g.nodes.push(node('trigger_2', 'trigger'));
     expect(codes(g)).toContain('trigger_count');
     expect(codes(graph([], []))).toContain('trigger_count');
+  });
+
+  it('Condition의 양쪽 갈래 모두 Trigger에서 이어진 것으로 본다', () => {
+    const g = rainFlow();
+    g.nodes.push(node('alt_1', 'transform', { expression: '1' }));
+    g.edges.push(edge('cond_1', 'alt_1', 'false'));
+    expect(validateGraph(g)).toEqual([]);
   });
 
   it('Trigger에서 이어지지 않은 노드를 보고한다', () => {
@@ -88,6 +108,35 @@ describe('validateGraph', () => {
         'duplicate_edge',
       ]),
     );
+  });
+
+  it('출발이나 도착 한쪽만 잘못돼도 보고한다', () => {
+    const issueOf = (e: ReturnType<typeof edge>) => {
+      const g = rainFlow();
+      g.edges.push(e);
+      return validateGraph(g).filter((i) => i.edgeId === e.id);
+    };
+    expect(issueOf(edge('ghost', 'msg_1'))).toMatchObject([
+      { code: 'unknown_node' },
+    ]);
+    expect(issueOf(edge('weather_1', 'ghost'))).toMatchObject([
+      { code: 'unknown_node' },
+    ]);
+    expect(issueOf(edge('weather_1', 'msg_1', 'bad'))).toMatchObject([
+      { code: 'invalid_port' },
+    ]);
+    // 이미 있는 weather_1 → cond_1과 도착 포트만 다르다. 중복 연결이 아니다.
+    expect(issueOf(edge('weather_1', 'cond_1', 'out', 'bad'))).toMatchObject([
+      { code: 'invalid_port' },
+    ]);
+  });
+
+  it('출발이 같아도 포트나 도착이 다르면 중복 연결이 아니다', () => {
+    const g = rainFlow();
+    // 이미 cond_1:true → msg_1, weather_1 → cond_1이 있다.
+    g.edges.push(edge('cond_1', 'msg_1', 'false'));
+    g.edges.push(edge('weather_1', 'msg_1'));
+    expect(codes(g)).not.toContain('duplicate_edge');
   });
 
   it('없는 참조 키를 가리키면 보고한다', () => {
@@ -133,6 +182,28 @@ describe('canConnect', () => {
 
   it('입력 포트에서 출력 포트로의 연결을 거부한다', () => {
     expect(canConnect(g, inp('msg_1'), out('weather_1'))).toMatchObject({
+      ok: false,
+      code: 'invalid_port',
+    });
+  });
+
+  it('없는 노드와의 연결을 거부한다', () => {
+    expect(canConnect(g, out('ghost'), inp('msg_1'))).toMatchObject({
+      ok: false,
+      code: 'unknown_node',
+    });
+    expect(canConnect(g, out('weather_1'), inp('ghost'))).toMatchObject({
+      ok: false,
+      code: 'unknown_node',
+    });
+  });
+
+  it('출발이나 도착 한쪽 포트만 틀려도 거부한다', () => {
+    expect(canConnect(g, out('weather_1'), out('msg_1'))).toMatchObject({
+      ok: false,
+      code: 'invalid_port',
+    });
+    expect(canConnect(g, inp('weather_1'), inp('msg_1'))).toMatchObject({
       ok: false,
       code: 'invalid_port',
     });

@@ -98,10 +98,46 @@ describe('buildInput', () => {
     });
   });
 
+  it('노드 id가 아니라 참조 키로 묶는다', () => {
+    const renamed = graph(
+      [
+        { ...node('w_1', 'http', { url: 'https://w' }), id: 'n1' },
+        { ...node('d_1', 'http', { url: 'https://d' }), id: 'n2' },
+        { ...node('merge_1', 'transform', { expression: '1' }), id: 'n3' },
+      ],
+      [edge('n1', 'n3'), edge('n2', 'n3')],
+    );
+    expect(
+      buildInput('n3', renamed, { n1: ok(), n2: ok() }, { n1: 'W', n2: 'D' }),
+    ).toEqual({ w_1: 'W', d_1: 'D' });
+  });
+
   it('if/else 뒤에는 성공한 쪽만 담는다', () => {
     expect(
       buildInput('join_1', g, { a_1: ok(), b_1: st('skipped') }, { a_1: 'A' }),
     ).toEqual({ a_1: 'A' });
+  });
+
+  it('건너뛰거나 실패한 부모의 출력은 넘겨받아도 담지 않는다', () => {
+    expect(
+      buildInput(
+        'join_1',
+        g,
+        { a_1: ok(), b_1: st('skipped') },
+        { a_1: 'A', b_1: 'B' },
+      ),
+    ).toEqual({ a_1: 'A' });
+    expect(
+      buildInput(
+        'merge_1',
+        g,
+        { w_1: ok(), d_1: st('failed') },
+        { w_1: 'W', d_1: 'D' },
+      ),
+    ).toEqual({ w_1: 'W' });
+    expect(
+      buildInput('b_1', g, { cond_1: ok('true') }, { cond_1: 'C' }),
+    ).toBeUndefined();
   });
 
   it('부모가 없는 노드는 undefined를 돌려준다', () => {

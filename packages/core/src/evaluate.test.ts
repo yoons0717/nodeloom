@@ -50,4 +50,8 @@ describe('fillTemplate', () => {
       ),
     ).toBe('https://h/Seoul?t=abc&x=&a=[3,5]');
   });
+
+  it('값이 null이면 "null"이 아니라 빈 글자로 바꾼다', async () => {
+    expect(await fillTemplate('a={{ null }}', ctx)).toBe('a=');
+  });
 });

@@ -7,6 +7,12 @@ describe('graphSchema', () => {
     expect(graphSchema.safeParse(rainFlow()).success).toBe(true);
   });
 
+  it('노드 위치가 숫자가 아니면 거부한다', () => {
+    const g = rainFlow();
+    (g.nodes[0] as { position: unknown }).position = { x: '0', y: 0 };
+    expect(graphSchema.safeParse(g).success).toBe(false);
+  });
+
   it('모르는 노드 종류를 거부한다', () => {
     const g = rainFlow();
     (g.nodes[0] as { type: string }).type = 'shell';
@@ -35,6 +41,20 @@ describe('노드 설정 기본값', () => {
         timeoutSec: 31,
       }).success,
     ).toBe(false);
+  });
+
+  it('HTTP 타임아웃은 1~30초, 재시도는 0~5회 정수만 받는다', () => {
+    const accepts = (config: Record<string, unknown>) =>
+      NODE_SPECS.http.config.safeParse({ url: 'https://x.test', ...config })
+        .success;
+    expect(accepts({ timeoutSec: 1 })).toBe(true);
+    expect(accepts({ timeoutSec: 30 })).toBe(true);
+    expect(accepts({ timeoutSec: 0 })).toBe(false);
+    expect(accepts({ timeoutSec: 1.5 })).toBe(false);
+    expect(accepts({ retry: 0 })).toBe(true);
+    expect(accepts({ retry: 5 })).toBe(true);
+    expect(accepts({ retry: -1 })).toBe(false);
+    expect(accepts({ retry: 6 })).toBe(false);
   });
 });
 

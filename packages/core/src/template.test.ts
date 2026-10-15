@@ -32,6 +32,31 @@ describe('parseTemplate', () => {
     ]);
   });
 
+  it('작은따옴표 문자열 속 }}도 식의 끝으로 보지 않는다', () => {
+    expect(parseTemplate("{{ $join(['a', '}}'], ',') }}")).toEqual([
+      { kind: 'expr', value: "$join(['a', '}}'], ',')" },
+    ]);
+  });
+
+  it('문자열 중간에 있는 }}도 식의 끝으로 보지 않는다', () => {
+    expect(parseTemplate('{{ "ab}}" }}')).toEqual([
+      { kind: 'expr', value: '"ab}}"' },
+    ]);
+  });
+
+  it('문자열 안의 이스케이프된 따옴표는 문자열을 닫지 않는다', () => {
+    expect(parseTemplate('{{ "a\\"}}" }}')).toEqual([
+      { kind: 'expr', value: '"a\\"}}"' },
+    ]);
+  });
+
+  it('짝 없는 } 하나는 식의 끝이 아니다. 끝은 }} 두 개다', () => {
+    expect(parseTemplate('{{ a } b }}x')).toEqual([
+      { kind: 'expr', value: 'a } b' },
+      { kind: 'text', value: 'x' },
+    ]);
+  });
+
   it('식이 없는 글자는 그대로 돌려준다', () => {
     expect(parseTemplate('https://h/w')).toEqual([
       { kind: 'text', value: 'https://h/w' },
@@ -68,6 +93,18 @@ describe('checkExpressionSyntax', () => {
 });
 
 describe('nodeExpressions', () => {
+  it('HTTP 쿼리와 헤더 칸의 {{ }} 식도 모은다', () => {
+    const n = node('h', 'http', {
+      url: 'https://h',
+      query: { city: '{{ city }}', fixed: 'seoul' },
+      headers: { 'X-Run': '{{ $run.id }}' },
+    });
+    expect(nodeExpressions(n)).toEqual([
+      { field: 'query', expression: 'city' },
+      { field: 'headers', expression: '$run.id' },
+    ]);
+  });
+
   it('HTTP 노드에서 템플릿 안쪽 식과 본문 식을 모은다', () => {
     const n = node('h', 'http', {
       url: 'https://h/{{ a }}',

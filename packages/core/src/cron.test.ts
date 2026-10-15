@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nextCronRuns } from './cron.js';
+import { isValidCron, nextCronRuns } from './cron.js';
 
 describe('nextCronRuns', () => {
   it('지정한 시간대 기준으로 다음 실행 시각을 계산한다', () => {
@@ -13,5 +13,16 @@ describe('nextCronRuns', () => {
     expect(nextCronRuns('0 7 * * *', 'UTC', 1, from)[0]!.toISOString()).toBe(
       '2026-10-11T07:00:00.000Z',
     );
+  });
+});
+
+describe('isValidCron', () => {
+  it('칸 사이나 앞뒤에 공백이 여러 개 있어도 5자리 식으로 본다', () => {
+    expect(isValidCron('0  7 * * *')).toBe(true);
+    expect(isValidCron(' 0 7 * * * ')).toBe(true);
+  });
+
+  it('5자리여도 값이 범위를 벗어나면 올바르지 않다', () => {
+    expect(isValidCron('0 25 * * *')).toBe(false);
   });
 });
