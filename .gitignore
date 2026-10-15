@@ -14,3 +14,6 @@ docs/DECISIONS.md
 test-results/
 playwright-report/
 .serena/
+# 뮤테이션 테스트(Stryker) 결과와 임시 폴더
+packages/core/reports/
+.stryker-tmp/
