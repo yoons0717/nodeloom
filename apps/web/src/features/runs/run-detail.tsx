@@ -173,7 +173,7 @@ export function RunDetail({
         </div>
         <aside
           ref={panel}
-          className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto border-t border-border-subtle bg-surface md:grid md:grid-cols-2 md:content-start lg:flex lg:w-80 lg:flex-none lg:overflow-visible lg:border-t-0 lg:border-l xl:w-96"
+          className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto border-t border-border-subtle bg-surface md:grid md:grid-cols-2 lg:flex lg:w-80 lg:flex-none lg:overflow-visible lg:border-t-0 lg:border-l xl:w-96"
         >
           <div className="md:max-lg:border-r md:max-lg:border-border-subtle">
             {p.error && (
