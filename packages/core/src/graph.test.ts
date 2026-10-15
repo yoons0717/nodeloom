@@ -34,27 +34,24 @@ describe('노드 설정 기본값', () => {
     });
   });
 
-  it('HTTP 타임아웃 30초 초과를 거부한다', () => {
-    expect(
-      NODE_SPECS.http.config.safeParse({
-        url: 'https://x.test',
-        timeoutSec: 31,
-      }).success,
-    ).toBe(false);
-  });
+  const accepts = (config: Record<string, unknown>) =>
+    NODE_SPECS.http.config.safeParse({ url: 'https://x.test', ...config })
+      .success;
 
-  it('HTTP 타임아웃은 1~30초, 재시도는 0~5회 정수만 받는다', () => {
-    const accepts = (config: Record<string, unknown>) =>
-      NODE_SPECS.http.config.safeParse({ url: 'https://x.test', ...config })
-        .success;
+  it('HTTP 타임아웃은 1~30초 정수만 받는다', () => {
     expect(accepts({ timeoutSec: 1 })).toBe(true);
     expect(accepts({ timeoutSec: 30 })).toBe(true);
     expect(accepts({ timeoutSec: 0 })).toBe(false);
+    expect(accepts({ timeoutSec: 31 })).toBe(false);
     expect(accepts({ timeoutSec: 1.5 })).toBe(false);
+  });
+
+  it('HTTP 재시도는 0~5회 정수만 받는다', () => {
     expect(accepts({ retry: 0 })).toBe(true);
     expect(accepts({ retry: 5 })).toBe(true);
     expect(accepts({ retry: -1 })).toBe(false);
     expect(accepts({ retry: 6 })).toBe(false);
+    expect(accepts({ retry: 1.5 })).toBe(false);
   });
 });
 

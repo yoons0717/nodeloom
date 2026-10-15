@@ -114,12 +114,6 @@ describe('buildInput', () => {
 
   it('if/else 뒤에는 성공한 쪽만 담는다', () => {
     expect(
-      buildInput('join_1', g, { a_1: ok(), b_1: st('skipped') }, { a_1: 'A' }),
-    ).toEqual({ a_1: 'A' });
-  });
-
-  it('건너뛰거나 실패한 부모의 출력은 넘겨받아도 담지 않는다', () => {
-    expect(
       buildInput(
         'join_1',
         g,
@@ -127,6 +121,9 @@ describe('buildInput', () => {
         { a_1: 'A', b_1: 'B' },
       ),
     ).toEqual({ a_1: 'A' });
+  });
+
+  it('실패한 부모의 출력은 넘겨받아도 담지 않는다', () => {
     expect(
       buildInput(
         'merge_1',
@@ -135,6 +132,9 @@ describe('buildInput', () => {
         { w_1: 'W', d_1: 'D' },
       ),
     ).toEqual({ w_1: 'W' });
+  });
+
+  it('부모가 하나여도 선택되지 않은 갈래면 입력이 없다', () => {
     expect(
       buildInput('b_1', g, { cond_1: ok('true') }, { cond_1: 'C' }),
     ).toBeUndefined();
