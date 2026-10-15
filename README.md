@@ -87,13 +87,13 @@ docs/             계획, 컨벤션, 디자인, 성능 기록, 마일스톤별 �
 
 ## 실행
 
-필요한 것: Node 24(`.nvmrc`), Corepack(pnpm 12), Docker
+필요한 것: Node 24.15 이상(`.nvmrc`), Corepack(pnpm 12), Docker
 
 ```bash
 corepack enable
 pnpm install
 cp .env.example .env
-pnpm admin:hash        # 터미널 앱에서 실행. 출력된 한 줄을 .env의 ADMIN_PASSWORD_HASH 자리에 붙여 넣기
+pnpm admin:hash        # 터미널 앱에서 실행. 비밀번호를 두 번 입력하고, 출력된 한 줄을 .env의 ADMIN_PASSWORD_HASH 자리에 붙여 넣기
 openssl rand -hex 32   # 출력값을 .env의 JWT_SECRET에 넣기
 docker compose up -d
 pnpm db:migrate        # DB 테이블 만들기(마이그레이션 적용)
