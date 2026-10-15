@@ -62,8 +62,8 @@ export function SettingsPanel() {
       aria-label="노드 설정"
       data-help-edge
       className={cn(
-        'flex w-80 shrink-0 flex-col xl:border-l xl:border-border-subtle xl:bg-surface',
-        'max-xl:absolute max-xl:inset-y-0 max-xl:right-0 max-xl:z-20 max-xl:border-l max-xl:border-help-border max-xl:bg-overlay max-xl:shadow-panel',
+        'flex w-80 shrink-0 flex-col bg-surface xl:border-l xl:border-border-subtle',
+        'max-xl:absolute max-xl:inset-y-0 max-xl:right-0 max-xl:z-20 max-xl:border-l max-xl:border-help-border max-xl:shadow-panel',
         !open && 'max-xl:hidden',
       )}
     >
@@ -102,7 +102,7 @@ function NodeSettings({
   return (
     <>
       {/* 머리: 종류, 제목, 다른 노드에서 읽는 이름. 참조 키는 카드 대신 여기에 보인다. */}
-      <div className="flex flex-col gap-2 border-b border-border-subtle p-4 max-xl:border-help-border">
+      <div className="flex flex-col gap-2 border-b border-border-subtle p-4">
         <div className="flex items-center">
           <span
             className={`flex h-6 w-fit items-center gap-1.5 rounded-md pr-2 pl-1 text-xs font-medium ${meta.chipClass}`}
