@@ -2,7 +2,7 @@
 
 노드를 이어 반복 작업을 자동화하는 워크플로우 도구 (Node-based workflow automation)
 
-노드를 이어 흐름을 만들면 서버가 대신 실행해 준다. 1인용이다.
+흐름을 만들어 두면 서버가 대신 실행해 준다. 혼자 쓰는 도구다.
 
 - **에디터:** 노드 4종(Trigger, HTTP, Transform, Condition)을 놓고 이어 흐름을 만든다. 연결할 수 없는 선은 이유와 함께 거부하고, Undo/Redo와 설정 칸의 식 문법 검사가 있다
 - **실행:** 서버가 흐름을 끝까지 실행한다. 분기·합류, HTTP 재시도와 시간 제한이 있고, 실패하면 지정한 다른 흐름으로 알린다
@@ -116,7 +116,7 @@ pnpm dev
 | `pnpm test`                                   | 전체 테스트(api 통합 테스트는 Docker 필요)                                                                                  |
 | `pnpm lint` / `pnpm typecheck` / `pnpm build` | 검사와 빌드                                                                                                                 |
 
-Colima를 쓴다면 테스트 전에 다음 환경 변수가 필요합니다.
+Colima를 쓴다면 테스트 전에 다음 환경 변수가 필요하다.
 
 ```bash
 export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
@@ -129,7 +129,8 @@ export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 - **비밀값 가리기:** 원래 값, URL 인코딩, JSON 문자열 형태만 찾아 가린다. Base64 등 다른 형태로 바꾼 값은 기록에 남을 수 있다.
 - **스케줄:** 서버가 꺼져 있던 동안의 회차는 실행하지 않는다.
 - **시간대:** `APP_TIMEZONE` 하나만 쓴다. 웹은 빌드할 때 값이 정해지고, 값을 바꾸면 이미 저장한 스케줄은 다시 저장해야 새 시간대로 돈다.
-- **사용자:** 관리자 1명이다. 같은 워크플로우는 한 번에 하나만 실행한다.
+- **사용자:** 관리자 1명이다.
+- **동시 실행:** 같은 워크플로우는 한 번에 하나만 실행한다.
 - **데모 모드:** 연습용 응답(`/mock`)으로만 요청할 수 있고, 자동 초기화가 없다.
 
 ## 문서
