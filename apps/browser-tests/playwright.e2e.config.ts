@@ -7,7 +7,12 @@ const demo = process.env.E2E_MODE === 'demo';
 // 관리자 모드와 데모 모드는 api 설정이 달라서 E2E_MODE로 나눠 두 번 실행한다(`pnpm e2e`).
 export default defineConfig({
   testDir: 'e2e',
-  testMatch: demo ? 'demo.e2e.ts' : 'admin.e2e.ts',
+  // SHOTS=1이면 README 화면 이미지를 찍는다(screenshots.shot.ts).
+  testMatch: process.env.SHOTS
+    ? 'screenshots.shot.ts'
+    : demo
+      ? 'demo.e2e.ts'
+      : 'admin.e2e.ts',
   timeout: 60_000,
   workers: 1,
   retries: process.env.CI ? 1 : 0,
