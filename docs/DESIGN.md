@@ -141,7 +141,7 @@
 
 ## 반응형
 
-근거와 문제 목록은 `docs/RESPONSIVE.md`.
+고친 문제와 처음 계획에서 달라진 점은 `docs/milestones/M6.md` 6-j.
 
 ### 폭 단계
 

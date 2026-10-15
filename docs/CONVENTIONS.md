@@ -18,7 +18,7 @@
 | NestJS는 역할 접미사를 붙인다 | `health.controller.ts`, `prisma.service.ts`, `runs.module.ts` |
 | Next.js 라우트 파일은 프레임워크 규칙을 따른다 | `page.tsx`, `layout.tsx` |
 | 한 파일에는 한 가지 관심사만 둔다. 300줄을 넘으면 나눌지 검토 | `topo.ts`는 위상 정렬만 |
-| 공용 규칙은 `packages/core`, 화면 전용은 `apps/web`, 서버 전용은 `apps/api`(9-2) | Undo 커맨드는 `apps/web` |
+| 공용 규칙은 `packages/core`, 화면 전용은 `apps/web`, 서버 전용은 `apps/api` | Undo 커맨드는 `apps/web` |
 | 생성 파일은 `generated/`에 두고 커밋하지 않는다 | Prisma 클라이언트 |
 
 ## 2. 이름
@@ -35,10 +35,10 @@
 ## 3. TypeScript
 
 - 내보내기는 이름 있는 export만 쓴다. Next.js의 `page.tsx`, `layout.tsx`처럼 프레임워크가 default export를 요구하는 곳만 예외
-- 상대 경로 import에는 `.js` 확장자를 붙인다(ESM, F-1)
+- 상대 경로 import에는 `.js` 확장자를 붙인다(ESM)
 - 다른 패키지 코드는 `@nodeloom/core`처럼 패키지 이름으로 가져온다. 다른 앱의 파일을 상대 경로로 가져오지 않는다
 - `any`를 쓰지 않는다. 모르는 값은 `unknown`으로 받고 zod로 좁힌다
-- 외부에서 들어온 데이터(HTTP 요청, DB의 JSON 컬럼, 환경 변수)는 경계에서 zod로 검증한다(6-2)
+- 외부에서 들어온 데이터(HTTP 요청, DB의 JSON 컬럼, 환경 변수)는 경계에서 zod로 검증한다
 - `!`(non-null 단언)는 바로 앞에서 존재가 보장된 경우에만 쓴다
 
 ## 4. 주석과 메시지
@@ -70,13 +70,14 @@
 - 테스트끼리 상태를 공유하지 않는다. 예시 그래프는 매번 새로 만든다(`rainFlow()`)
 
 ### 무엇을 어떤 테스트로
-| 대상 | 테스트 | 근거 |
-|---|---|---|
-| core 규칙 | 단위 테스트(가장 많이) | 10-2 |
-| DB 제약, 트랜잭션, 실행 엔진 | 실제 Postgres 통합 테스트(Testcontainers) | 10-2 |
-| 커맨드 스택, 화면 로직 | 단위 테스트, 필요한 컴포넌트만 RTL | 10-2 |
-| 핵심 사용자 흐름 | e2e(Playwright) 3~5개 | 10-2 |
-| mock은 외부 경계(외부 HTTP)에만 쓴다. DB는 mock하지 않는다 | — | 10-2 |
+| 대상 | 테스트 |
+|---|---|
+| core 규칙 | 단위 테스트(가장 많이) |
+| DB 제약, 트랜잭션, 실행 엔진 | 실제 Postgres 통합 테스트(Testcontainers) |
+| 커맨드 스택, 화면 로직 | 단위 테스트, 필요한 컴포넌트만 RTL |
+| 핵심 사용자 흐름 | e2e(Playwright) 3~5개 |
+
+mock은 외부 경계(외부 HTTP)에만 쓴다. DB는 mock하지 않는다.
 
 ### 경계값과 걸러 내는 값
 - 범위는 거부되는 값과 통과하는 끝값을 함께 확인한다. 예: 1~30이면 0·31 거부, 1·30 통과
