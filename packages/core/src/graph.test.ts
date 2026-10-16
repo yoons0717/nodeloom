@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { graphSchema, nextNodeKey, NODE_SPECS } from './graph.js';
+import { graphSchema, nextNodeKey } from './graph.js';
+import { NODE_SPECS } from './node-specs.js';
 import { graph, node, rainFlow } from './fixtures.test-util.js';
 
 describe('graphSchema', () => {

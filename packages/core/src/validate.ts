@@ -3,9 +3,9 @@ import {
   type GraphNode,
   graphSchema,
   NODE_KEY_PATTERN,
-  NODE_SPECS,
   type PortRef,
 } from './graph.js';
+import { NODE_SPECS } from './node-specs.js';
 import {
   checkExpressionSyntax,
   extractNodeRefs,

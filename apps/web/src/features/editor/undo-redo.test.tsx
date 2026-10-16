@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { addNode, createInitialGraph, newNode } from './commands';
-import { UndoRedo } from './canvas-controls';
+import { UndoRedo } from './undo-redo';
 import { EditorStoreProvider, useEditorStore } from './store-context';
 
 afterEach(cleanup);

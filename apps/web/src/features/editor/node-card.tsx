@@ -1,6 +1,6 @@
 'use client';
 
-import { type GraphNode, type Issue, NODE_SPECS } from '@nodeloom/core';
+import { type GraphNode, type Issue, NODE_PORTS } from '@nodeloom/core';
 import { Handle, type Node, type NodeProps, Position } from '@xyflow/react';
 import { Profiler } from 'react';
 import { cn } from '@/lib/utils';
@@ -32,7 +32,7 @@ const CONDITION_PORT_TOP = { true: 63, false: 85 };
 // 노드 4종이 함께 쓰는 카드. 1줄 종류와 상태, 2줄 제목, 3줄 설정 요약(Condition은 참·거짓 라벨).
 export function NodeCard({ data, selected }: NodeProps<CanvasNode>) {
   const { node, issues, run } = data;
-  const spec = NODE_SPECS[node.type];
+  const spec = NODE_PORTS[node.type];
   const outputs = spec.outputs as readonly string[];
   const isCondition = node.type === 'condition';
   const height = isCondition ? HEIGHT.condition : HEIGHT.default;

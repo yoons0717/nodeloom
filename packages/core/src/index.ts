@@ -1,4 +1,5 @@
 export * from './graph.js';
+export * from './node-specs.js';
 export * from './template.js';
 export * from './topo.js';
 export * from './validate.js';

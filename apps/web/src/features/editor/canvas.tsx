@@ -23,12 +23,13 @@ import {
   ViewportPortal,
 } from '@xyflow/react';
 import { type DragEvent, type ReactNode, useCallback, useState } from 'react';
-import { CanvasControls, UndoRedo } from './canvas-controls';
+import { CanvasControls } from './canvas-controls';
 import { addNode, newNode } from './commands';
 import { getGraphIssues } from './graph-issues';
 import { type CanvasNode, NodeCard } from './node-card';
 import { DRAG_MIME } from './node-meta';
 import { useEditorStore } from './store-context';
+import { UndoRedo } from './undo-redo';
 
 const nodeTypes = {
   trigger: NodeCard,
