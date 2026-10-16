@@ -4,6 +4,8 @@ import {
   canConnect,
   type Graph,
   type GraphEdge,
+  type GraphNode,
+  type Issue,
   type NodeType,
   type PortRef,
 } from '@nodeloom/core';
@@ -48,6 +50,68 @@ function toPorts(c: {
   return { from, to };
 }
 
+const NO_ISSUES: Issue[] = [];
+
+// 검사는 그래프가 바뀔 때마다 새 오류 객체를 만든다. 내용이 같으면 같은 오류로 본다.
+function sameIssues(a: Issue[], b: Issue[]) {
+  return (
+    a.length === b.length &&
+    a.every(
+      (x, i) =>
+        x.code === b[i]!.code &&
+        x.field === b[i]!.field &&
+        x.message === b[i]!.message,
+    )
+  );
+}
+
+// React Flow는 이전과 같은 객체를 받은 노드·선은 다시 그리지 않는다. 그래프의 노드·선 객체마다 마지막으로 만든
+// React Flow 객체를 기억해 두고, 선택·오류·크기도 같으면 그대로 넘긴다. getGraphIssues와 같은 방식이라
+// 그래프 객체가 키여서 다른 에디터와 섞이지 않고, 안 쓰는 항목은 WeakMap이 버린다.
+const nodeCache = new WeakMap<GraphNode, CanvasNode>();
+const edgeCache = new WeakMap<GraphEdge, Edge>();
+
+export function toCanvasNode(
+  n: GraphNode,
+  issues: Issue[],
+  selected: boolean,
+  measured: NodeDimensionChange['dimensions'],
+): CanvasNode {
+  const prev = nodeCache.get(n);
+  if (
+    prev &&
+    prev.selected === selected &&
+    prev.measured === measured &&
+    sameIssues(prev.data.issues, issues)
+  )
+    return prev;
+  const next: CanvasNode = {
+    id: n.id,
+    type: n.type,
+    position: n.position,
+    data: { node: n, issues },
+    selected,
+    measured,
+  };
+  nodeCache.set(n, next);
+  return next;
+}
+
+export function toCanvasEdge(e: GraphEdge, selected: boolean): Edge {
+  const prev = edgeCache.get(e);
+  if (prev && prev.selected === selected) return prev;
+  const next: Edge = {
+    id: e.id,
+    source: e.from.node,
+    sourceHandle: e.from.port,
+    target: e.to.node,
+    targetHandle: e.to.port,
+    selected,
+  };
+  edgeCache.set(e, next);
+  return next;
+}
+
 // 선택 알림(select)을 반영한 새 id 목록. 선택 알림이 없으면 그대로 돌려준다.
 function applySelect(
   current: string[],
@@ -83,22 +147,17 @@ export function Canvas({ children }: { children?: ReactNode }) {
   const issues = getGraphIssues(graph).byNode;
 
   // 원본은 스토어의 그래프 하나. React Flow는 여기서 만든 값만 받는다(제어 모드, DECISIONS 5-1).
-  const nodes: CanvasNode[] = graph.nodes.map((n) => ({
-    id: n.id,
-    type: n.type,
-    position: n.position,
-    data: { node: n, issues: issues.get(n.id) ?? [] },
-    selected: selection.nodeIds.includes(n.id),
-    measured: measured[n.id],
-  }));
-  const edges: Edge[] = graph.edges.map((e) => ({
-    id: e.id,
-    source: e.from.node,
-    sourceHandle: e.from.port,
-    target: e.to.node,
-    targetHandle: e.to.port,
-    selected: selection.edgeIds.includes(e.id),
-  }));
+  const nodes = graph.nodes.map((n) =>
+    toCanvasNode(
+      n,
+      issues.get(n.id) ?? NO_ISSUES,
+      selection.nodeIds.includes(n.id),
+      measured[n.id],
+    ),
+  );
+  const edges = graph.edges.map((e) =>
+    toCanvasEdge(e, selection.edgeIds.includes(e.id)),
+  );
 
   // 선택도 제어 모드다. React Flow가 보낸 선택 알림을 스토어의 선택에 반영해야 화면에서 선택된다.
   const onNodesChange = useCallback(
