@@ -52,6 +52,21 @@ export class MockController {
     return { ok: true };
   }
 
+  // 큰 JSON 보기 측정용(M9). 항목 n개(최대 2만)짜리 목록. 항목 하나가 약 60바이트라 1만 5천 개면 1MB에 가깝다.
+  @Get('items/:n')
+  items(@Param('n', ParseIntPipe) n: number) {
+    const count = Math.min(Math.max(n, 0), 20_000);
+    return {
+      total: count,
+      items: Array.from({ length: count }, (_, i) => ({
+        id: i,
+        name: `item-${i}`,
+        price: i * 10,
+        tags: ['a', 'b'],
+      })),
+    };
+  }
+
   // 응답 크기 제한 시험용. 최대 2MB
   @Get('bytes/:n')
   bytes(@Param('n', ParseIntPipe) n: number) {

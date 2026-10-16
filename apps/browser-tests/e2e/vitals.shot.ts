@@ -172,3 +172,87 @@ test('화면별 JS 크기와 LCP·INP', async ({ page, browser }) => {
   console.log(`\n${rows.join('\n')}\n`);
   console.log(JSON.stringify(scriptsBy));
 });
+
+// 실행 상세에서 큰 출력(약 0.94MB, 항목 1만 5천 개)을 가진 노드를 눌러 JSON 보기가 다 그려지기까지를 잰다(M9 9-c).
+// 누른 순간부터 화면의 요소 수가 더 늘지 않을 때까지의 시간이라, 출력을 받아 오는 시간도 들어 있다.
+test('큰 JSON 보기', async ({ page }) => {
+  test.setTimeout(180_000);
+  await login(page);
+  const big = {
+    schemaVersion: 1,
+    nodes: [
+      node('trigger_1', 'trigger', 0),
+      node('http_1', 'http', 200, {
+        url: `http://localhost:${API_PORT}/mock/items/15000`,
+      }),
+    ],
+    edges: [graph.edges[0]],
+  };
+  const res = await page.request.post('/api/workflows', {
+    data: { name: '큰 출력', graph: big },
+  });
+  const { id } = (await res.json()) as { id: string };
+  const run = await page.request.post(`/api/workflows/${id}/runs`);
+  const { runId } = (await run.json()) as { runId: string };
+  await expect
+    .poll(
+      async () =>
+        (
+          (await (
+            await page.request.get(`/api/runs/${runId}/status`)
+          ).json()) as { status: string }
+        ).status,
+    )
+    .toBe('SUCCESS');
+
+  const results: { ms: number; added: number; longest: number }[] = [];
+  for (let i = 0; i < RUNS; i++) {
+    await page.goto(`/w/${id}/runs/${runId}`);
+    const card = page.locator('.react-flow__node:has([data-key="http_1"])');
+    await card.waitFor();
+    await page.evaluate(() => {
+      const w = window as unknown as { __json: Promise<unknown> };
+      w.__json = new Promise((resolve) => {
+        let longest = 0;
+        new PerformanceObserver((list) => {
+          for (const e of list.getEntries())
+            longest = Math.max(longest, e.duration);
+        }).observe({ type: 'longtask' });
+        addEventListener(
+          'pointerdown',
+          () => {
+            const base = document.getElementsByTagName('*').length;
+            const t0 = performance.now();
+            let last = base;
+            let done = t0;
+            let stable = 0;
+            const tick = () => {
+              const n = document.getElementsByTagName('*').length;
+              if (n !== last) {
+                last = n;
+                done = performance.now();
+                stable = 0;
+              } else stable++;
+              if (stable < 30 && performance.now() - t0 < 20_000)
+                requestAnimationFrame(tick);
+              else resolve({ ms: done - t0, added: last - base, longest });
+            };
+            requestAnimationFrame(tick);
+          },
+          { once: true, capture: true },
+        );
+      });
+    });
+    await card.click({ position: { x: 12, y: 12 } });
+    results.push(
+      (await page.evaluate(
+        () => (window as unknown as { __json: Promise<unknown> }).__json,
+      )) as { ms: number; added: number; longest: number },
+    );
+  }
+  const m = (k: 'ms' | 'added' | 'longest') =>
+    median(results.map((r) => r[k])).toFixed(0);
+  console.log(
+    `\n| 큰 JSON 보기 | 다 그리기까지(ms) | 늘어난 요소 수 | 가장 긴 작업(ms) |\n|---|---|---|---|\n| 항목 15000개 | ${m('ms')} | ${m('added')} | ${m('longest')} |\n`,
+  );
+});
