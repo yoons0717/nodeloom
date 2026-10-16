@@ -6,6 +6,7 @@
     "bench": "playwright test",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "vitals": "E2E_MODE=admin VITALS=1 playwright test -c playwright.e2e.config.ts",
     "screenshots": "E2E_MODE=admin SHOTS=1 playwright test -c playwright.e2e.config.ts",
     "e2e": "E2E_MODE=admin playwright test -c playwright.e2e.config.ts && E2E_MODE=demo playwright test -c playwright.e2e.config.ts"
   },
@@ -13,6 +14,7 @@
     "@playwright/test": "1.63.0",
     "@testcontainers/postgresql": "^12.2.0",
     "@types/node": "^24",
-    "bcryptjs": "^3.0.3"
+    "bcryptjs": "^3.0.3",
+    "web-vitals": "6.2.2"
   }
 }
