@@ -95,7 +95,7 @@ export function RunHistory({
 }
 
 // 상태 배지 | 시각 | 방식(모든 실행은 워크플로우 이름 · 방식) | 걸린 시간 | › 고정 열.
-// sm(640) 미만은 두 줄: 1줄 배지 · 시각 · (오른쪽) 걸린 시간 · ›, 2줄 워크플로우 이름 · 방식(RESPONSIVE R5).
+// sm(640) 미만은 두 줄: 1줄 배지 · 시각 · (오른쪽) 걸린 시간 · ›, 2줄 워크플로우 이름 · 방식(DESIGN.md 반응형).
 // 실패 행은 왼쪽에 빨간 막대와 오류 두 줄.
 function RunRow({ run: r, workflowId }: { run: Run; workflowId?: string }) {
   const at = r.startedAt ?? r.createdAt;

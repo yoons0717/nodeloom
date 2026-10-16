@@ -56,7 +56,7 @@ function EditorLayout({
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">
       <TopBar toolbar={toolbar} />
-      {/* md – lg에서는 설정 패널이 이 안에서 캔버스 위에 겹쳐 열린다(RESPONSIVE 4-3). */}
+      {/* md – lg에서는 설정 패널이 이 안에서 캔버스 위에 겹쳐 열린다(DESIGN.md 반응형). */}
       <div className="relative flex min-h-0 flex-1">
         <Palette />
         <Canvas>{bench && <PerfHud />}</Canvas>

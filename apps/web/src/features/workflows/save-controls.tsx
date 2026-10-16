@@ -29,7 +29,7 @@ export function SaveControls({
   id: string;
   initialName: string;
   actions?: ReactNode;
-  // 저장하지 않은 변경이 있는지. 좁아져도 에디터를 내리지 않을지 정할 때 쓴다(RESPONSIVE R8).
+  // 저장하지 않은 변경이 있는지. 좁아져도 에디터를 내리지 않을지 정할 때 쓴다(DESIGN.md 반응형).
   onDirtyChange?: (dirty: boolean) => void;
   after?: (ensureSaved: () => Promise<boolean>) => ReactNode;
 }) {
@@ -227,7 +227,7 @@ function SaveStatus({
     return (
       <span className={`${CHIP} bg-warning-soft text-warning-text`}>
         <span aria-hidden>●</span>
-        {/* md – lg에서는 ●만 보인다(RESPONSIVE 4-2). 글자는 스크린 리더에 남긴다. */}
+        {/* md – lg에서는 ●만 보인다(DESIGN.md 반응형). 글자는 스크린 리더에 남긴다. */}
         <span role="status" className="-ml-1 max-xl:sr-only">
           저장 안 됨
         </span>

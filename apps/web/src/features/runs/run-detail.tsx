@@ -70,7 +70,7 @@ export function RunDetail({
     void queryClient.invalidateQueries({ queryKey: ['run-summary'] });
   }, [done, queryClient]);
   const nodeRuns = new Map(p.nodes.map((n) => [n.nodeId, n]));
-  // 캔버스 아래에 쌓인 배치(lg 미만)에서는 노드를 고르면 패널 맨 위로 올린다(RESPONSIVE 4-4).
+  // 캔버스 아래에 쌓인 배치(lg 미만)에서는 노드를 고르면 패널 맨 위로 올린다(DESIGN.md 반응형).
   const panel = useRef<HTMLElement>(null);
   useEffect(() => {
     if (panel.current && !isAtLeast('lg')) panel.current.scrollTop = 0;
@@ -149,7 +149,7 @@ export function RunDetail({
       <p className="border-b border-border-subtle bg-surface px-4 py-2 text-xs text-muted-foreground">
         {summary.join(' · ')}
       </p>
-      {/* lg 미만은 캔버스 아래에 패널을 쌓고 패널만 스크롤한다. md – lg는 패널을 두 칸으로 나눈다(RESPONSIVE 4-4). */}
+      {/* lg 미만은 캔버스 아래에 패널을 쌓고 패널만 스크롤한다. md – lg는 패널을 두 칸으로 나눈다(DESIGN.md 반응형). */}
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <div className="h-[45svh] min-h-64 min-w-0 shrink-0 lg:h-auto lg:flex-1 lg:shrink">
           <ReactFlowProvider>

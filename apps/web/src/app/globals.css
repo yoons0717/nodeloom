@@ -180,7 +180,7 @@
   --color-help-stripe: var(--help-stripe);
   --color-raised-open: var(--raised-open);
   --shadow-help: 0 16px 40px rgb(0 0 0 / 0.55);
-  /* md – lg에서 캔버스 위에 겹쳐 연 설정 패널(RESPONSIVE 4-3) */
+  /* md – lg에서 캔버스 위에 겹쳐 연 설정 패널(DESIGN.md 반응형) */
   --shadow-panel: -16px 0 40px rgb(0 0 0 / 0.45);
   --color-scrim: var(--scrim);
   --color-border-subtle: var(--border-subtle);

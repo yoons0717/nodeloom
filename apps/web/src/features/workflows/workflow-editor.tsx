@@ -11,12 +11,12 @@ import { SaveControls } from './save-controls';
 import type { Workflow } from './schemas';
 
 export function WorkflowEditor({ workflow }: { workflow: Workflow }) {
-  // 좁은 화면에서는 에디터를 아예 그리지 않는다(RESPONSIVE R8). 서버와 처음 그림이 같도록 마운트 뒤에 폭을 본다.
+  // 좁은 화면에서는 에디터를 아예 그리지 않는다(DESIGN.md 반응형). 서버와 처음 그림이 같도록 마운트 뒤에 폭을 본다.
   const [mounted, setMounted] = useState(false);
   // 저장하지 않은 변경이 있으면 좁아져도 내리지 않는다(편집 내용 보호).
   const dirty = useRef(false);
   useEffect(() => {
-    // md(768px) 이상에서만 편집한다(DECISIONS B-11, RESPONSIVE 4-3).
+    // md(768px) 이상에서만 편집한다(DECISIONS B-11, DESIGN.md 반응형).
     const mq = window.matchMedia(minWidth('md'));
     const update = () =>
       setMounted((on) => mq.matches || (on && dirty.current));

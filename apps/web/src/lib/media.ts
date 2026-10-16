@@ -6,7 +6,7 @@ type Width = keyof typeof WIDTH;
 
 export const minWidth = (step: Width) => `(min-width: ${WIDTH[step]}px)`;
 
-// 폭과 입력 방식 질의(RESPONSIVE 3장). 처음 그림은 CSS로 나누고, 여기 값은 누를 때나 마운트 뒤에만 쓴다.
+// 폭과 입력 방식 질의(DESIGN.md 반응형). 처음 그림은 CSS로 나누고, 여기 값은 누를 때나 마운트 뒤에만 쓴다.
 // 테스트(jsdom)처럼 matchMedia가 없으면 fallback을 돌려준다.
 function matches(query: string, fallback: boolean) {
   return typeof window === 'undefined' ||
@@ -22,7 +22,7 @@ export function isAtLeast(step: Width) {
 
 const FINE = '(pointer: fine)';
 
-// 마우스처럼 정밀한 포인터인지. HTML 끌어다 놓기는 이때만 켠다(RESPONSIVE R9). 서버 그림은 false.
+// 마우스처럼 정밀한 포인터인지. HTML 끌어다 놓기는 이때만 켠다(DESIGN.md 반응형). 서버 그림은 false.
 export function usePointerFine() {
   return useSyncExternalStore(
     (onChange) => {

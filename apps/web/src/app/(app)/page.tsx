@@ -55,7 +55,6 @@ export default async function WorkflowListPage() {
                 >
                   {w.name}
                 </Link>
-                {/* TODO: 마지막 실행 상태는 목록 API에 없어서 보여 주지 않는다(M6 6-f). */}
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 md:contents">
                   {/* 넓은 화면에서는 열을 맞추려고 빈 칸도 두고, 좁은 화면에서는 스케줄이 없으면 자리를 차지하지 않는다. */}
                   <span
@@ -76,7 +75,7 @@ export default async function WorkflowListPage() {
                     {formatRunTime(w.updatedAt)} 수정
                   </span>
                 </div>
-                {/* 넓은 화면이고 마우스가 있으면 올리거나 포커스가 있을 때만 보인다. 터치 기기에서는 폭과 상관없이 늘 보인다(RESPONSIVE R2). */}
+                {/* 넓은 화면이고 마우스가 있으면 올리거나 포커스가 있을 때만 보인다. 터치 기기에서는 폭과 상관없이 늘 보인다(DESIGN.md 반응형). */}
                 <div className="relative z-10 -ml-2.5 self-start md:ml-0 md:self-auto md:pointer-fine:opacity-0 md:pointer-fine:group-focus-within:opacity-100 md:pointer-fine:group-hover:opacity-100 md:pointer-fine:has-[[data-confirming]]:opacity-100">
                   <DeleteWorkflowButton id={w.id} name={w.name} />
                 </div>

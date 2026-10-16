@@ -113,7 +113,7 @@ test('Condition이 고른 갈래만 실행되고, 상세 화면에서 고른 쪽
   await expect(page.getByRole('button', { name: '"크다"' })).toBeVisible();
 });
 
-// 태블릿 세로(768): 팔레트는 레일, 설정 패널은 캔버스 위에 겹쳐 열린다(RESPONSIVE 4-3).
+// 태블릿 세로(768): 팔레트는 레일, 설정 패널은 캔버스 위에 겹쳐 열린다(DESIGN.md 반응형).
 test.describe('768px 간단 배치', () => {
   test.use({ viewport: { width: 768, height: 1024 } });
 

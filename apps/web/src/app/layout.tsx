@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: '노드를 이어 반복 작업을 자동화하는 워크플로우 도구',
 };
 
-// 노치·홈 바 영역까지 그리고(RESPONSIVE R7) 드로어 등에 safe-area 여백을 둔다. 확대는 막지 않는다.
+// 노치·홈 바 영역까지 그리고(DESIGN.md 반응형) 드로어 등에 safe-area 여백을 둔다. 확대는 막지 않는다.
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,

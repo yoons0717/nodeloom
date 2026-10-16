@@ -26,7 +26,7 @@ const SETTINGS: Record<NodeType, ComponentType<SettingsProps>> = {
   condition: ConditionSettings,
 };
 
-// xl 이상은 캔버스 오른쪽에 나란히(320). md – lg는 노드를 고르면 캔버스 위 오른쪽에 겹쳐 연다(RESPONSIVE 4-3).
+// xl 이상은 캔버스 오른쪽에 나란히(320). md – lg는 노드를 고르면 캔버스 위 오른쪽에 겹쳐 연다(DESIGN.md 반응형).
 // 겹친 패널은 모달이 아니라 열려 있어도 캔버스를 움직일 수 있고, 선택 해제·닫기 버튼·Esc로 닫힌다.
 export function SettingsPanel() {
   const graph = useEditorStore((s) => s.graph);

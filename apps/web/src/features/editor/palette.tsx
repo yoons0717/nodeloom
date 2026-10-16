@@ -21,7 +21,7 @@ const CARD = { width: 136, height: 84 };
 // md – lg에서 노드를 고르면 캔버스 오른쪽 위에 겹쳐 열리는 설정 패널 폭(w-80)
 const OVERLAY_PANEL = 320;
 
-// 지금 보이는 캔버스 가운데에 노드를 놓고 고른다(RESPONSIVE R9). 끌어다 놓기를 못 쓰는 터치 기기에서도 넣을 수 있게.
+// 지금 보이는 캔버스 가운데에 노드를 놓고 고른다(DESIGN.md 반응형). 끌어다 놓기를 못 쓰는 터치 기기에서도 넣을 수 있게.
 // md – lg에서는 추가하자마자 설정 패널이 겹쳐 열리므로 그 폭을 뺀 영역의 가운데에 놓는다.
 function useAddAtCenter() {
   const graph = useEditorStore((s) => s.graph);
@@ -49,7 +49,7 @@ function useAddAtCenter() {
   };
 }
 
-// 노드 목록. xl 이상은 펼친 목록(224), md – lg는 글리프만 있는 56px 레일(RESPONSIVE 4-3).
+// 노드 목록. xl 이상은 펼친 목록(224), md – lg는 글리프만 있는 56px 레일(DESIGN.md 반응형).
 // 둘 다 그리고 CSS로 하나만 보인다. 끌어다 놓기는 마우스에서만, 누르면 캔버스 가운데에 추가한다.
 export function Palette() {
   const add = useAddAtCenter();
@@ -195,7 +195,7 @@ function FullPalette({
             key={type}
             className="flex items-start rounded-md p-2 hover:bg-raised has-data-popup-open:bg-raised-open"
           >
-            {/* 누르면 캔버스 가운데에 추가한다. 터치 노트북도 노드를 넣을 수 있게(RESPONSIVE R9). */}
+            {/* 누르면 캔버스 가운데에 추가한다. 터치 노트북도 노드를 넣을 수 있게(DESIGN.md 반응형). */}
             <button
               type="button"
               aria-label={`${NODE_META[type].label} 캔버스에 추가`}
