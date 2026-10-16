@@ -92,7 +92,7 @@ export function AppSidebar({
   const router = useRouter();
   const state = useSidebarState();
   const collapsed = !forceExpanded && (state?.collapsed ?? false);
-  // rail: 레일만, full: 펼친 모양만, responsive: xl 미만은 레일 · xl 이상은 펼친 모양(RESPONSIVE 4-1).
+  // rail: 레일만, full: 펼친 모양만, responsive: xl 미만은 레일 · xl 이상은 펼친 모양(DESIGN.md 반응형).
   // responsive는 둘 다 그리고 CSS로 하나만 보인다. 폭을 JS로 재지 않아 처음 그림이 서버와 같다.
   const mode =
     forceExpanded || !state ? 'full' : collapsed ? 'rail' : 'responsive';
@@ -175,10 +175,10 @@ export function AppSidebar({
     failed > 0 && (
       <Badge
         tone="danger"
-        aria-label={`최근 24시간 실패 ${failed}건`}
         className={rail ? 'absolute -top-1 -right-1 px-1' : 'ml-auto'}
       >
-        {failed}
+        <span aria-hidden>{failed}</span>
+        <span className="sr-only">최근 24시간 실패 {failed}건</span>
       </Badge>
     );
   const subItems = (id: string, failedCount: number) => [
@@ -194,11 +194,9 @@ export function AppSidebar({
       icon: <History className="size-3.5" />,
       active: id === workflowId && section === 'history',
       extra: failedCount > 0 && (
-        <span
-          aria-label={`실패 ${failedCount}건`}
-          className="ml-auto font-mono text-caption text-danger-text"
-        >
-          ! {failedCount}
+        <span className="ml-auto font-mono text-caption text-danger-text">
+          <span aria-hidden>! {failedCount}</span>
+          <span className="sr-only">실패 {failedCount}건</span>
         </span>
       ),
     },
@@ -539,12 +537,9 @@ function TreeStatus({
     );
   if (failedCount > 0)
     return (
-      <Badge
-        tone="danger"
-        aria-label={`최근 24시간 실패 ${failedCount}건`}
-        className="ml-auto px-1.5"
-      >
-        {failedCount}
+      <Badge tone="danger" className="ml-auto px-1.5">
+        <span aria-hidden>{failedCount}</span>
+        <span className="sr-only">최근 24시간 실패 {failedCount}건</span>
       </Badge>
     );
   return null;

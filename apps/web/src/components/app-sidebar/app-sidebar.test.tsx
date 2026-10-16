@@ -85,7 +85,8 @@ describe('AppSidebar', () => {
         .getAttribute('aria-expanded'),
     ).toBe('false');
     // 24시간 실패 수
-    expect(await screen.findByLabelText('최근 24시간 실패 2건')).toBeTruthy();
+    // 숫자는 화면에, 읽는 문장은 스크린 리더용 글자로 둔다(span의 aria-label은 읽히지 않을 수 있다).
+    expect(await screen.findByText('최근 24시간 실패 2건')).toBeTruthy();
   });
 
   it('트리 행은 실패와 실행 중만 오른쪽 끝에 보이고, 성공은 표시하지 않는다', () => {
@@ -105,13 +106,11 @@ describe('AppSidebar', () => {
       screen.getByText(name).closest('a') as HTMLElement;
     // 마지막 실행이 성공이어도 24시간 안의 실패는 보인다
     expect(row('디스코드').textContent).toContain('2');
-    expect(
-      row('디스코드').querySelector('[aria-label="최근 24시간 실패 2건"]'),
-    ).toBeTruthy();
+    expect(row('디스코드').textContent).toContain('최근 24시간 실패 2건');
     expect(row('주간 리포트').textContent).toContain('실행 중');
     expect(row('매일 환율 기록').textContent).toBe('매일 환율 기록');
     // 하위 "실행 기록"에는 실패 건수
-    expect(screen.getByLabelText('실패 2건')).toBeTruthy();
+    expect(screen.getByText('실패 2건')).toBeTruthy();
   });
 
   it('새 워크플로우와 로그아웃이 실패하면 사유를 보여 준다', async () => {
