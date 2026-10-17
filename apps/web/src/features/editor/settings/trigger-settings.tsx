@@ -85,7 +85,7 @@ export function TriggerSettings({ node, errors, set }: SettingsProps) {
 
   const time =
     'hour' in schedule ? (
-      <Field label="시각">
+      <Field label="시각" hint={`${TIMEZONE} 기준`}>
         {(control) => (
           <Input
             {...control}
@@ -178,7 +178,7 @@ export function TriggerSettings({ node, errors, set }: SettingsProps) {
       {schedule.kind === 'custom' && (
         <Field
           label="cron"
-          hint="분 시 일 월 요일. 예: */15 9-18 * * 1-5(평일 9~18시 15분마다)"
+          hint={`분 시 일 월 요일. 예: */15 9-18 * * 1-5(평일 9~18시 15분마다) · ${TIMEZONE} 기준`}
           error={errors.cron}
         >
           {(control) => (
