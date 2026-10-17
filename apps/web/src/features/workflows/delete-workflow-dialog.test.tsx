@@ -58,11 +58,11 @@ describe('DeleteWorkflowDialog', () => {
     );
   });
 
-  it('지우는 동안에는 Esc로 닫히지 않고 버튼이 "삭제 중…"으로 막힌다', async () => {
+  it('지우는 동안에는 Esc로 닫히지 않고 버튼이 "삭제 중"으로 막힌다', async () => {
     clientApi.mockReturnValue(new Promise(() => {}));
     render(<Harness />);
     fireEvent.click(screen.getByRole('button', { name: '삭제' }));
-    const busy = await screen.findByRole('button', { name: '삭제 중…' });
+    const busy = await screen.findByRole('button', { name: '삭제 중' });
     expect(busy.hasAttribute('disabled')).toBe(true);
     fireEvent.keyDown(document.activeElement ?? document.body, {
       key: 'Escape',
@@ -129,7 +129,7 @@ describe('WorkflowRowMenu', () => {
     expect(await screen.findByRole('alertdialog')).toBeTruthy();
   });
 
-  it('지우면 목록을 새로 그리고, 행이 빠질 때까지 창은 "삭제 중…"으로 남는다', async () => {
+  it('지우면 목록을 새로 그리고, 행이 빠질 때까지 창은 "삭제 중"으로 남는다', async () => {
     clientApi.mockResolvedValue(undefined);
     render(
       <QueryClientProvider client={new QueryClient()}>
@@ -144,7 +144,7 @@ describe('WorkflowRowMenu', () => {
       }),
     );
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
-    expect(screen.getByRole('button', { name: '삭제 중…' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '삭제 중' })).toBeTruthy();
   });
 });
 

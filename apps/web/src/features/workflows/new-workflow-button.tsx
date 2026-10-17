@@ -21,7 +21,8 @@ export function useCreateWorkflow() {
     onSuccess: ({ id }) => {
       // 사이드바 목록(['workflows'])도 새로 불러온다.
       void queryClient.invalidateQueries({ queryKey: ['workflows'] });
-      router.push(`/w/${id}`);
+      // ?new: 에디터가 이름 칸을 골라 둔다(save-controls.tsx).
+      router.push(`/w/${id}?new`);
     },
   });
 }
@@ -31,7 +32,7 @@ export function NewWorkflowButton() {
   return (
     <div className="flex flex-col items-end gap-1">
       <Button onClick={() => create.mutate()} disabled={create.isPending}>
-        {create.isPending ? '만드는 중…' : '새 워크플로우'}
+        {create.isPending ? '만드는 중' : '새 워크플로우'}
       </Button>
       {create.error && (
         <p role="alert" className="text-xs text-danger-text">

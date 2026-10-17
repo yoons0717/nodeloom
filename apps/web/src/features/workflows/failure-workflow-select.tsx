@@ -64,7 +64,7 @@ export function FailureWorkflowSelect({
           {/* 목록을 불러오기 전에는 id 대신 안내를 보여 준다. */}
           <SelectValue>
             {(v: string) =>
-              items.find((i) => i.value === v)?.label ?? '불러오는 중…'
+              items.find((i) => i.value === v)?.label ?? '불러오는 중'
             }
           </SelectValue>
         </SelectTrigger>
@@ -76,18 +76,30 @@ export function FailureWorkflowSelect({
           ))}
         </SelectContent>
       </Select>
-      <span
-        className={`text-xs ${save.error ? 'text-danger-text' : 'text-muted-foreground'}`}
-      >
-        {save.error ? (
-          <>
-            <span aria-hidden>! </span>
-            {save.error.message}
-          </>
-        ) : (
-          '이 워크플로우가 실패하면 고른 워크플로우를 실행합니다'
-        )}
-      </span>
+      <div className="flex gap-3 text-xs">
+        <span
+          className={`flex-1 ${save.error ? 'text-danger-text' : 'text-muted-foreground'}`}
+        >
+          {save.error ? (
+            <>
+              <span aria-hidden>! </span>
+              {save.error.message}
+            </>
+          ) : (
+            '이 워크플로우가 실패하면 고른 워크플로우를 실행합니다'
+          )}
+        </span>
+        {/* 고르는 순간 저장되므로 저장된 것을 보여 준다. 다시 고를 때까지 남는다. */}
+        <span role="status" className="shrink-0 text-label">
+          {save.isPending ? (
+            '저장 중'
+          ) : save.isSuccess ? (
+            <>
+              <span aria-hidden>✓ </span>저장됨
+            </>
+          ) : null}
+        </span>
+      </div>
     </div>
   );
 }

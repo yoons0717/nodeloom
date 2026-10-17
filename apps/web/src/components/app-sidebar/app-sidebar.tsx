@@ -453,7 +453,7 @@ export function AppSidebar({
             disabled={create.isPending}
           >
             <Plus aria-hidden />
-            {create.isPending ? '만드는 중…' : '새 워크플로우'}
+            {create.isPending ? '만드는 중' : '새 워크플로우'}
           </Button>
         )}
         <div

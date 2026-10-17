@@ -54,7 +54,7 @@ export function NodeRunPanel({
   if (attempts.error)
     return <InlineError className="p-4" message={attempts.error.message} />;
   if (!attempts.data)
-    return <p className="p-4 text-sm text-muted-foreground">불러오는 중…</p>;
+    return <p className="p-4 text-sm text-muted-foreground">불러오는 중</p>;
 
   const list = attempts.data;
   // 기본은 마지막 시도

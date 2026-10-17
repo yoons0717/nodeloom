@@ -11,7 +11,6 @@ import Link from 'next/link';
 // 실행 상세 주소로 바로 들어와도 캔버스가 그려지도록 React Flow 기본 스타일을 여기서도 불러온다.
 import '@xyflow/react/dist/style.css';
 import { useEffect, useRef, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { InlineError } from '@/components/ui/inline-error';
@@ -20,14 +19,11 @@ import { type CanvasNode, NodeCard } from '@/features/editor/node-card';
 import { formatRunTime } from '@/features/workflows/format';
 import { clientApi } from '@/lib/client-api';
 import { isAtLeast } from '@/lib/media';
-import {
-  formatDuration,
-  RUN_KIND_LABEL,
-  RUN_STATUS_LABEL,
-  RUN_STATUS_TONE,
-} from './format';
+import { cn } from '@/lib/utils';
+import { formatDuration, RUN_KIND_LABEL, RUN_STATUS_LABEL } from './format';
 import { NodeRunPanel } from './node-run-panel';
 import { firstFailedNodeId, RunTimeline } from './run-timeline';
+import { RUN_STATUS_DOT, STATUS_TEXT, StatusDot } from './status-dot';
 import { type RunDetail as Run, runProgressSchema } from './schemas';
 
 const nodeTypes = {
@@ -129,9 +125,17 @@ export function RunDetail({
         context={workflowName}
         title={`${formatRunTime(run.createdAt)} 실행`}
         status={
-          <Badge tone={RUN_STATUS_TONE[p.status]} role="status">
+          // 목록·카드와 같은 점 + 글자(status-dot.tsx).
+          <span
+            role="status"
+            className={cn(
+              'flex shrink-0 items-center gap-2 text-xs',
+              STATUS_TEXT[RUN_STATUS_DOT[p.status]],
+            )}
+          >
+            <StatusDot tone={RUN_STATUS_DOT[p.status]} />
             {RUN_STATUS_LABEL[p.status]}
-          </Badge>
+          </span>
         }
         actions={
           <Button

@@ -16,6 +16,7 @@ import {
 import { clientApi } from '@/lib/client-api';
 import { cn } from '@/lib/utils';
 import { formatDateTime, formatRunTime, TIMEZONE } from './format';
+import { NewWorkflowButton } from './new-workflow-button';
 import { workflowListSchema } from './schemas';
 import { WorkflowRowMenu } from './workflow-row-menu';
 
@@ -69,8 +70,9 @@ export function WorkflowCards({
           아직 워크플로우가 없습니다
         </span>
         <span className="text-body-sm text-muted-foreground">
-          위의 &quot;새 워크플로우&quot;로 시작하세요.
+          첫 워크플로우를 만들어 보세요.
         </span>
+        <NewWorkflowButton />
       </div>
     );
 

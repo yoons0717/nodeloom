@@ -105,17 +105,14 @@ export function RunHistory({
 
 // 상태(점 + 글자) | 시각 | 방식(모든 실행은 워크플로우 이름 · 방식) | 걸린 시간 | › 고정 열.
 // sm(640) 미만은 두 줄: 1줄 배지 · 시각 · (오른쪽) 걸린 시간 · ›, 2줄 워크플로우 이름 · 방식(DESIGN.md 반응형).
-// 실패 행은 왼쪽에 빨간 막대와 오류 두 줄.
+// 실패 행은 오류 두 줄.
 function RunRow({ run: r, workflowId }: { run: Run; workflowId?: string }) {
   const at = r.startedAt ?? r.createdAt;
   const wid = workflowId ?? r.workflow?.id;
   return (
     <Link
       href={`/w/${wid}/runs/${r.id}`}
-      className={cn(
-        'grid grid-cols-[auto_auto_minmax(0,1fr)_auto_16px] items-center gap-x-3 gap-y-1 px-4 py-3 sm:grid-cols-[84px_44px_minmax(0,1fr)_auto_16px] hover:bg-raised focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent-ring focus-visible:ring-inset',
-        r.status === 'FAILED' && 'shadow-[inset_2px_0_0_var(--danger)]',
-      )}
+      className="grid grid-cols-[auto_auto_minmax(0,1fr)_auto_16px] items-center gap-x-3 gap-y-1 px-4 py-3 sm:grid-cols-[84px_44px_minmax(0,1fr)_auto_16px] hover:bg-raised focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent-ring focus-visible:ring-inset"
     >
       <span
         className={cn(

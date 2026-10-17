@@ -15,7 +15,7 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border-subtle bg-surface px-4">
+    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border-subtle bg-surface px-6">
       <MobileNavButton />
       <h1 className="flex min-w-0 items-center gap-2 text-base">
         {/* 좁은 화면에서는 맥락을 숨겨 지금 화면 이름이 보이게 한다. */}

@@ -1,4 +1,3 @@
-import type { BadgeTone } from '@/components/ui/badge';
 import type { NodeRunStatus, RunListItem } from './schemas';
 
 export const RUN_STATUS_LABEL: Record<RunListItem['status'], string> = {
@@ -6,14 +5,6 @@ export const RUN_STATUS_LABEL: Record<RunListItem['status'], string> = {
   RUNNING: '실행 중',
   SUCCESS: '성공',
   FAILED: '실패',
-};
-
-// 실행 상세의 실행 상태는 Badge로 보여 준다. 목록은 점 + 글자(status-dot.tsx, DESIGN.md 원칙).
-export const RUN_STATUS_TONE: Record<RunListItem['status'], BadgeTone> = {
-  PENDING: 'neutral',
-  RUNNING: 'running',
-  SUCCESS: 'success',
-  FAILED: 'danger',
 };
 
 export const RUN_KIND_LABEL: Record<RunListItem['kind'], string> = {

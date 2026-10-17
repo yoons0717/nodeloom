@@ -17,6 +17,7 @@ import {
   type IsValidConnection,
   type NodeChange,
   type NodeDimensionChange,
+  Panel,
   ReactFlow,
   useConnection,
   useReactFlow,
@@ -244,6 +245,17 @@ export function Canvas({ children }: { children?: ReactNode }) {
         <Background gap={GRID[0]} />
         <CanvasControls leading={<UndoRedo />} />
         <ConnectionFeedback graph={graph} />
+        {/* 막 만든 워크플로우(Trigger 하나)에서 다음 할 일. 노드를 하나 더 놓으면 사라진다. */}
+        {/* 좁은 캔버스에서 왼쪽 아래 도구 막대와 겹치지 않게 그 위에 둔다: 패널 여백 15 + 터치 높이 44 + 간격 8. */}
+        {graph.nodes.length === 1 && (
+          <Panel
+            position="bottom-center"
+            style={{ marginBottom: 15 + 44 + 8 }}
+            className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted-foreground"
+          >
+            왼쪽에서 노드를 추가하고, 오른쪽 점을 끌어 이으세요
+          </Panel>
+        )}
         {children}
       </ReactFlow>
     </div>

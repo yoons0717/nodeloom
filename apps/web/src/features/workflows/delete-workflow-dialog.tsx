@@ -93,7 +93,7 @@ export function DeleteWorkflowDialog({
               disabled={busy}
               onClick={() => remove.mutate()}
             >
-              {busy ? '삭제 중…' : '삭제'}
+              {busy ? '삭제 중' : '삭제'}
             </Button>
           </div>
         </Dialog.Popup>

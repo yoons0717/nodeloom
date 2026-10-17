@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Graph } from '@nodeloom/core';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { MobileNavButton } from '@/components/app-sidebar/sidebar-shell';
 import { Input } from '@/components/ui/input';
 import { InfoTip } from '@/components/ui/info-tip';
@@ -106,6 +106,16 @@ export function SaveControls({
     }
   };
 
+  // 막 만든 워크플로우(주소에 ?new)는 이름부터 바꾸도록 이름 칸을 골라 둔다.
+  // 새로고침하면 다시 고르지 않게 주소에서 표시를 지운다.
+  const nameRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has('new')) return;
+    nameRef.current?.focus();
+    nameRef.current?.select();
+    window.history.replaceState(null, '', window.location.pathname);
+  }, []);
+
   // ⌘S / Ctrl+S. 입력 칸 안에서도 저장한다(브라우저의 "페이지 저장"을 막음).
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -151,6 +161,7 @@ export function SaveControls({
       <MobileNavButton />
       {/* 글자처럼 보이다가 누르면 편집한다(M6 작은 결정 ⑩). */}
       <Input
+        ref={nameRef}
         aria-label="워크플로우 이름"
         aria-invalid={nameError ? true : undefined}
         title={nameError}
@@ -202,7 +213,7 @@ function SaveStatus({
   if (pending)
     return (
       <span role="status" className="shrink-0 text-xs text-muted-foreground">
-        저장 중…
+        저장 중
       </span>
     );
   if (error)

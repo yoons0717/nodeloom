@@ -14,9 +14,9 @@ const isDone = (s?: RunStatus) =>
 function label(s: RunStatus) {
   switch (s.status) {
     case 'PENDING':
-      return '실행 대기 중…';
+      return '실행 대기 중';
     case 'RUNNING':
-      return '실행 중…';
+      return '실행 중';
     case 'SUCCESS':
       return '실행 성공';
     case 'FAILED':
@@ -65,13 +65,13 @@ export function RunControls({
     (runId !== null && !isDone(status.data) && !status.error);
   const error = start.error ?? status.error;
   const text = start.isPending
-    ? '실행 요청 중…'
+    ? '실행 요청 중'
     : error
       ? error.message
       : status.data
         ? label(status.data)
         : runId
-          ? '실행 대기 중…'
+          ? '실행 대기 중'
           : '';
   const failed = Boolean(error) || status.data?.status === 'FAILED';
   // 실패는 첫 줄 "실행 실패", 둘째 줄 사유로 나눈다(M6 6-f).
@@ -101,7 +101,7 @@ export function RunControls({
     <div className="relative">
       <Button onClick={() => start.mutate()} disabled={busy}>
         {busy ? (
-          '실행 중…'
+          '실행 중'
         ) : (
           <>
             <span aria-hidden>▶</span>실행

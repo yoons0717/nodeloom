@@ -64,7 +64,7 @@ export function WorkflowRowMenu({
         workflow={workflow}
         open={confirming}
         onOpenChange={setConfirming}
-        // 창은 닫지 않고 "삭제 중…"으로 두었다가, 목록을 다시 불러와 카드가 빠질 때 함께 사라진다.
+        // 창은 닫지 않고 "삭제 중"으로 두었다가, 목록을 다시 불러와 카드가 빠질 때 함께 사라진다.
         onDeleted={() => router.refresh()}
       />
     </>
