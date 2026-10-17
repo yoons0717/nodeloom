@@ -12,7 +12,7 @@ const TONE: Record<BadgeTone, { className: string; glyph?: string }> = {
   danger: { className: 'bg-danger-soft text-danger-text', glyph: '!' },
 };
 
-// 상태 표시는 모두 이 배지를 쓴다. 색에만 기대지 않도록 글리프를 함께 붙인다(DESIGN.md).
+// 배지로 보여 주는 상태 표시. 색에만 기대지 않도록 글리프를 함께 붙인다(DESIGN.md). 목록의 실행 상태는 status-dot.tsx.
 function Badge({
   tone = 'neutral',
   className,

@@ -2,7 +2,7 @@ import { Button as ButtonPrimitive } from '@base-ui/react/button';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
-// 버튼 값은 디자인 리뷰 데모를 따른다(DESIGN.md). 주요 버튼(default)은 화면에 하나만 둔다.
+// 버튼 값은 디자인 리뷰 데모를 따른다. 주요 버튼(default)은 화면에 하나만 둔다(DESIGN.md 부품).
 const buttonVariants = cva(
   "inline-flex shrink-0 items-center justify-center gap-2 rounded-md border border-transparent text-sm font-medium whitespace-nowrap transition-colors outline-none select-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent-ring disabled:pointer-events-none disabled:text-disabled [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
