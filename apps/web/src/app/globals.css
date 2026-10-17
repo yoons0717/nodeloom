@@ -16,6 +16,7 @@
   --raised: #1b222b;
   --raised-hover: #232b36;
   --overlay: #28313d;
+  --overlay-hover: #323c49;
   /* 도움말 팝오버(M6 6-i): 바탕, 테두리, 규칙 표 줄무늬, 열린 노드 목록 항목 */
   --help: #1f262f;
   --help-border: #3a4452;
@@ -175,6 +176,7 @@
   --color-raised: var(--raised);
   --color-raised-hover: var(--raised-hover);
   --color-overlay: var(--overlay);
+  --color-overlay-hover: var(--overlay-hover);
   --color-help: var(--help);
   --color-help-border: var(--help-border);
   --color-help-stripe: var(--help-stripe);

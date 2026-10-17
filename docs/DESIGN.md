@@ -20,6 +20,7 @@
 | `--raised` | `#1B222B` | 노드 카드, 목록 항목, 버튼 |
 | `--raised-hover` | `#232B36` | 마우스를 올린 카드·버튼·목록 항목(어두운 테마라 밝아진다) |
 | `--overlay` | `#28313D` | 토스트, 팝오버, 툴팁, 선택 메뉴(그림자와 함께 띄운다) |
+| `--overlay-hover` | `#323C49` | `--overlay` 위에서 고른 메뉴·선택 목록 항목 |
 | `--help` · `--help-border` | `#1F262F` · `#3A4452` | 도움말 팝오버 바탕과 테두리(그림자 `shadow-help` 0 16 40 55% 검정). 규칙 표 줄무늬는 `--help-stripe`(흰색 2.5%) |
 | `--raised-open` | `#1E252E` | 도움말이 열린 노드 목록 항목 |
 | `--grid` | `#252C36` | 캔버스 점 격자 |
@@ -121,8 +122,9 @@
 | 캔버스 도구 | 왼쪽 아래, 높이 36, `--surface` 바탕, `--border` 테두리. − 배율 + │ 맞춤 보기 |
 | 실행 상세 패널 | 너비 384. 위는 "실행 순서"(줄 높이 28, 상태 글리프 · 제목 13px · 걸린 시간 고정폭 11px, 고른 줄은 `--accent-soft` + 700, 전체의 절반을 넘긴 노드는 40×4 `--warning` 막대). 아래는 입력/출력 탭(높이 28) · 복사, 남은 높이를 다 쓰는 JSON 보기(12/20, 키 `--node-http-text`, 숫자·참거짓 `--node-condition-text`, 문자열 `--success-text`, 접힌 객체 "… n"), 맨 아래 고른 값을 읽는 식(고정폭 11px) |
 | PageHeader | 에디터를 뺀 화면(목록, 실행 기록, 실행 상세, 모든 실행, 설정)의 상단 바. 높이 56, `--surface`, 아래 `--border-subtle`. 뒤로 가기는 없다(사이드바가 맡음). 좁은 화면에서는 왼쪽에 메뉴 버튼, 제목은 "맥락 / 화면"(좁은 화면에서는 맥락을 숨김), 상태 배지, 오른쪽 동작 |
-| 목록 행 ⋯ 메뉴 | `features/workflows/workflow-row-menu.tsx`. 모든 행·모든 기기에서 늘 보이는 ghost 아이콘 버튼 36(터치 44), `--text-muted`. 행을 덮는 링크 위에 둔다. 항목: 실행 기록 · 설정 · 구분선 · 삭제(`--danger-text`, 고르면 `--danger-soft`). 행을 누르면 편집으로 가므로 "편집 열기"는 없다 |
-| 삭제 확인 창 | `features/workflows/delete-workflow-dialog.tsx`. 목록 ⋯ 메뉴와 설정 화면 맨 아래 "워크플로우 삭제" 구역(`--danger-soft` 테두리, destructive "삭제")이 함께 쓴다. 폭 `min(440px, 남은 폭)`, `--overlay` 바탕 + `shadow-help`, `--scrim` 막. 제목 "'이름'을 삭제할까요?", 본문 13/20 `--text-label`(스케줄이 있으면 "스케줄도 멈춥니다"), 실패 알림 설정이 비워진다는 안내 12px `--text-muted`. 취소(outline) · 삭제(`--danger-strong` 바탕). 포커스는 취소에서 시작하고 Esc·바깥 클릭은 취소. 지우는 동안은 "삭제 중…"으로 막고 닫히지 않는다. 실패하면 창 안에 InlineError. 지운 뒤 목록에서는 행만 빠지고, 설정에서는 목록으로 옮긴다(토스트 없음) |
+| 워크플로우 카드 | `features/workflows/workflow-cards.tsx`. 전체 워크플로우(`/`) 화면, 머리말 "전체 워크플로우 N개" + "새 워크플로우". 격자 `repeat(auto-fill, minmax(260px, 1fr))`, 간격 16, 본문 여백 24, 순서는 서버 순서. 카드는 최소 높이 164, `--surface` 바탕 + `--border`, 마우스·메뉴 열림이면 `--raised` + `--border-control`. 위: 이름 15/22 700 두 줄까지(카드 전체가 에디터 링크, 포커스는 3px `--accent-ring`) · ⋯ 메뉴. 가운데 12/18 `--text-muted`: 스케줄(`--text-label`, 없으면 "스케줄 없음", 오류면 `--danger-text`) · 다음 실행(데모에서는 뺌), 노드 수 · 수정 시각. 아래 상태 줄 44(`--border-subtle` 위 선, 마우스면 `--raised-hover`)은 실행 기록 링크: 8px 점 + 글자 + ›. 점은 실패 `--danger`, 실행 중 `--accent` + 3px 옅은 링, 대기 중 빈 원(`--text-muted` 선), 성공 `--success`, 실행 안 함 점선 원(`--border-control`). 글자 색은 실패만 `--danger-text` 500, 실행 중·대기 중 `--text-label`, 나머지 `--text-muted`. 시각은 절대 시각("10월 17일 12:03"). 사이드바와 같은 `['workflows']` 캐시라 실행 상태가 함께 바뀐다. 빈 상태는 점선 상자 "아직 워크플로우가 없습니다" |
+| 카드 ⋯ 메뉴 | `features/workflows/workflow-row-menu.tsx`. 모든 카드·모든 기기에서 늘 보이는 ghost 아이콘 버튼 36(터치 44), `--text-muted`. 카드를 덮는 링크 위에 둔다. 항목은 글자만(아이콘 없음): 실행 기록 · 설정 · 구분선 · 삭제(`--danger-text`, 고르면 `--danger-soft`). 카드를 누르면 편집으로 가므로 "편집 열기"는 없다 |
+| 삭제 확인 창 | `features/workflows/delete-workflow-dialog.tsx`. 카드 ⋯ 메뉴와 설정 화면 맨 아래 "워크플로우 삭제" 구역(`--danger-soft` 테두리, destructive "삭제")이 함께 쓴다. 폭 `min(440px, 남은 폭)`, `--overlay` 바탕 + `shadow-help`, `--scrim` 막. 제목 "'이름'을 삭제할까요?", 본문 13/20 `--text-label`(스케줄이 있으면 "스케줄도 멈춥니다"), 실패 알림 설정이 비워진다는 안내 12px `--text-muted`. 취소(outline) · 삭제(`--danger-strong` 바탕). 포커스는 취소에서 시작하고 Esc·바깥 클릭은 취소. 지우는 동안은 "삭제 중…"으로 막고 닫히지 않는다. 실패하면 창 안에 InlineError. 지운 뒤 목록에서는 카드만 빠지고, 설정에서는 목록으로 옮긴다(토스트 없음) |
 | InlineError | "! 문구" 꼴 오류. `--danger-text`, 글리프는 읽지 않게(aria-hidden). 문제 목록을 함께 받을 수 있다 |
 | 실행 기록 행 | 고정 열: 상태 배지 84 · 시각(HH:mm, 고정폭) 44 · 방식 · 걸린 시간(고정폭, 오른쪽 정렬) · ›. 실패 행은 왼쪽 2px `--danger` 막대와 배지 열만큼 들여 쓴 오류 두 줄. 날짜별 묶음(오늘 / 어제 / 10월 9일), 상태 거르기 칩은 주소 `?status=`이고 서버가 그 상태의 최근 50건을 돌려준다(칩에 개수는 붙이지 않음) |
 
@@ -162,7 +164,7 @@
 - 폭(`md:` 등)으로 터치를 짐작하지 않는다. 누르는 크기와 hover는 `pointer-coarse:` / `pointer-fine:`로 나눈다.
 - 터치(`pointer-coarse`)에서 누르는 영역은 44×44 이상: 캔버스 도구 막대, 사이드바 항목, 실행 기록 거르기 칩, 노드 입출력 탭·복사, 버튼. 보이는 크기를 그대로 둘 때는 `after:`로 영역만 넓힌다(도움말 (?), 포트).
 - 누를 수 있는 버튼(`button`, `role="button"`)은 손가락 커서다. 막힌 버튼(`disabled`, `aria-disabled`)은 기본 커서(`globals.css`).
-- hover 때만 보이는 버튼은 `pointer-fine:`에서만 숨긴다. 목록 행 ⋯ 메뉴는 숨기지 않고 늘 보인다.
+- hover 때만 보이는 버튼은 `pointer-fine:`에서만 숨긴다. 카드 ⋯ 메뉴는 숨기지 않고 늘 보인다.
 - `title=`만으로 보여 주는 정보는 없다. 문제 배지·노드 오류·저장 실패 사유는 `InfoTip`(올리기·포커스·누르기로 열림)을 쓴다.
 - 터치 입력 칸은 16px(`pointer-coarse:text-base`)로 iOS 확대를 피한다. `maximum-scale`로 확대를 막지 않는다.
 - HTML 끌어다 놓기는 정밀한 포인터에서만 켠다. 노드 목록은 누르면 캔버스 가운데에 추가한다.

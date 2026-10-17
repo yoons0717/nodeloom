@@ -31,7 +31,7 @@ export function NewWorkflowButton() {
   return (
     <div className="flex flex-col items-end gap-1">
       <Button onClick={() => create.mutate()} disabled={create.isPending}>
-        {create.isPending ? '만드는 중…' : '새로 만들기'}
+        {create.isPending ? '만드는 중…' : '새 워크플로우'}
       </Button>
       {create.error && (
         <p role="alert" className="text-xs text-danger-text">

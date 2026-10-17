@@ -10,9 +10,14 @@ test('로그인해서 만든 흐름은 저장 후 새로고침해도 그대로 �
   await expect(page).toHaveURL(/\/login$/);
   await page.getByLabel('비밀번호').fill(E2E_PASSWORD);
   await page.getByRole('button', { name: '로그인' }).click();
-  await expect(page.getByRole('heading', { name: 'Nodeloom' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: '전체 워크플로우' }),
+  ).toBeVisible();
 
-  await page.getByRole('button', { name: '새로 만들기' }).click();
+  await page
+    .locator('header')
+    .getByRole('button', { name: '새 워크플로우' })
+    .click();
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]+$/);
   await expect(nodes(page)).toHaveCount(1);
 

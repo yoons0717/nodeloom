@@ -9,7 +9,7 @@ import {
   selectNode,
 } from './editor.ts';
 
-// 데모 모드: 로그인 없이 목록 → 새로 만들기 → 편집 → 저장 → 실행(DECISIONS H-1, 6-5)
+// 데모 모드: 로그인 없이 목록 → 새 워크플로우 → 편집 → 저장 → 실행(DECISIONS H-1, 6-5)
 // 데모에서는 연습용 주소(/mock)로만 요청할 수 있다(DECISIONS 1-3).
 test('데모 모드에서는 로그인 없이 편집하고 저장할 수 있다', async ({
   page,
@@ -19,7 +19,10 @@ test('데모 모드에서는 로그인 없이 편집하고 저장할 수 있다'
   await expect(page.getByText('데모', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '로그아웃' })).toHaveCount(0);
 
-  await page.getByRole('button', { name: '새로 만들기' }).click();
+  await page
+    .locator('header')
+    .getByRole('button', { name: '새 워크플로우' })
+    .click();
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]+$/);
   await addNode(page, 'HTTP', 500, 250);
   await connect(page, 'trigger_1', 'http_1');
@@ -43,7 +46,10 @@ test('실행하면 상세 화면에서 노드별 상태와 입출력을 볼 수 
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: '새로 만들기' }).click();
+  await page
+    .locator('header')
+    .getByRole('button', { name: '새 워크플로우' })
+    .click();
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]+$/);
   await addNode(page, 'HTTP', 500, 250);
   await connect(page, 'trigger_1', 'http_1');
@@ -72,7 +78,10 @@ test('Condition이 고른 갈래만 실행되고, 상세 화면에서 고른 쪽
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: '새로 만들기' }).click();
+  await page
+    .locator('header')
+    .getByRole('button', { name: '새 워크플로우' })
+    .click();
   await expect(page).toHaveURL(/\/w\/[0-9a-f-]+$/);
   await addNode(page, 'Transform', 250, 250);
   await addNode(page, 'Condition', 430, 250);
@@ -121,7 +130,10 @@ test.describe('768px 간단 배치', () => {
     page,
   }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: '새로 만들기' }).click();
+    await page
+      .locator('header')
+      .getByRole('button', { name: '새 워크플로우' })
+      .click();
     await expect(page).toHaveURL(/\/w\/[0-9a-f-]+$/);
     await expect(nodes(page)).toHaveCount(1);
 
