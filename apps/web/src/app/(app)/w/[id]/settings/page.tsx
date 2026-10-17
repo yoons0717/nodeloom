@@ -18,7 +18,7 @@ export default async function WorkflowSettingsPage({
   return (
     <>
       <PageHeader context={workflow.name} title="설정" />
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
+      <div className="flex w-full max-w-[1200px] flex-col gap-6 p-6">
         <section className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-4">
           <h2 className="text-base font-bold">실패 알림</h2>
           <FailureWorkflowSelect

@@ -29,7 +29,7 @@ export default async function WorkflowListPage() {
         }
         actions={<NewWorkflowButton />}
       />
-      <div className="p-6">
+      <div className="w-full max-w-[1200px] p-6">
         <WorkflowCards initial={workflows} demo={me.role === 'demo'} />
       </div>
     </>

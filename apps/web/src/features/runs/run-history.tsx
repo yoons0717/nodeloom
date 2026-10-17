@@ -1,14 +1,8 @@
 import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
 import { formatDateTime, formatTime } from '@/features/workflows/format';
 import { cn } from '@/lib/utils';
 import { Elapsed } from './elapsed';
-import {
-  formatDuration,
-  RUN_KIND_LABEL,
-  RUN_STATUS_LABEL,
-  RUN_STATUS_TONE,
-} from './format';
+import { formatDuration, RUN_KIND_LABEL, RUN_STATUS_LABEL } from './format';
 import {
   EMPTY_FILTER_MESSAGE,
   groupRunsByDay,
@@ -16,9 +10,22 @@ import {
   RUN_FILTERS,
 } from './run-list';
 import type { RunListItem } from './schemas';
+import {
+  RUN_STATUS_DOT,
+  STATUS_TEXT,
+  StatusDot,
+  type StatusTone,
+} from './status-dot';
 
 // API가 돌려주는 최대 개수(M5 작은 결정 ③)
 const LIMIT = 50;
+
+// 거르기 칩의 점. "전체"에는 점이 없다.
+const FILTER_DOT: Partial<Record<RunFilter, StatusTone>> = {
+  failed: 'fail',
+  success: 'ok',
+  running: 'run',
+};
 
 type Run = RunListItem & { workflow?: { id: string; name: string } };
 
@@ -42,6 +49,7 @@ export function RunHistory({
       <nav aria-label="상태 거르기" className="flex flex-wrap gap-2">
         {RUN_FILTERS.map((f) => {
           const on = f.value === filter;
+          const dot = FILTER_DOT[f.value];
           return (
             <Link
               key={f.value}
@@ -56,6 +64,7 @@ export function RunHistory({
                   : 'border-border-control text-label hover:bg-raised-hover',
               )}
             >
+              {dot && <StatusDot tone={dot} />}
               {f.label}
             </Link>
           );
@@ -94,7 +103,7 @@ export function RunHistory({
   );
 }
 
-// 상태 배지 | 시각 | 방식(모든 실행은 워크플로우 이름 · 방식) | 걸린 시간 | › 고정 열.
+// 상태(점 + 글자) | 시각 | 방식(모든 실행은 워크플로우 이름 · 방식) | 걸린 시간 | › 고정 열.
 // sm(640) 미만은 두 줄: 1줄 배지 · 시각 · (오른쪽) 걸린 시간 · ›, 2줄 워크플로우 이름 · 방식(DESIGN.md 반응형).
 // 실패 행은 왼쪽에 빨간 막대와 오류 두 줄.
 function RunRow({ run: r, workflowId }: { run: Run; workflowId?: string }) {
@@ -108,22 +117,33 @@ function RunRow({ run: r, workflowId }: { run: Run; workflowId?: string }) {
         r.status === 'FAILED' && 'shadow-[inset_2px_0_0_var(--danger)]',
       )}
     >
-      <Badge tone={RUN_STATUS_TONE[r.status]}>
+      <span
+        className={cn(
+          'flex items-center gap-2 text-xs',
+          STATUS_TEXT[RUN_STATUS_DOT[r.status]],
+        )}
+      >
+        <StatusDot tone={RUN_STATUS_DOT[r.status]} />
         {RUN_STATUS_LABEL[r.status]}
-      </Badge>
+      </span>
       <span className="font-mono text-xs text-label" title={formatDateTime(at)}>
         {formatTime(at)}
       </span>
       <span className="col-span-5 row-start-2 truncate text-xs text-muted-foreground sm:col-span-1 sm:col-start-3 sm:row-start-1">
         {!workflowId && r.workflow && (
-          <span className="text-body-sm text-label">{r.workflow.name} · </span>
+          <>
+            <span className="text-body-sm font-bold text-foreground">
+              {r.workflow.name}
+            </span>
+            {' · '}
+          </>
         )}
         {RUN_KIND_LABEL[r.kind]}
       </span>
       <span className="col-start-4 row-start-1 text-right font-mono text-xs text-muted-foreground">
-        {r.status === 'PENDING' ? (
-          '대기 중'
-        ) : r.status === 'RUNNING' && r.startedAt ? (
+        {/* 대기 중은 왼쪽 상태 글자가 이미 말해 주므로 비워 둔다. */}
+        {r.status === 'PENDING' ? null : r.status === 'RUNNING' &&
+          r.startedAt ? (
           <Elapsed since={r.startedAt} />
         ) : (
           formatDuration(r.startedAt, r.finishedAt)

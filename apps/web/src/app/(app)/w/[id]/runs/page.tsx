@@ -29,7 +29,7 @@ export default async function RunListPage({
   return (
     <>
       <PageHeader context={workflow.name} title="실행 기록" />
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
+      <div className="flex w-full max-w-[1200px] flex-col gap-6 p-6">
         {filter === 'all' && runs.length === 0 ? (
           <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-border px-6 py-12 text-center">
             <p className="text-sm text-muted-foreground">

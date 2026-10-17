@@ -8,6 +8,11 @@ import {
   describeSchedule,
   parseSchedule,
 } from '@/features/editor/settings/schedule';
+import {
+  STATUS_TEXT,
+  StatusDot,
+  type StatusTone,
+} from '@/features/runs/status-dot';
 import { clientApi } from '@/lib/client-api';
 import { cn } from '@/lib/utils';
 import { formatDateTime, formatRunTime, TIMEZONE } from './format';
@@ -15,27 +20,10 @@ import { workflowListSchema } from './schemas';
 import { WorkflowRowMenu } from './workflow-row-menu';
 
 type Item = z.output<typeof workflowListSchema>[number];
-type Tone = 'fail' | 'run' | 'pending' | 'ok' | 'none';
-
-// 색은 점에만 쓰고, 글자에 색을 넣는 건 실패뿐이다(DESIGN.md 워크플로우 카드).
-const DOT: Record<Tone, string> = {
-  fail: 'bg-danger',
-  run: 'bg-accent ring-3 ring-accent/25',
-  pending: 'border-[1.5px] border-muted-foreground',
-  ok: 'bg-success',
-  none: 'border-[1.5px] border-dashed border-border-control',
-};
-const TEXT: Record<Tone, string> = {
-  fail: 'font-medium text-danger-text',
-  run: 'text-label',
-  pending: 'text-label',
-  ok: 'text-muted-foreground',
-  none: 'text-muted-foreground',
-};
 
 // 카드 아래 상태 줄의 글자. 마지막 실행과 24시간 안의 실패 수로 만든다.
 export function runStatus(w: Pick<Item, 'lastRun' | 'failedLast24h'>): {
-  tone: Tone;
+  tone: StatusTone;
   text: string;
 } {
   const run = w.lastRun;
@@ -125,12 +113,12 @@ export function WorkflowCards({
               aria-label={`${w.name} 실행 기록: ${status.text}`}
               className="relative z-[2] mt-auto flex h-11 items-center gap-2 rounded-b-[7px] border-t border-border-subtle pr-3 pl-4 text-xs hover:bg-raised-hover focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent-ring"
             >
+              <StatusDot tone={status.tone} />
               <span
-                aria-hidden
-                className={cn('size-2 shrink-0 rounded-full', DOT[status.tone])}
-              />
-              <span
-                className={cn('min-w-0 flex-1 truncate', TEXT[status.tone])}
+                className={cn(
+                  'min-w-0 flex-1 truncate',
+                  STATUS_TEXT[status.tone],
+                )}
               >
                 {status.text}
               </span>
