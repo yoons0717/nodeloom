@@ -161,6 +161,7 @@
 
 - 폭(`md:` 등)으로 터치를 짐작하지 않는다. 누르는 크기와 hover는 `pointer-coarse:` / `pointer-fine:`로 나눈다.
 - 터치(`pointer-coarse`)에서 누르는 영역은 44×44 이상: 캔버스 도구 막대, 사이드바 항목, 실행 기록 거르기 칩, 노드 입출력 탭·복사, 버튼. 보이는 크기를 그대로 둘 때는 `after:`로 영역만 넓힌다(도움말 (?), 포트).
+- 누를 수 있는 버튼(`button`, `role="button"`)은 손가락 커서다. 막힌 버튼(`disabled`, `aria-disabled`)은 기본 커서(`globals.css`).
 - hover 때만 보이는 버튼은 `pointer-fine:`에서만 숨긴다. 목록 행 ⋯ 메뉴는 숨기지 않고 늘 보인다.
 - `title=`만으로 보여 주는 정보는 없다. 문제 배지·노드 오류·저장 실패 사유는 `InfoTip`(올리기·포커스·누르기로 열림)을 쓴다.
 - 터치 입력 칸은 16px(`pointer-coarse:text-base`)로 iOS 확대를 피한다. `maximum-scale`로 확대를 막지 않는다.

@@ -249,4 +249,9 @@
   body {
     @apply bg-bg font-sans text-sm text-foreground;
   }
+  /* Tailwind v4는 버튼 커서를 기본 화살표로 둔다. 누를 수 있는 버튼만 손가락 커서로 바꾼다. */
+  button:not(:disabled, [aria-disabled='true']),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
 }
