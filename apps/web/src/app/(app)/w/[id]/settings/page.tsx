@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { PageHeader } from '@/components/ui/page-header';
+import { DeleteWorkflowSection } from '@/features/workflows/delete-workflow-dialog';
 import { FailureWorkflowSelect } from '@/features/workflows/failure-workflow-select';
 import { workflowSchema } from '@/features/workflows/schemas';
 import { serverApi } from '@/lib/server-api';
@@ -12,6 +13,8 @@ export default async function WorkflowSettingsPage({
 }: PageProps<'/w/[id]/settings'>) {
   const { id } = await params;
   const workflow = await serverApi(`/workflows/${id}`, workflowSchema);
+  const cron = workflow.graph.nodes.find((n) => n.type === 'trigger')?.config
+    .cron;
   return (
     <>
       <PageHeader context={workflow.name} title="설정" />
@@ -23,6 +26,13 @@ export default async function WorkflowSettingsPage({
             initial={workflow.failureWorkflowId}
           />
         </section>
+        <DeleteWorkflowSection
+          workflow={{
+            id: workflow.id,
+            name: workflow.name,
+            cron: typeof cron === 'string' ? cron : null,
+          }}
+        />
       </div>
     </>
   );

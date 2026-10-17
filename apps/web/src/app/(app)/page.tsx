@@ -5,7 +5,6 @@ import {
   describeSchedule,
   parseSchedule,
 } from '@/features/editor/settings/schedule';
-import { DeleteWorkflowButton } from '@/features/workflows/delete-workflow-button';
 import { DemoBadge } from '@/features/workflows/demo-badge';
 import {
   formatDateTime,
@@ -14,6 +13,7 @@ import {
 } from '@/features/workflows/format';
 import { NewWorkflowButton } from '@/features/workflows/new-workflow-button';
 import { meSchema, workflowListSchema } from '@/features/workflows/schemas';
+import { WorkflowRowMenu } from '@/features/workflows/workflow-row-menu';
 import { serverApi } from '@/lib/server-api';
 import { cn } from '@/lib/utils';
 
@@ -46,9 +46,9 @@ export default async function WorkflowListPage() {
             {workflows.map((w) => (
               <li
                 key={w.id}
-                className="group relative flex flex-col gap-1 px-4 py-3 hover:bg-raised md:col-span-5 md:grid md:grid-cols-subgrid md:items-center md:gap-x-4"
+                className="relative flex flex-col gap-1 px-4 py-3 hover:bg-raised md:col-span-5 md:grid md:grid-cols-subgrid md:items-center md:gap-x-4"
               >
-                {/* 행 전체를 누를 수 있게 링크가 행을 덮는다. 삭제 버튼만 그 위에 둔다. */}
+                {/* 행 전체를 누를 수 있게 링크가 행을 덮는다. ⋯ 메뉴만 그 위에 둔다. */}
                 <Link
                   href={`/w/${w.id}`}
                   className="truncate font-bold after:absolute after:inset-0 after:rounded-[inherit] focus-visible:outline-none focus-visible:after:ring-3 focus-visible:after:ring-accent-ring"
@@ -75,9 +75,11 @@ export default async function WorkflowListPage() {
                     {formatRunTime(w.updatedAt)} 수정
                   </span>
                 </div>
-                {/* 넓은 화면이고 마우스가 있으면 올리거나 포커스가 있을 때만 보인다. 터치 기기에서는 폭과 상관없이 늘 보인다(DESIGN.md 반응형). */}
-                <div className="relative z-10 -ml-2.5 self-start md:ml-0 md:self-auto md:pointer-fine:opacity-0 md:pointer-fine:group-focus-within:opacity-100 md:pointer-fine:group-hover:opacity-100 md:pointer-fine:has-[[data-confirming]]:opacity-100">
-                  <DeleteWorkflowButton id={w.id} name={w.name} />
+                {/* 모든 기기에서 늘 보인다(DESIGN.md 입력 방식). */}
+                <div className="relative z-10 -ml-2 self-start md:ml-0 md:self-auto">
+                  <WorkflowRowMenu
+                    workflow={{ id: w.id, name: w.name, cron: w.cron }}
+                  />
                 </div>
               </li>
             ))}
