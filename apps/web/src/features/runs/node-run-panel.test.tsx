@@ -110,4 +110,12 @@ describe('NodeRunPanel', () => {
       await screen.findByText('이 노드는 실행되지 않았습니다.'),
     ).toBeTruthy();
   });
+
+  it('404가 아닌 실패는 실행되지 않았다고 하지 않고 사유를 보여 준다', async () => {
+    renderPanel(
+      Response.json({ message: '서버 오류가 발생했습니다' }, { status: 500 }),
+    );
+    expect(await screen.findByText('서버 오류가 발생했습니다')).toBeTruthy();
+    expect(screen.queryByText('이 노드는 실행되지 않았습니다.')).toBeNull();
+  });
 });
