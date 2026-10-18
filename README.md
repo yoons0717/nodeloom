@@ -158,3 +158,5 @@ export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 - [디자인 토큰](docs/DESIGN.md)
 - [성능 기록](docs/PERFORMANCE.md)
 - [백로그](docs/BACKLOG.md)
+
+마일스톤 기록은 그때의 계획과 결과다. 나중에 바뀐 동작은 프로젝트 계획과 디자인 토큰 문서를 따른다.

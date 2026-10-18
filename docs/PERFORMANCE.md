@@ -9,7 +9,7 @@ pnpm --filter @nodeloom/browser-tests exec playwright install chromium   # 처�
 pnpm --filter @nodeloom/browser-tests bench
 ```
 
-- `NEXT_PUBLIC_BENCH=1`로 web을 **프로덕션 빌드**한 뒤 띄워서 잰다. 개발 모드는 React가 검사용으로 렌더를 두 번 하는 등 수치가 부푼다. 이 빌드에서만 `/bench` 페이지와 React Profiler 측정이 켜진다.
+- `NEXT_PUBLIC_BENCH=1`로 web을 **프로덕션 빌드**한 뒤 띄워서 잰다. 개발 모드는 React가 검사용으로 렌더를 두 번 하는 등 수치가 부푼다. `/bench` 페이지와 React Profiler 측정은 이 빌드와 개발 모드에서만 켜진다.
 - `/bench?nodes=N`은 Trigger 하나와 Transform N-1개를 격자로 놓고 앞 노드와 이은 그래프를 연다. 설정이 모두 올바라서 오류 배지는 없다.
 - 동작마다 준비 운동 1번은 버리고, 3번 잰 값의 중앙값을 적는다.
   - **드래그:** 화면에 보이는 노드 하나를 잡고 300px 끌고 갔다가 제자리로 돌아와 놓는다(마우스 이동 60번).
