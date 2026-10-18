@@ -317,7 +317,10 @@ describe('실행 엔진', () => {
 
   describe('실패 알림', () => {
     const failing = () =>
-      g([trigger(), http('bad', '/mock/status/500')], [e('trigger', 'bad')]);
+      g(
+        [trigger(), { ...http('bad', '/mock/status/500'), title: '환율' }],
+        [e('trigger', 'bad')],
+      );
     const createWorkflow = async (graph: Graph) =>
       (
         await prisma.workflow.create({
@@ -352,6 +355,7 @@ describe('실행 엔진', () => {
         workflow: { id: workflowId, name: 'w' },
         runId,
         failedNode: 'bad',
+        failedNodeTitle: '환율',
         error: '응답 코드 500',
       });
     });

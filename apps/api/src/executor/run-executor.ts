@@ -333,6 +333,11 @@ export class RunExecutor implements OnApplicationBootstrap {
       workflow: { id: workflow.id, name: workflow.name },
       runId: run.id,
       failedNode: error.nodeKey ?? null,
+      // 알림에는 키(fx)보다 화면에 보이는 제목(환율)이 알아보기 쉽다.
+      failedNodeTitle:
+        graphSchema
+          .safeParse(run.graph)
+          .data?.nodes.find((n) => n.key === error.nodeKey)?.title ?? null,
       error: error.message,
     };
     const checked = checkGraph(target.graph);
