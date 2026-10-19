@@ -11,6 +11,8 @@ coverage/
 next-env.d.ts
 docs/spec.html
 docs/DECISIONS.md
+# 개인 서버 운영 가이드(경로·설정이 이 기기 전용)
+docs/OPERATIONS.md
 test-results/
 playwright-report/
 .serena/
