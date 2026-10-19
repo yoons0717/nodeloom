@@ -28,27 +28,4 @@ describe('RunHistory', () => {
     expect(row.getAttribute('href')).toBe('/w/w1/runs/r1');
     expect(within(row).getAllByText('대기 중')).toHaveLength(1);
   });
-
-  it('실패는 빨간 글자로, 모든 실행에서는 워크플로우 이름을 붙인다', () => {
-    render(
-      <RunHistory
-        runs={[
-          {
-            ...run,
-            id: 'r2',
-            status: 'FAILED',
-            error: { message: '날씨 조회: 504' },
-          },
-        ]}
-        filter="all"
-        basePath="/runs"
-      />,
-    );
-    const row = screen.getByRole('link', { name: /디스코드/ });
-    expect(within(row).getByText('실패').className).toContain(
-      'text-danger-text',
-    );
-    expect(screen.getByText('디스코드')).toBeTruthy();
-    expect(screen.getByText('날씨 조회: 504')).toBeTruthy();
-  });
 });

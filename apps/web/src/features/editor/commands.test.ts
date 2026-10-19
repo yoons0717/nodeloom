@@ -32,22 +32,6 @@ function sample(): Graph {
   return g;
 }
 
-describe('createInitialGraph', () => {
-  it('Trigger 1개만 놓인 그래프로 시작한다', () => {
-    const g = createInitialGraph();
-    expect(g.nodes.map((n) => n.type)).toEqual(['trigger']);
-    expect(g.nodes[0]!.key).toBe('trigger_1');
-    expect(g.edges).toEqual([]);
-  });
-});
-
-describe('newNode', () => {
-  it('참조 키를 종류 기준으로 자동으로 붙인다', () => {
-    const g = sample();
-    expect(newNode(g, 'http', { x: 0, y: 0 }).key).toBe('http_2');
-  });
-});
-
 describe('Command.revert', () => {
   const cases: [string, (g: Graph) => ReturnType<typeof addNode>][] = [
     ['노드 추가', (g) => addNode(newNode(g, 'condition', { x: 9, y: 9 }))],

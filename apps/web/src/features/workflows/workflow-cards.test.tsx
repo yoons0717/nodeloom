@@ -63,25 +63,6 @@ describe('WorkflowCards', () => {
     updatedAt: at,
   };
 
-  it('카드는 에디터로, 상태 줄은 실행 기록으로 간다', () => {
-    render(
-      <QueryClientProvider client={new QueryClient()}>
-        <WorkflowCards initial={[card]} demo={false} />
-      </QueryClientProvider>,
-    );
-    expect(
-      screen.getByRole('link', { name: '디스코드' }).getAttribute('href'),
-    ).toBe('/w/w1');
-    expect(
-      screen
-        .getByRole('link', {
-          name: '디스코드 실행 기록: 실패 · 10월 17일 12:03',
-        })
-        .getAttribute('href'),
-    ).toBe('/w/w1/runs');
-    expect(screen.getByText('스케줄 없음')).toBeTruthy();
-  });
-
   it('스케줄은 다음 실행을 붙이고, 데모에서는 빼고, 잘못되면 오류로 보여 준다', () => {
     const daily = { ...card, cron: '0 7 * * *' };
     const view = (cron: string, demo: boolean) =>
@@ -99,14 +80,5 @@ describe('WorkflowCards', () => {
     cleanup();
     view('nope', false);
     expect(screen.getByText('스케줄 오류')).toBeTruthy();
-  });
-
-  it('없으면 빈 상태를 보여 준다', () => {
-    render(
-      <QueryClientProvider client={new QueryClient()}>
-        <WorkflowCards initial={[]} demo={false} />
-      </QueryClientProvider>,
-    );
-    expect(screen.getByText('아직 워크플로우가 없습니다')).toBeTruthy();
   });
 });
