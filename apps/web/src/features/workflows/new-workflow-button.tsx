@@ -6,9 +6,8 @@ import { Button } from '@/components/ui/button';
 import { createInitialGraph } from '@/features/editor/commands';
 import { clientApi } from '@/lib/client-api';
 
-const NEW_NAME = '새 워크플로우';
-
 // Trigger 하나가 놓인 그래프로 만들고 바로 에디터로 이동한다. 목록 버튼과 사이드바가 같이 쓴다.
+// 이름은 보내지 않는다. 서버가 "새 워크플로우", "새 워크플로우 2"…로 붙인다.
 export function useCreateWorkflow() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -16,7 +15,7 @@ export function useCreateWorkflow() {
     mutationFn: async () =>
       (await clientApi('/workflows', {
         method: 'POST',
-        body: JSON.stringify({ name: NEW_NAME, graph: createInitialGraph() }),
+        body: JSON.stringify({ graph: createInitialGraph() }),
       })) as { id: string },
     onSuccess: ({ id }) => {
       // 사이드바 목록(['workflows'])도 새로 불러온다.

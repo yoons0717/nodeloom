@@ -11,7 +11,8 @@ datasource db {
 // graph는 core의 graphSchema 형식(schemaVersion 포함)이며, 검증 오류가 있는 초안도 그대로 저장한다(DECISIONS 7-5).
 model Workflow {
   id        String   @id @default(uuid()) @db.Uuid
-  name      String
+  // 이름으로 워크플로우를 구분한다. 대소문자는 구분한다(M10 10-a).
+  name      String   @unique
   graph     Json
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

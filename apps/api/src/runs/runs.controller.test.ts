@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import { GRAPH_SCHEMA_VERSION, type Graph } from '@nodeloom/core';
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
@@ -44,8 +45,12 @@ describe('실행 API', () => {
 
   const create = async (g: Graph = graph) =>
     (
-      (await agent.post('/workflows').send({ name: 'w', graph: g }).expect(201))
-        .body as { id: string }
+      (
+        await agent
+          .post('/workflows')
+          .send({ name: `w-${randomUUID()}`, graph: g })
+          .expect(201)
+      ).body as { id: string }
     ).id;
   const status = async (runId: string) =>
     (await agent.get(`/runs/${runId}/status`).expect(200)).body as {

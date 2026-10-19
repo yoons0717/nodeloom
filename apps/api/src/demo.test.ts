@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import { GRAPH_SCHEMA_VERSION } from '@nodeloom/core';
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
@@ -16,7 +17,7 @@ const nodes = (n: number) =>
     config: {},
   }));
 const workflow = (nodeCount = 0) => ({
-  name: '데모',
+  name: `데모-${randomUUID()}`,
   graph: {
     schemaVersion: GRAPH_SCHEMA_VERSION,
     nodes: nodes(nodeCount),

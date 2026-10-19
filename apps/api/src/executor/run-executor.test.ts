@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import {
   GRAPH_SCHEMA_VERSION,
@@ -81,7 +82,7 @@ describe('실행 엔진', () => {
   ) => {
     const wf = await prisma.workflow.create({
       data: {
-        name: 'w',
+        name: `w-${randomUUID()}`,
         graph: graph as Prisma.InputJsonObject,
         failureWorkflowId: opts.failureWorkflowId,
       },
@@ -94,7 +95,7 @@ describe('실행 엔진', () => {
         triggerInput: opts.triggerInput ?? {},
       },
     });
-    return { workflowId: wf.id, runId: run.id };
+    return { workflowId: wf.id, workflowName: wf.name, runId: run.id };
   };
   const execute = async (graph: Graph, opts = {}) => {
     const ids = await createRun(graph, opts);
@@ -324,7 +325,10 @@ describe('실행 엔진', () => {
     const createWorkflow = async (graph: Graph) =>
       (
         await prisma.workflow.create({
-          data: { name: '알림', graph: graph as Prisma.InputJsonObject },
+          data: {
+            name: `알림-${randomUUID()}`,
+            graph: graph as Prisma.InputJsonObject,
+          },
         })
       ).id;
     const failureRuns = (workflowId: string) =>
@@ -340,7 +344,7 @@ describe('실행 엔진', () => {
           [e('trigger', 'msg')],
         ),
       );
-      const { runId, workflowId } = await execute(failing(), {
+      const { runId, workflowId, workflowName } = await execute(failing(), {
         failureWorkflowId: alertId,
       });
 
@@ -352,7 +356,7 @@ describe('실행 엔진', () => {
       );
       const [alert] = await failureRuns(alertId);
       expect(alert?.nodeRuns.find((r) => r.nodeKey === 'msg')?.output).toEqual({
-        workflow: { id: workflowId, name: 'w' },
+        workflow: { id: workflowId, name: workflowName },
         runId,
         failedNode: 'bad',
         failedNodeTitle: '환율',

@@ -12,6 +12,8 @@ import {
 } from '@nestjs/common';
 import { ZodValidationPipe } from '../zod-validation.pipe.js';
 import {
+  type CreateWorkflowBody,
+  createWorkflowBodySchema,
   type FailureWorkflowBody,
   failureWorkflowBodySchema,
   type WorkflowBody,
@@ -38,7 +40,10 @@ export class WorkflowsController {
   }
 
   @Post()
-  create(@Body(body) input: WorkflowBody) {
+  create(
+    @Body(new ZodValidationPipe(createWorkflowBodySchema))
+    input: CreateWorkflowBody,
+  ) {
     return this.workflows.create(input);
   }
 

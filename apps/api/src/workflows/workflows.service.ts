@@ -11,7 +11,13 @@ import { env } from '../env.js';
 import { QueueService } from '../executor/queue.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma.service.js';
-import type { FailureWorkflowBody, WorkflowBody } from './workflows.schemas.js';
+import type {
+  CreateWorkflowBody,
+  FailureWorkflowBody,
+  WorkflowBody,
+} from './workflows.schemas.js';
+
+const NEW_NAME = '새 워크플로우';
 
 @Injectable()
 export class WorkflowsService {
@@ -70,7 +76,7 @@ export class WorkflowsService {
     };
   }
 
-  async create(body: WorkflowBody) {
+  async create(input: CreateWorkflowBody) {
     if (env.DEMO_MODE) {
       const count = await this.prisma.workflow.count();
       if (count >= DEMO_LIMITS.workflows)
@@ -78,26 +84,31 @@ export class WorkflowsService {
           `데모에서는 워크플로우를 ${DEMO_LIMITS.workflows}개까지 만들 수 있습니다`,
         );
     }
-    checkDemoGraph(body);
-    const w = await this.prisma.$transaction(async (tx) => {
-      const w = await tx.workflow.create({ data: toRow(body) });
-      await this.queue.syncSchedule(tx, w.id, body.graph);
-      return w;
-    });
+    checkDemoGraph(input);
+    const w = await this.prisma
+      .$transaction(async (tx) => {
+        const body = { ...input, name: input.name ?? (await newName(tx)) };
+        const w = await tx.workflow.create({ data: toRow(body) });
+        await this.queue.syncSchedule(tx, w.id, body.graph);
+        return w;
+      })
+      .catch(rethrowNameTaken);
     return { id: w.id };
   }
 
-  // 덮어쓰기 저장. 버전 비교(409)는 하지 않는다(DECISIONS 2-4).
+  // 덮어쓰기 저장. 버전 비교는 하지 않는다(DECISIONS 2-4). 409는 이름이 겹칠 때만 나온다.
   async update(id: string, body: WorkflowBody) {
     checkDemoGraph(body);
-    await this.prisma.$transaction(async (tx) => {
-      const { count } = await tx.workflow.updateMany({
-        where: { id },
-        data: toRow(body),
-      });
-      if (count === 0) throw notFound();
-      await this.queue.syncSchedule(tx, id, body.graph);
-    });
+    await this.prisma
+      .$transaction(async (tx) => {
+        const { count } = await tx.workflow.updateMany({
+          where: { id },
+          data: toRow(body),
+        });
+        if (count === 0) throw notFound();
+        await this.queue.syncSchedule(tx, id, body.graph);
+      })
+      .catch(rethrowNameTaken);
   }
 
   async setFailureWorkflow(id: string, body: FailureWorkflowBody) {
@@ -137,7 +148,31 @@ export class WorkflowsService {
   }
 }
 
-function checkDemoGraph(body: WorkflowBody) {
+// "새 워크플로우", "새 워크플로우 2"… 중 비어 있는 첫 이름
+// ponytail: 이름 없이 만들기가 거의 동시에 둘 오면 같은 번호를 골라 늦은 쪽이 409를 받는다. 1인용이고 버튼이 요청 중에 막혀 있어 두었다. 생기면 P2002에서 한 번 다시 시도한다
+async function newName(tx: Prisma.TransactionClient) {
+  const taken = new Set(
+    (
+      await tx.workflow.findMany({
+        where: { name: { startsWith: NEW_NAME } },
+        select: { name: true },
+      })
+    ).map((w) => w.name),
+  );
+  if (!taken.has(NEW_NAME)) return NEW_NAME;
+  let n = 2;
+  while (taken.has(`${NEW_NAME} ${n}`)) n++;
+  return `${NEW_NAME} ${n}`;
+}
+
+// 이름 유니크 제약 위반(P2002)을 409로 바꾼다.
+function rethrowNameTaken(e: unknown): never {
+  if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002')
+    throw new ConflictException('같은 이름의 워크플로우가 있습니다');
+  throw e;
+}
+
+function checkDemoGraph(body: Pick<WorkflowBody, 'graph'>) {
   if (env.DEMO_MODE && body.graph.nodes.length > DEMO_LIMITS.nodesPerGraph)
     throw new ForbiddenException(
       `데모에서는 노드를 ${DEMO_LIMITS.nodesPerGraph}개까지 놓을 수 있습니다`,

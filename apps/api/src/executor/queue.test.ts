@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import { GRAPH_SCHEMA_VERSION, type Graph } from '@nodeloom/core';
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
@@ -40,7 +41,9 @@ describe('실행 대기열', () => {
 
   beforeEach(async () => {
     workflowId = (
-      await prisma.workflow.create({ data: { name: 'w', graph: {} } })
+      await prisma.workflow.create({
+        data: { name: `w-${randomUUID()}`, graph: {} },
+      })
     ).id;
   });
 

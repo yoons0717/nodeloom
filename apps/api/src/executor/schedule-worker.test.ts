@@ -52,7 +52,7 @@ describe('ScheduleWorker', () => {
   const runsOf = (workflowId: string) =>
     prisma.run.findMany({ where: { workflowId } });
   const save = async (graph: Graph) =>
-    (await workflows.create({ name: 's', graph })).id;
+    (await workflows.create({ name: `s-${randomUUID()}`, graph })).id;
 
   beforeAll(async () => {
     ({ app, container } = await startTestApp({}, (b) =>

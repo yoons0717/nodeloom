@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
 import { GRAPH_SCHEMA_VERSION, type Graph } from '@nodeloom/core';
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
@@ -133,16 +134,77 @@ describe('/workflows', () => {
     await api().delete(`/workflows/${first}`).expect(204);
     expect((await list()).some((w) => w.id === first)).toBe(false);
   });
+  describe('이름', () => {
+    it('같은 이름으로 만들거나 다른 워크플로우의 이름으로 바꿔 저장하면 409를 돌려준다', async () => {
+      const g = graph([node('trigger_1', 'trigger')]);
+      await create('겹치는 이름', g);
+      const res = await api()
+        .post('/workflows')
+        .send({ name: '겹치는 이름', graph: g })
+        .expect(409);
+      expect(res.body).toMatchObject({
+        message: '같은 이름의 워크플로우가 있습니다',
+      });
+
+      const other = await create('다른 이름', g);
+      await api()
+        .put(`/workflows/${other}`)
+        .send({ name: '겹치는 이름', graph: g })
+        .expect(409);
+      // 자기 이름 그대로 저장하는 것은 된다.
+      await api()
+        .put(`/workflows/${other}`)
+        .send({ name: '다른 이름', graph: g })
+        .expect(204);
+    });
+
+    it('대소문자가 다르면 다른 이름이다', async () => {
+      const g = graph([]);
+      await create('Rain', g);
+      await create('rain', g);
+    });
+
+    it('이름 없이 만들면 서버가 "새 워크플로우"에 비어 있는 첫 번호를 붙인다', async () => {
+      const createUnnamed = async () => {
+        const { id } = (
+          await api()
+            .post('/workflows')
+            .send({ graph: graph([]) })
+            .expect(201)
+        ).body as { id: string };
+        const { name } = (await api().get(`/workflows/${id}`).expect(200))
+          .body as { name: string };
+        return { id, name };
+      };
+      const made = [
+        await createUnnamed(),
+        await createUnnamed(),
+        await createUnnamed(),
+      ];
+      expect(made.map((w) => w.name)).toEqual([
+        '새 워크플로우',
+        '새 워크플로우 2',
+        '새 워크플로우 3',
+      ]);
+
+      // 지워서 빈 번호는 다시 쓴다.
+      await api().delete(`/workflows/${made[1]?.id}`).expect(204);
+      expect((await createUnnamed()).name).toBe('새 워크플로우 2');
+    });
+  });
+
   describe('스케줄', () => {
     const withCron = (cron: string | null) =>
       graph([node('trigger_1', 'trigger', { cron })]);
     const schedules = (id: string) =>
       queue.boss.getSchedules(SCHEDULE_QUEUE, id);
     const save = (id: string, g: Graph) =>
-      api().put(`/workflows/${id}`).send({ name: 's', graph: g });
+      api()
+        .put(`/workflows/${id}`)
+        .send({ name: `s-${id}`, graph: g });
 
     it('저장한 cron대로 등록하고, cron을 지우거나 워크플로우를 지우면 해제한다', async () => {
-      const id = await create('s', withCron('0 7 * * *'));
+      const id = await create(`s-${randomUUID()}`, withCron('0 7 * * *'));
       expect(await schedules(id)).toMatchObject([
         { cron: '0 7 * * *', timezone: 'Asia/Seoul', data: { workflowId: id } },
       ]);
@@ -159,8 +221,8 @@ describe('/workflows', () => {
     });
 
     it('목록에 Trigger의 cron을 함께 돌려준다', async () => {
-      const id = await create('s', withCron('0 7 * * *'));
-      const none = await create('s', withCron(null));
+      const id = await create(`s-${randomUUID()}`, withCron('0 7 * * *'));
+      const none = await create(`s-${randomUUID()}`, withCron(null));
       const rows = (await api().get('/workflows').expect(200)).body as {
         id: string;
         cron: string | null;
@@ -170,7 +232,7 @@ describe('/workflows', () => {
     });
 
     it('틀린 cron은 저장하되 스케줄은 해제한다', async () => {
-      const id = await create('s', withCron('0 7 * * *'));
+      const id = await create(`s-${randomUUID()}`, withCron('0 7 * * *'));
       await save(id, withCron('0 25 * * *')).expect(204);
       expect(await schedules(id)).toEqual([]);
       const res = await api().get(`/workflows/${id}`).expect(200);
@@ -181,12 +243,12 @@ describe('/workflows', () => {
       const g = withCron('0 7 * * *');
       // Trigger에서 이어지지 않은 노드
       g.nodes.push(node('orphan_1', 'transform', { expression: '1' }));
-      const id = await create('s', g);
+      const id = await create(`s-${randomUUID()}`, g);
       expect(await schedules(id)).toMatchObject([{ cron: '0 7 * * *' }]);
     });
 
     it('스케줄 등록이 실패하면 저장도 되돌아간다', async () => {
-      const id = await create('s', withCron(null));
+      const id = await create(`s-${randomUUID()}`, withCron(null));
       const spy = vi
         .spyOn(queue.boss, 'schedule')
         .mockRejectedValueOnce(new Error('등록 실패'));
