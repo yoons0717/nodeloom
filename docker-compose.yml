@@ -1,12 +1,15 @@
 services:
   postgres:
     image: postgres:18
+    # Colima가 다시 켜질 때 함께 다시 뜬다(운영, M10 10-b).
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - '5432:5432'
+      # 운영은 개발과 같은 기기에서 다른 포트를 쓴다(M10 10-b).
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - pgdata:/var/lib/postgresql
     healthcheck:
