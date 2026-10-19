@@ -19,7 +19,8 @@ export class RunCleanup implements OnApplicationBootstrap {
     if (env.DEMO_MODE) return;
     const { boss } = this.queue;
     await boss.createQueue(CLEANUP_QUEUE);
-    await boss.schedule(CLEANUP_QUEUE, '0 3 * * *', null, {
+    // 개인 서버(아이맥)는 06:55~07:25에만 깨어 있어 그 안에 돌린다(M10 10-c).
+    await boss.schedule(CLEANUP_QUEUE, '15 7 * * *', null, {
       tz: env.APP_TIMEZONE,
     });
     await boss.work(CLEANUP_QUEUE, () => this.handle());
