@@ -36,7 +36,11 @@ describe('RunCleanup', () => {
 
   it('매일 07:15(APP_TIMEZONE)에 돌도록 등록한다', async () => {
     expect(await queue.boss.getSchedules(CLEANUP_QUEUE)).toMatchObject([
-      { cron: '15 7 * * *', timezone: 'Asia/Seoul' },
+      {
+        cron: '15 7 * * *',
+        timezone: 'Asia/Seoul',
+        options: { missed: 'once' },
+      },
     ]);
   });
 

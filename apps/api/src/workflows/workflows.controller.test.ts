@@ -206,7 +206,12 @@ describe('/workflows', () => {
     it('저장한 cron대로 등록하고, cron을 지우거나 워크플로우를 지우면 해제한다', async () => {
       const id = await create(`s-${randomUUID()}`, withCron('0 7 * * *'));
       expect(await schedules(id)).toMatchObject([
-        { cron: '0 7 * * *', timezone: 'Asia/Seoul', data: { workflowId: id } },
+        {
+          cron: '0 7 * * *',
+          timezone: 'Asia/Seoul',
+          data: { workflowId: id },
+          options: { missed: 'once' },
+        },
       ]);
 
       await save(id, withCron('30 8 * * 1-5')).expect(204);

@@ -58,6 +58,8 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
 
   // 저장·삭제와 같은 트랜잭션에서 Trigger의 cron대로 스케줄을 등록하거나 해제한다(DECISIONS B-5).
   // 그래프가 없거나(삭제) cron이 없거나 틀리면 해제한다. 다른 검사 오류는 실행할 때 FAILED로 남긴다(7-5).
+  // missed: 'once'는 cron 확인이 한동안 멈췄다 돌아왔을 때 놓친 회차 중 가장 최근 하나를 늦게라도 보낸다.
+  // 잠자기 뒤 깨어난 직후에는 DB 시계가 밀려 있다가 바로잡혀 회차를 건너뛸 수 있다(M10 10-c).
   async syncSchedule(tx: Tx, workflowId: string, graph: Graph | null) {
     if (env.DEMO_MODE) return;
     const db = fromPrisma(tx);
@@ -67,7 +69,7 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
         SCHEDULE_QUEUE,
         cron,
         { workflowId } satisfies ScheduleJob,
-        { key: workflowId, tz: env.APP_TIMEZONE, db },
+        { key: workflowId, tz: env.APP_TIMEZONE, missed: 'once', db },
       );
     } else {
       await this.boss.unschedule(SCHEDULE_QUEUE, workflowId, { db });
