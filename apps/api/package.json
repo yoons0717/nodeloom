@@ -42,7 +42,6 @@
     "@types/supertest": "^7.0.0",
     "prisma": "7.10.0",
     "supertest": "^7.0.0",
-    "testcontainers": "^12.2.0",
     "typescript": "^6.0.2",
     "vitest": "^4.1.2"
   }

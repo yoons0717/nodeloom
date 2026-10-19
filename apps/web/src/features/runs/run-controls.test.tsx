@@ -57,7 +57,7 @@ const renderRun = () =>
 
 describe('RunControls', () => {
   it('저장되지 않은 변경이 있으면 저장한 뒤 실행하고, 실행 결과를 보여 준다', async () => {
-    const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+    const fetchMock = vi.fn((_: string, init?: RequestInit) => {
       if (init?.method === 'PUT')
         return Promise.resolve(new Response(null, { status: 204 }));
       if (init?.method === 'POST') return json({ runId: 'r1' }, 202);

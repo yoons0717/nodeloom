@@ -284,7 +284,9 @@ export class RunExecutor implements OnApplicationBootstrap {
         finishedAt: new Date(),
       },
     });
-    this.logger.log(`실행 ${runId}: ${error ? `실패(${error.code})` : '성공'}`);
+    this.logger.log(
+      `run ${error ? `failed code=${error.code}` : 'succeeded'} runId=${runId}`,
+    );
 
     // 실패 알림 실행이 실패하면 다시 알리지 않는다(DECISIONS 7-4).
     if (error && run.kind !== 'FAILURE') await this.startFailureRun(run, error);

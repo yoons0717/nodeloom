@@ -25,7 +25,7 @@ const durationOf = (r: NodeRunRow) =>
     : undefined;
 
 // 시작한 순서. 아직 시작하지 않은 노드는 맨 뒤로.
-export function orderNodeRuns(nodes: NodeRunRow[]) {
+function orderNodeRuns(nodes: NodeRunRow[]) {
   return nodes.toSorted(
     (a, b) =>
       Date.parse(a.startedAt ?? '9999') - Date.parse(b.startedAt ?? '9999'),

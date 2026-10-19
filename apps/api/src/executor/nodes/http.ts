@@ -9,7 +9,7 @@ import { NodeError } from './node-error.js';
 import type { NodeResult, RunNodeOptions } from './run-node.js';
 
 // 응답 본문 상한(DECISIONS 8-1)
-export const MAX_RESPONSE_BYTES = 1024 * 1024;
+const MAX_RESPONSE_BYTES = 1024 * 1024;
 
 // 다시 보내면 결과가 달라질 수 있는 응답 코드(DECISIONS 7-3)
 const isRetryableStatus = (s: number) => s >= 500 || s === 408 || s === 429;
