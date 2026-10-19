@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import { API_PORT } from './config.ts';
 import {
   addNode,
@@ -9,55 +9,16 @@ import {
   selectNode,
 } from './editor.ts';
 
-// 데모 모드: 로그인 없이 목록 → 새 워크플로우 → 편집 → 저장 → 실행(DECISIONS H-1, 6-5)
+// 데모 모드: 로그인 없이 목록 → 새 워크플로우 → 편집 → 저장 → 실행 → 상세(DECISIONS H-1, 6-5, M5)
 // 데모에서는 연습용 주소(/mock)로만 요청할 수 있다(DECISIONS 1-3).
-test('데모 모드에서는 로그인 없이 편집하고 저장할 수 있다', async ({
+test('데모에서 로그인 없이 만든 흐름을 실행하고, 상세 화면에서 노드별 상태와 입출력을 본다', async ({
   page,
 }) => {
   await page.goto('/login');
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByText('데모', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '로그아웃' })).toHaveCount(0);
-
-  await page
-    .locator('header')
-    .getByRole('button', { name: '새 워크플로우' })
-    .click();
-  await expect(page).toHaveURL(/\/w\/[0-9a-f-]+$/);
-  await addNode(page, 'HTTP', 500, 250);
-  await connect(page, 'trigger_1', 'http_1');
-  await selectNode(page, 'http_1');
-  await page
-    .getByLabel('URL')
-    .fill(`http://localhost:${API_PORT}/mock/weather`);
-  await save(page);
-
-  await page.getByRole('button', { name: '실행', exact: true }).click();
-  await expect(
-    page.getByRole('status').filter({ hasText: '실행 성공' }),
-  ).toBeVisible({ timeout: 15_000 });
-
-  await page.reload();
-  await expect(nodes(page)).toHaveCount(2);
-});
-
-// 실행 → 결과 보기 → 상세 화면에서 노드별 상태와 입출력 확인(M5)
-test('실행하면 상세 화면에서 노드별 상태와 입출력을 볼 수 있다', async ({
-  page,
-}) => {
-  await page.goto('/');
-  await page
-    .locator('header')
-    .getByRole('button', { name: '새 워크플로우' })
-    .click();
-  await expect(page).toHaveURL(/\/w\/[0-9a-f-]+$/);
-  await addNode(page, 'HTTP', 500, 250);
-  await connect(page, 'trigger_1', 'http_1');
-  await selectNode(page, 'http_1');
-  await page
-    .getByLabel('URL')
-    .fill(`http://localhost:${API_PORT}/mock/weather`);
-  await save(page);
+  await createWeatherFlow(page);
 
   await page.getByRole('button', { name: '실행', exact: true }).click();
   await page.getByRole('link', { name: '결과 보기' }).click();
@@ -157,3 +118,19 @@ test.describe('768px 간단 배치', () => {
     await save(page);
   });
 });
+
+// 새 워크플로우에 Trigger → HTTP(연습용 날씨 응답)를 만들고 저장한다.
+async function createWeatherFlow(page: Page) {
+  await page
+    .locator('header')
+    .getByRole('button', { name: '새 워크플로우' })
+    .click();
+  await expect(page).toHaveURL(/\/w\/[0-9a-f-]+$/);
+  await addNode(page, 'HTTP', 500, 250);
+  await connect(page, 'trigger_1', 'http_1');
+  await selectNode(page, 'http_1');
+  await page
+    .getByLabel('URL')
+    .fill(`http://localhost:${API_PORT}/mock/weather`);
+  await save(page);
+}

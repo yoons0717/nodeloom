@@ -55,3 +55,22 @@ export async function save(page: Page) {
     page.getByRole('status').filter({ hasText: '저장됨' }),
   ).toBeVisible();
 }
+
+// API로 실행을 시작하고 성공할 때까지 기다린다. 실행 id를 돌려준다.
+export async function runViaApi(page: Page, workflowId: string) {
+  const run = await page.request.post(`/api/workflows/${workflowId}/runs`);
+  expect(run.ok()).toBe(true);
+  const { runId } = (await run.json()) as { runId: string };
+  await expect
+    .poll(
+      async () =>
+        (
+          (await (
+            await page.request.get(`/api/runs/${runId}/status`)
+          ).json()) as { status: string }
+        ).status,
+      { timeout: 15_000 },
+    )
+    .toBe('SUCCESS');
+  return runId;
+}

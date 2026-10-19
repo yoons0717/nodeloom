@@ -9,6 +9,7 @@ import {
   test,
 } from '@playwright/test';
 import { API_PORT, E2E_PASSWORD } from './config.ts';
+import { runViaApi } from './editor.ts';
 
 // 화면별 JS 다운로드 양과 LCP·INP를 잰다. `pnpm --filter @nodeloom/browser-tests vitals`
 // e2e와 같은 서버(새 Postgres, 프로덕션 빌드)에서 잰다. web-vitals는 앱에 넣지 않고 페이지를 열 때 주입한다.
@@ -112,18 +113,7 @@ test('화면별 JS 크기와 LCP·INP', async ({ page, browser }) => {
     data: { name: '측정용', graph },
   });
   const { id } = (await res.json()) as { id: string };
-  const run = await page.request.post(`/api/workflows/${id}/runs`);
-  const { runId } = (await run.json()) as { runId: string };
-  await expect
-    .poll(
-      async () =>
-        (
-          (await (
-            await page.request.get(`/api/runs/${runId}/status`)
-          ).json()) as { status: string }
-        ).status,
-    )
-    .toBe('SUCCESS');
+  const runId = await runViaApi(page, id);
 
   const card = (p: Page, key: string) =>
     p.locator(`.react-flow__node:has([data-key="${key}"])`);
@@ -192,18 +182,7 @@ test('큰 JSON 보기', async ({ page }) => {
     data: { name: '큰 출력', graph: big },
   });
   const { id } = (await res.json()) as { id: string };
-  const run = await page.request.post(`/api/workflows/${id}/runs`);
-  const { runId } = (await run.json()) as { runId: string };
-  await expect
-    .poll(
-      async () =>
-        (
-          (await (
-            await page.request.get(`/api/runs/${runId}/status`)
-          ).json()) as { status: string }
-        ).status,
-    )
-    .toBe('SUCCESS');
+  const runId = await runViaApi(page, id);
 
   const results: { ms: number; added: number; longest: number }[] = [];
   for (let i = 0; i < RUNS; i++) {

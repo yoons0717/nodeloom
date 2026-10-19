@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 import { API_PORT, E2E_PASSWORD } from './config.ts';
-import { nodeByKey, selectNode } from './editor.ts';
+import { nodeByKey, runViaApi, selectNode } from './editor.ts';
 
 // README 화면 이미지(docs/images/*.png)를 찍는다. `pnpm --filter @nodeloom/browser-tests screenshots`
 // e2e와 같은 서버(새 Postgres, 프로덕션 빌드)에 예시 흐름을 넣고 실행한 뒤 찍어서, 언제 다시 찍어도 같은 화면이 나온다.
@@ -85,20 +85,7 @@ test('README 화면 이미지', async ({ page }) => {
     ),
   });
 
-  const run = await page.request.post(`/api/workflows/${id}/runs`);
-  expect(run.ok()).toBe(true);
-  const { runId } = (await run.json()) as { runId: string };
-  await expect
-    .poll(
-      async () =>
-        (
-          (await (
-            await page.request.get(`/api/runs/${runId}/status`)
-          ).json()) as { status: string }
-        ).status,
-      { timeout: 15_000 },
-    )
-    .toBe('SUCCESS');
+  const runId = await runViaApi(page, id);
 
   await page.goto('/');
   await expect(page.getByText('아침 기온 알림').first()).toBeVisible();
