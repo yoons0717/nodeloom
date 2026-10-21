@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { E2E_PASSWORD } from './config.ts';
 import { addNode, connect, edges, nodes, save, selectNode } from './editor.ts';
 
-// 관리자: 로그인 → 노드 추가 → 연결 → 순환 연결 거부 → Undo → 저장 → 새로고침 후 복원(DECISIONS H-1)
+// 관리자: 로그인 → 노드 추가 → 연결 → 순환 연결 거부 → Undo → 저장 → 새로고침 후 복원
 test('로그인해서 만든 흐름은 저장 후 새로고침해도 그대로 복원된다', async ({
   page,
 }) => {

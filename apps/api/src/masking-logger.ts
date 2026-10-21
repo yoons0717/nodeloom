@@ -1,7 +1,7 @@
 import { ConsoleLogger } from '@nestjs/common';
 import { createMasker } from './executor/mask.js';
 
-// Nest 기본 로거와 같고, 내보내기 직전에 비밀값을 ***로 바꾼다(DECISIONS 8-2).
+// Nest 기본 로거와 같고, 내보내기 직전에 비밀값을 ***로 바꾼다.
 export class MaskingLogger extends ConsoleLogger {
   private readonly mask: (text: string) => string;
 

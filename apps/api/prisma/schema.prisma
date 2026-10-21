@@ -7,8 +7,8 @@ datasource db {
   provider = "postgresql"
 }
 
-// 워크플로우 하나. 저장은 덮어쓰기이고 버전을 남기지 않는다(DECISIONS 2-4).
-// graph는 core의 graphSchema 형식(schemaVersion 포함)이며, 검증 오류가 있는 초안도 그대로 저장한다(DECISIONS 7-5).
+// 워크플로우 하나. 저장은 덮어쓰기이고 버전을 남기지 않는다. 실행 당시 그래프는 실행 기록에 따로 남고, 혼자 쓰는 도구라 버전 비교가 쓸모 적다.
+// graph는 core의 graphSchema 형식(schemaVersion 포함)이며, 검증 오류가 있는 초안도 그대로 저장한다.
 model Workflow {
   id        String   @id @default(uuid()) @db.Uuid
   // 이름으로 워크플로우를 구분한다. 대소문자는 구분한다(M10 10-a).
@@ -17,7 +17,7 @@ model Workflow {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  // 실패하면 실행할 워크플로우. 그 워크플로우를 지우면 비운다(DECISIONS B-4).
+  // 실패하면 실행할 워크플로우. 그 워크플로우를 지우면 비운다.
   failureWorkflowId String?    @map("failure_workflow_id") @db.Uuid
   failureWorkflow   Workflow?  @relation("FailureWorkflow", fields: [failureWorkflowId], references: [id], onDelete: SetNull)
   failureFor        Workflow[] @relation("FailureWorkflow")
@@ -33,14 +33,14 @@ enum RunStatus {
   FAILED
 }
 
-// FAILURE는 다른 실행이 실패해서 시작된 실패 알림 실행이다(DECISIONS A-1).
+// FAILURE는 다른 실행이 실패해서 시작된 실패 알림 실행이다.
 enum RunKind {
   MANUAL
   SCHEDULE
   FAILURE
 }
 
-// 실행 한 번. 같은 워크플로우에서 PENDING·RUNNING은 하나만 있을 수 있다(실패 알림 실행은 제외, DECISIONS 7-5).
+// 실행 한 번. 같은 워크플로우에서 PENDING·RUNNING은 하나만 있을 수 있다(실패 알림 실행은 제외).
 // 이 규칙은 부분 유니크 인덱스라 Prisma 스키마로 쓸 수 없어서 마이그레이션 SQL에 직접 있다.
 model Run {
   id           String    @id @default(uuid()) @db.Uuid
@@ -48,9 +48,9 @@ model Run {
   workflow     Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   status       RunStatus @default(PENDING)
   kind         RunKind
-  // 실행할 때의 그래프. 실행과 재개는 저장된 워크플로우가 아니라 이것만 읽는다(DECISIONS 2-4, B-9).
+  // 실행할 때의 그래프. 실행과 재개는 저장된 워크플로우가 아니라 이것만 읽는다.
   graph        Json
-  // Trigger가 내보낼 값(DECISIONS B-10)
+  // Trigger가 내보낼 값
   triggerInput Json      @map("trigger_input")
   error        Json?
   createdAt    DateTime  @default(now()) @map("created_at")
@@ -69,8 +69,8 @@ enum NodeRunStatus {
   SKIPPED
 }
 
-// 노드 실행 한 번(재시도마다 attempt가 늘어난다, DECISIONS 7-1).
-// input·output·error는 저장 직전에 비밀값을 ***로 바꾼다(DECISIONS 8-2).
+// 노드 실행 한 번(재시도마다 attempt가 늘어난다).
+// input·output·error는 저장 직전에 비밀값을 ***로 바꾼다.
 model NodeRun {
   id         String        @id @default(uuid()) @db.Uuid
   runId      String        @map("run_id") @db.Uuid

@@ -5,7 +5,7 @@
 /* 테마는 토큰 값만 바꿔서 처리한다. shadcn 부품의 dark: 스타일은 쓰지 않도록 .dark 안에서만 켜지게 두고, .dark는 붙이지 않는다. */
 @custom-variant dark (&:is(.dark *));
 
-/* 색은 이 토큰으로만 쓴다(docs/DESIGN.md, DECISIONS I-1). 지금은 어두운 테마 하나뿐이다.
+/* 색은 이 토큰으로만 쓴다(docs/DESIGN.md). 지금은 어두운 테마 하나뿐이다.
    기본값 → 의미 → 부품 순서로 쓴다. 부품(shadcn, React Flow)은 의미 토큰을 가리키기만 한다. */
 :root {
   color-scheme: dark;

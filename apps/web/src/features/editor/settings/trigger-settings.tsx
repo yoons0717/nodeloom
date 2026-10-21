@@ -75,7 +75,7 @@ export function TriggerSettings({ node, errors, set }: SettingsProps) {
     : parsed;
   const update = (next: Schedule) => set('cron', toCron(next));
 
-  // 데모 서버에서는 스케줄이 돌지 않는다(DECISIONS D-3).
+  // 데모 서버에서는 스케줄이 돌지 않는다.
   const me = useQuery({
     queryKey: ['me'],
     queryFn: async () => meSchema.parse(await clientApi('/auth/me')),

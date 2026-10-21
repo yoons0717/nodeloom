@@ -24,7 +24,7 @@ function label(s: RunStatus) {
   }
 }
 
-// 실행 버튼과 실행 결과 토스트(M4 작은 결정 ⑥, M6). 저장되지 않은 변경이 있으면 먼저 저장한다(M4 ⑦).
+// 실행 버튼과 실행 결과 토스트. 서버는 저장된 그래프로 실행하므로, 저장되지 않은 변경이 있으면 먼저 저장한다.
 export function RunControls({
   workflowId,
   ensureSaved,
@@ -51,7 +51,7 @@ export function RunControls({
     onSuccess: setRunId,
   });
 
-  // 끝날 때까지 1초마다 상태만 조회한다(DECISIONS B-1).
+  // 끝날 때까지 1초마다 상태만 조회한다.
   const status = useQuery({
     queryKey: ['run-status', runId],
     queryFn: async () =>
@@ -90,7 +90,7 @@ export function RunControls({
     void queryClient.invalidateQueries({ queryKey: ['run-summary'] });
   }, [finished, queryClient]);
 
-  // 성공은 잠시 뒤 저절로 닫고, 실패는 직접 닫을 때까지 남긴다(M6 작은 결정 ⑥).
+  // 성공은 잠시 뒤 저절로 닫고, 실패는 직접 닫을 때까지 남긴다.
   useEffect(() => {
     if (!succeeded) return;
     const t = setTimeout(() => setDismissed(true), 4000);

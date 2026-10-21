@@ -6,7 +6,7 @@ import { QueueService } from './queue.js';
 export const CLEANUP_QUEUE = 'cleanup';
 const DAY_MS = 24 * 60 * 60_000;
 
-// 끝난 실행 기록을 RUN_RETENTION_DAYS가 지나면 매일 지운다(DECISIONS A-6). node_runs는 cascade로 함께 지워진다.
+// 끝난 실행 기록을 RUN_RETENTION_DAYS가 지나면 매일 지운다. node_runs는 cascade로 함께 지워진다.
 @Injectable()
 export class RunCleanup implements OnApplicationBootstrap {
   constructor(
@@ -15,7 +15,7 @@ export class RunCleanup implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    // 데모에서는 정리 작업도 돌리지 않는다(DECISIONS D-3).
+    // 데모에서는 정리 작업도 돌리지 않는다.
     if (env.DEMO_MODE) return;
     const { boss } = this.queue;
     await boss.createQueue(CLEANUP_QUEUE);

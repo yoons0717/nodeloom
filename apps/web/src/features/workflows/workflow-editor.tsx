@@ -16,7 +16,7 @@ export function WorkflowEditor({ workflow }: { workflow: Workflow }) {
   // 저장하지 않은 변경이 있으면 좁아져도 내리지 않는다(편집 내용 보호).
   const dirty = useRef(false);
   useEffect(() => {
-    // md(768px) 이상에서만 편집한다(DECISIONS B-11, DESIGN.md 반응형).
+    // md(768px) 이상에서만 편집한다(DESIGN.md 반응형).
     const mq = window.matchMedia(minWidth('md'));
     const update = () =>
       setMounted((on) => mq.matches || (on && dirty.current));
@@ -27,7 +27,7 @@ export function WorkflowEditor({ workflow }: { workflow: Workflow }) {
 
   return (
     <>
-      {/* 좁은 화면에서는 편집 대신 안내만 보여 준다(DECISIONS B-11). 실행 기록과 설정은 좁은 화면에서도 쓸 수 있다. */}
+      {/* 좁은 화면에서는 편집 대신 안내만 보여 준다. 실행 기록과 설정은 좁은 화면에서도 쓸 수 있다. */}
       <div className="relative flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center md:hidden">
         <MobileNavButton className="absolute top-2 left-4" />
         <p className="font-bold">{workflow.name}</p>

@@ -6,7 +6,7 @@ import {
 } from '@nodeloom/core';
 import type { ProfilerOnRenderCallback } from 'react';
 
-// 벤치 모드(/bench)에서만 측정값을 모은다(DECISIONS 5-3). 측정 순서는 Playwright가 window.__bench로 정한다.
+// 벤치 모드(/bench)에서만 측정값을 모은다. 측정 순서는 Playwright가 window.__bench로 정한다.
 export type BenchResult = {
   nodeRenders: number;
   commits: number;

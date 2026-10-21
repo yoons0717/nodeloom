@@ -8,20 +8,20 @@ import type { Dispatcher } from 'undici';
 import { NodeError } from './node-error.js';
 import type { NodeResult, RunNodeOptions } from './run-node.js';
 
-// 응답 본문 상한(DECISIONS 8-1)
+// 응답 본문 상한
 const MAX_RESPONSE_BYTES = 1024 * 1024;
 
-// 다시 보내면 결과가 달라질 수 있는 응답 코드(DECISIONS 7-3)
+// 다시 보내면 결과가 달라질 수 있는 응답 코드
 const isRetryableStatus = (s: number) => s >= 500 || s === 408 || s === 429;
 
-// 요청을 한 번 보낸다. 2xx가 아니면 실패이고, "2xx가 아니어도 계속"이 켜져 있으면 항상 { status, body }를 내보낸다(DECISIONS 3-3).
+// 요청을 한 번 보낸다. 2xx가 아니면 실패이고, "2xx가 아니어도 계속"이 켜져 있으면 항상 { status, body }를 내보낸다.
 export async function runHttp(
   config: NodeConfig<'http'>,
   ctx: EvalContext,
   { signal, guard }: RunNodeOptions,
 ): Promise<NodeResult> {
   const request = await buildRequest(config, ctx);
-  // 보내기 전에 주소를 검사하고, 연결 직전 IP 검사를 하는 연결을 받는다(DECISIONS 8-1).
+  // 보내기 전에 주소를 검사하고, 연결 직전 IP 검사를 하는 연결을 받는다.
   const dispatcher = guard.check(new URL(request.url));
 
   let res: Response;
@@ -30,7 +30,7 @@ export async function runHttp(
     // Node 내장 fetch는 undici의 dispatcher를 받지만 RequestInit 타입에는 없다.
     const init: RequestInit & { dispatcher?: Dispatcher } = {
       dispatcher,
-      // 리다이렉트는 따라가지 않는다. 3xx는 2xx가 아니므로 실패(DECISIONS 8-1)
+      // 리다이렉트는 따라가지 않는다. 3xx는 2xx가 아니므로 실패
       redirect: 'manual',
       signal: AbortSignal.any([
         AbortSignal.timeout(config.timeoutSec * 1000),
@@ -76,7 +76,7 @@ async function buildRequest(config: NodeConfig<'http'>, ctx: EvalContext) {
   const url = await fillTemplate(config.url, ctx);
   const query = await fill(config.query);
   const headers = await fill(config.headers);
-  // 본문은 객체를 만드는 식 하나(DECISIONS A-3)
+  // 본문은 객체를 만드는 식 하나
   const body = config.body.trim()
     ? JSON.stringify(await evaluate(config.body, ctx))
     : undefined;

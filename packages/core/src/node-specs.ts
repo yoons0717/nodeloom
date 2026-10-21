@@ -33,7 +33,7 @@ const httpConfig = z
       .min(1, { error: 'URL을 입력하세요' }),
     query: z.record(z.string(), z.string()).default({}),
     headers: z.record(z.string(), z.string()).default({}),
-    // 객체를 만드는 JSONata 식. 비어 있으면 본문 없음(DECISIONS A-3).
+    // 객체를 만드는 JSONata 식. 비어 있으면 본문 없음.
     body: z.string().default(''),
     timeoutSec: intRange(1, 30).default(10),
     retry: intRange(0, 5).default(0),

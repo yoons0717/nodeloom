@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 export const TEST_PASSWORD = 'test-password';
 export const TEST_JWT_SECRET = 'test-secret-'.padEnd(32, 'x');
 
-// 실제 Postgres 18 컨테이너에 저장소의 마이그레이션을 적용하고, main.ts와 같은 설정으로 앱을 띄운다(DECISIONS 10-2).
+// 실제 Postgres 18 컨테이너에 저장소의 마이그레이션을 적용하고, main.ts와 같은 설정으로 앱을 띄운다.
 // 앱 모듈은 import할 때 환경 변수를 읽으므로 환경 변수를 먼저 넣고 import한다. 테스트 파일마다 모듈이 새로 로드된다.
 // customize로 테스트에서만 바꿀 provider를 갈아 끼운다(예: pg-boss 시계).
 export async function startTestApp(

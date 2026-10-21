@@ -29,7 +29,7 @@ export class AuthGuard implements CanActivate {
     if (isPublic) return true;
 
     const req = context.switchToHttp().getRequest<AuthedRequest>();
-    // 데모 서버는 쿠키 없이 공용 demo 사용자로 본다(DECISIONS B-6).
+    // 데모 서버는 쿠키 없이 공용 demo 사용자로 본다.
     if (env.DEMO_MODE) {
       req.user = { role: 'demo' };
       return true;

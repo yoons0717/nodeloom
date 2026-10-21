@@ -1,7 +1,7 @@
 import { graphSchema } from '@nodeloom/core';
 import { z } from 'zod';
 
-// 저장은 그래프의 뼈대만 검사한다. 설정 오류나 순환이 있는 초안도 저장한다(DECISIONS 7-5).
+// 저장은 그래프의 뼈대만 검사한다. 설정 오류나 순환이 있는 초안도 저장한다.
 const nameSchema = z
   .string()
   .trim()
@@ -23,7 +23,7 @@ export const createWorkflowBodySchema = z.object({
 
 export type CreateWorkflowBody = z.output<typeof createWorkflowBodySchema>;
 
-// 실패하면 실행할 워크플로우(DECISIONS 7-4). null이면 해제
+// 실패하면 실행할 워크플로우. null이면 해제
 export const failureWorkflowBodySchema = z.object({
   failureWorkflowId: z.uuid({ error: '워크플로우 id가 아닙니다' }).nullable(),
 });

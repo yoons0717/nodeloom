@@ -10,7 +10,7 @@ import { serverApi } from '@/lib/server-api';
 
 export const metadata: Metadata = { title: '실행 기록 · Nodeloom' };
 
-// 읽기 화면이라 서버 컴포넌트로 그리고 좁은 화면에서도 보여 준다(DECISIONS 4-1, B-11).
+// 읽기 화면이라 서버 컴포넌트로 그리고 좁은 화면에서도 보여 준다.
 // 상태 거르기는 주소(?status=)에 두어 새로고침해도 유지한다.
 export default async function RunListPage({
   params,

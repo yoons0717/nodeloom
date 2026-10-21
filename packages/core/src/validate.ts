@@ -50,7 +50,7 @@ const sameEdge = (
   a.to.node === b.to.node &&
   a.to.port === b.to.port;
 
-// DB에 저장된 그래프를 읽고 검사한다. 수동 실행, 스케줄 실행, 실패 알림 실행이 같이 쓴다(DECISIONS 7-5).
+// DB에 저장된 그래프를 읽고 검사한다. 수동 실행, 스케줄 실행, 실패 알림 실행이 같이 쓴다.
 export function checkGraph(
   raw: unknown,
 ): { ok: true; graph: Graph } | { ok: false; issues: Issue[] } {
@@ -68,7 +68,7 @@ export function checkGraph(
     : { ok: true, graph: parsed.data };
 }
 
-// 그래프 전체를 검사해 문제 목록을 돌려준다. 에디터 배지와 서버의 실행 전 검증이 같이 쓴다(DECISIONS 7-5).
+// 그래프 전체를 검사해 문제 목록을 돌려준다. 에디터 배지와 서버의 실행 전 검증이 같이 쓴다.
 export function validateGraph(graph: Graph): Issue[] {
   const issues: Issue[] = [];
   const byId = new Map(graph.nodes.map((n) => [n.id, n]));
@@ -225,7 +225,7 @@ function reachableFrom(graph: Graph, startId: string): Set<string> {
 export type ConnectResult =
   { ok: true } | { ok: false; code: IssueCode; message: string };
 
-// 에디터에서 선을 놓기 전에 연결 가능 여부와 거부 사유를 알려준다(React Flow isValidConnection에 연결, DECISIONS 5-1).
+// 에디터에서 선을 놓기 전에 연결 가능 여부와 거부 사유를 알려준다(React Flow isValidConnection에 연결).
 export function canConnect(
   graph: Graph,
   from: PortRef,

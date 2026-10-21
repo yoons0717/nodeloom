@@ -16,7 +16,7 @@ import {
   type NodeMove,
 } from './commands';
 
-// 같은 칸을 이 시간 안에 이어서 입력하면 Undo 한 번에 되돌아간다(M2 작은 결정 ⑤).
+// 같은 칸을 이 시간 안에 이어서 입력하면 Undo 한 번에 되돌아간다.
 export const TYPING_MERGE_MS = 500;
 
 export type Selection = { nodeIds: string[]; edgeIds: string[] };
@@ -43,8 +43,8 @@ export type EditorState = {
   endDrag: () => void;
 };
 
-// 에디터마다 새 스토어를 만든다. 모듈 전역 스토어는 서버 렌더링 때 요청끼리 공유될 수 있다(DECISIONS B-12).
-// 그래프의 원본은 이 스토어 하나에만 있고, React Flow는 여기서 만든 값만 받는다(DECISIONS 5-1).
+// 에디터마다 새 스토어를 만든다. 모듈 전역 스토어는 서버 렌더링 때 요청끼리 공유될 수 있다.
+// 그래프의 원본은 이 스토어 하나에만 있고, React Flow는 여기서 만든 값만 받는다.
 export function createEditorStore(initial: Graph = createInitialGraph()) {
   return createStore<EditorState>()((set, get) => ({
     graph: initial,
@@ -124,7 +124,7 @@ export function createEditorStore(initial: Graph = createInitialGraph()) {
       return result;
     },
 
-    // 드래그 중에는 위치만 바꾸고 기록하지 않는다. 놓을 때 시작·끝 위치로 이동 커맨드 하나를 남긴다(DECISIONS 4-4).
+    // 드래그 중에는 위치만 바꾸고 기록하지 않는다. 놓을 때 시작·끝 위치로 이동 커맨드 하나를 남긴다.
     beginDrag: (nodeIds) => {
       const ids = new Set(nodeIds);
       set({

@@ -3,7 +3,7 @@ import type { Graph } from './graph.js';
 export type TopoResult =
   { ok: true; order: string[] } | { ok: false; cycle: string[] };
 
-// 화살표 방향을 지킨 노드 순서(Kahn 알고리즘). 실행 순서(DECISIONS 7-1)와 순환 검사에 쓴다.
+// 화살표 방향을 지킨 노드 순서(Kahn 알고리즘). 실행 순서와 순환 검사에 쓴다.
 export function topoSort(graph: Graph): TopoResult {
   const ids = graph.nodes.map((n) => n.id);
   const next = new Map(ids.map((id) => [id, [] as string[]]));

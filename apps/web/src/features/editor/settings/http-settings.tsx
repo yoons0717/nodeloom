@@ -17,8 +17,8 @@ import { configDefault, configValue, Field, type SettingsProps } from './field';
 
 const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
-// 응답이 계속 없을 때 이 노드가 걸리는 최대 시간(초, DECISIONS B-13).
-// 실행기와 같은 규칙: 재시도 대기는 1·2·4초…(최대 30초)에 흔들림이 최대 25% 붙는다(7-3).
+// 응답이 계속 없을 때 이 노드가 걸리는 최대 시간(초).
+// 실행기와 같은 규칙: 재시도 대기는 1·2·4초…(최대 30초)에 흔들림이 최대 25% 붙는다.
 export function worstCaseSeconds(timeoutSec: number, retry: number) {
   let wait = 0;
   for (let i = 1; i <= retry; i++) wait += Math.min(2 ** (i - 1), 30) * 1.25;

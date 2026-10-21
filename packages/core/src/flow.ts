@@ -23,14 +23,14 @@ function parentOutcomes(
         return { parentId: e.from.node, outcome: 'unfinished' };
       if (s.status !== 'success')
         return { parentId: e.from.node, outcome: s.status };
-      // Condition에서 선택되지 않은 포트로 온 연결은 SKIPPED로 취급한다(DECISIONS 7-2).
+      // Condition에서 선택되지 않은 포트로 온 연결은 SKIPPED로 취급한다.
       if (s.port !== undefined && s.port !== e.from.port)
         return { parentId: e.from.node, outcome: 'skipped' };
       return { parentId: e.from.node, outcome: 'success' };
     });
 }
 
-// 부모들의 상태를 보고 이 노드를 실행할지, 건너뛸지, 더 기다릴지 판정한다(DECISIONS 7-2, 7-4).
+// 부모들의 상태를 보고 이 노드를 실행할지, 건너뛸지, 더 기다릴지 판정한다.
 // - 부모가 없으면(Trigger) 실행
 // - 부모가 하나라도 끝나지 않았으면 기다림
 // - 실패한 부모가 있으면 건너뜀: 실패한 노드의 하위 노드는 SKIPPED
@@ -47,8 +47,8 @@ export function decideNode(
   return outcomes.some((o) => o.outcome === 'success') ? 'run' : 'skip';
 }
 
-// 노드의 입력(루트). 부모가 하나면 그 출력, 여럿이면 성공한 부모만 { 참조키: 출력 }(DECISIONS 7-2).
-// 부모가 없는 Trigger의 입력은 실행 엔진이 실행 종류에 따라 넣는다(DECISIONS B-10).
+// 노드의 입력(루트). 부모가 하나면 그 출력, 여럿이면 성공한 부모만 { 참조키: 출력 }.
+// 부모가 없는 Trigger의 입력은 실행 엔진이 실행 종류에 따라 넣는다.
 export function buildInput(
   nodeId: string,
   graph: Graph,

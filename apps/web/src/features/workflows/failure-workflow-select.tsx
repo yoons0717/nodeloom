@@ -14,7 +14,7 @@ import { workflowListSchema } from './schemas';
 
 const NONE = 'none';
 
-// 이 워크플로우가 실패하면 실행할 워크플로우(DECISIONS 7-4). 고르면 바로 저장한다.
+// 이 워크플로우가 실패하면 실행할 워크플로우. 고르면 바로 저장한다.
 export function FailureWorkflowSelect({
   workflowId,
   initial,

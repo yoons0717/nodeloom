@@ -99,7 +99,7 @@ describe('실행 API', () => {
       ['plus', 'SUCCESS'],
       ['trigger', 'SUCCESS'],
     ]);
-    // 입출력은 상태 조회에 넣지 않는다(DECISIONS B-1).
+    // 입출력은 상태 조회에 넣지 않는다.
     expect(JSON.stringify(nodes)).not.toContain('output');
   });
 

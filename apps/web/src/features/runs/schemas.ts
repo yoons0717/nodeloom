@@ -12,7 +12,7 @@ const runError = z
   })
   .nullable();
 
-// 상태와 시간만 온다(DECISIONS B-1).
+// 상태와 시간만 온다.
 export const runStatusSchema = z.object({
   status: runStatusValue,
   error: runError,
@@ -42,7 +42,7 @@ export const nodeRunStatusSchema = z.enum([
 ]);
 export type NodeRunStatus = z.output<typeof nodeRunStatusSchema>;
 
-// 상태 조회(1초 폴링)의 전체 응답. 노드마다 마지막 시도의 상태만 온다(DECISIONS B-1).
+// 상태 조회(1초 폴링)의 전체 응답. 노드마다 마지막 시도의 상태만 온다.
 export const runProgressSchema = runStatusSchema.extend({
   startedAt: z.string().nullable(),
   finishedAt: z.string().nullable(),

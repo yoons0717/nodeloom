@@ -5,7 +5,7 @@ import { meSchema, workflowListSchema } from '@/features/workflows/schemas';
 import { WorkflowCards } from '@/features/workflows/workflow-cards';
 import { serverApi } from '@/lib/server-api';
 
-// 목록은 서버가 처음 그리고, 카드는 사이드바와 같은 캐시로 상태를 이어 받는다(DECISIONS 4-1).
+// 목록은 서버가 처음 그리고, 카드는 사이드바와 같은 캐시로 상태를 이어 받는다.
 // 로그인하지 않았으면 serverApi가 /login으로 보낸다.
 export default async function WorkflowListPage() {
   const [me, workflows] = await Promise.all([

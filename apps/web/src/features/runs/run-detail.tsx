@@ -34,7 +34,7 @@ const nodeTypes = {
 };
 const isDone = (s: Run['status']) => s === 'SUCCESS' || s === 'FAILED';
 
-// 실행 당시 그래프를 읽기 전용으로 그리고 노드별 상태를 겹쳐 보여 준다(M5 작은 결정 ④).
+// 실행 당시 그래프를 읽기 전용으로 그리고 노드별 상태를 겹쳐 보여 준다.
 export function RunDetail({
   run,
   workflowName,
@@ -47,7 +47,7 @@ export function RunDetail({
     firstFailedNodeId(run.nodes),
   );
 
-  // 끝날 때까지 1초마다 상태만 조회한다(DECISIONS B-1).
+  // 끝날 때까지 1초마다 상태만 조회한다.
   const progress = useQuery({
     queryKey: ['run-progress', run.id],
     queryFn: async () =>
@@ -120,7 +120,7 @@ export function RunDetail({
 
   return (
     <>
-      {/* 실행은 시각으로 부른다(M6 작은 결정 ③). 뒤로 가기 하나만 둔다(M6 6-f). */}
+      {/* 실행은 시각으로 부른다. 뒤로 가기 하나만 둔다(M6 6-f). */}
       <PageHeader
         context={workflowName}
         title={`${formatRunTime(run.createdAt)} 실행`}

@@ -7,7 +7,7 @@ import { serverApi } from '@/lib/server-api';
 
 export const metadata: Metadata = { title: '실행 상세 · Nodeloom' };
 
-// 처음 화면은 서버에서 그리고, 끝나지 않은 실행은 브라우저가 상태만 이어서 조회한다(DECISIONS 4-1, B-1).
+// 처음 화면은 서버에서 그리고, 끝나지 않은 실행은 브라우저가 상태만 이어서 조회한다.
 export default async function RunDetailPage({
   params,
 }: PageProps<'/w/[id]/runs/[runId]'>) {

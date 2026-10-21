@@ -148,7 +148,7 @@ export function Canvas({ children }: { children?: ReactNode }) {
 
   const issues = getGraphIssues(graph).byNode;
 
-  // 원본은 스토어의 그래프 하나. React Flow는 여기서 만든 값만 받는다(제어 모드, DECISIONS 5-1).
+  // 원본은 스토어의 그래프 하나. React Flow는 여기서 만든 값만 받는다(제어 모드).
   const nodes = graph.nodes.map((n) =>
     toCanvasNode(
       n,

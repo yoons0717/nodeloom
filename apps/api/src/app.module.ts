@@ -13,7 +13,7 @@ import { WorkflowsModule } from './workflows/workflows.module.js';
 
 @Module({
   imports: [
-    // 전체 API 속도 제한은 데모 서버에만 둔다(DECISIONS 8-3). 로그인은 경로에서 따로 더 좁힌다.
+    // 전체 API 속도 제한은 데모 서버에만 둔다. 로그인은 경로에서 따로 더 좁힌다.
     ThrottlerModule.forRoot([
       {
         ttl: 60_000,

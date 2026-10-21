@@ -12,7 +12,7 @@ const loginSchema = z.object({
   password: z.string().min(1, { error: '비밀번호를 입력하세요' }),
 });
 
-// 제출형 폼은 기본 <form>과 zod로 처리한다(DECISIONS 4-4).
+// 제출형 폼은 기본 <form>과 zod로 처리한다. 이 프로젝트는 폼 라이브러리를 쓰지 않는다(설정 패널에서 쓰면 값의 원본이 스토어와 폼 두 곳이 된다).
 export function LoginForm() {
   const router = useRouter();
   const [error, setError] = useState<string>();

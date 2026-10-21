@@ -25,7 +25,7 @@ const workflow = (nodeCount = 0) => ({
   },
 });
 
-// 데모 서버 규칙(DECISIONS 6-5, B-6, 8-3)
+// 데모 서버 규칙
 describe('DEMO_MODE', () => {
   let container: StartedPostgreSqlContainer;
   let app: INestApplication<App>;

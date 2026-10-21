@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-// 저장된 그래프 JSON의 형식 버전. 형식이 바뀌면 올리고, 새 설정 항목은 zod 기본값으로 채운다(DECISIONS B-8).
+// 저장된 그래프 JSON의 형식 버전. 형식이 바뀌면 올리고, 새 설정 항목은 zod 기본값으로 채운다.
 export const GRAPH_SCHEMA_VERSION = 1;
 
-// 다른 노드가 `$nodes.<key>`로 가리키는 참조 키(DECISIONS 3-4).
+// 다른 노드가 `$nodes.<key>`로 가리키는 참조 키.
 export const NODE_KEY_PATTERN = /^[a-z][a-z0-9_]*$/;
 
 // 노드 종류. 종류별 포트와 설정 규칙은 node-specs.ts의 NODE_SPECS에 있다.
@@ -26,7 +26,7 @@ export const NODE_PORTS = {
 
 export const nodeTypeSchema = z.enum(NODE_TYPES);
 
-// 저장은 초안도 허용하므로(DECISIONS 7-5) 그래프 구조만 엄격히 보고, 노드 설정은 validateGraph가 따로 검사한다.
+// 저장은 초안도 허용하므로 그래프 구조만 엄격히 보고, 노드 설정은 validateGraph가 따로 검사한다.
 export const nodeSchema = z.object({
   id: z.string().min(1),
   key: z.string(),

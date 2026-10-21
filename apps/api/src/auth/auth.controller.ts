@@ -28,7 +28,7 @@ const loginSchema = z.object({
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
-  // 비밀번호 대입을 늦추려고 IP당 1분에 5번까지만 받는다(DECISIONS 8-3, M3 작은 결정 ②).
+  // 비밀번호 대입을 늦추려고 IP당 1분에 5번까지만 받는다.
   @Public()
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('login')

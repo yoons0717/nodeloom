@@ -18,7 +18,7 @@ import { TransformSettings } from './settings/transform-settings';
 import { TriggerSettings } from './settings/trigger-settings';
 import { useEditorStore } from './store-context';
 
-// 노드 종류마다 직접 만든 설정 화면(M2 작은 결정 ②).
+// 노드 종류마다 직접 만든 설정 화면. 종류가 4개뿐이라 스키마에서 폼을 자동으로 만드는 것보다 단순하다.
 const SETTINGS: Record<NodeType, ComponentType<SettingsProps>> = {
   trigger: TriggerSettings,
   http: HttpSettings,

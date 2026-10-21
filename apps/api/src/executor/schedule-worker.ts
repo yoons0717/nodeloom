@@ -14,7 +14,7 @@ import { RunExecutor } from './run-executor.js';
 // 이보다 오래된 회차는 실행하지 않는다. 워커가 없던 동안 쌓인 회차가 한꺼번에 돌지 않게 한다.
 const STALE_MS = 2 * 60_000;
 
-// pg-boss가 cron 시각마다 넣은 job을 받아 스케줄 실행을 만든다(DECISIONS 7-5, B-10).
+// pg-boss가 cron 시각마다 넣은 job을 받아 스케줄 실행을 만든다.
 @Injectable()
 export class ScheduleWorker implements OnApplicationBootstrap {
   private readonly logger = new Logger(ScheduleWorker.name);
@@ -49,7 +49,7 @@ export class ScheduleWorker implements OnApplicationBootstrap {
     if (!workflow) return;
 
     const checked = checkGraph(workflow.graph);
-    // 검사에 실패하면 실행하지 않고 FAILED로 남겨 실패 알림을 보낸다(DECISIONS 7-5).
+    // 검사에 실패하면 실행하지 않고 FAILED로 남겨 실패 알림을 보낸다.
     if (!checked.ok) {
       const { issues } = checked;
       const error = {
@@ -83,7 +83,7 @@ export class ScheduleWorker implements OnApplicationBootstrap {
         triggerInput: {},
       });
     } catch (e) {
-      // 이미 실행 중이면 이번 회차는 건너뛴다(DECISIONS 7-5).
+      // 이미 실행 중이면 이번 회차는 건너뛴다.
       if (e instanceof ConflictException) {
         this.logger.warn(
           `skip schedule, already running workflowId=${workflowId}`,

@@ -1,4 +1,4 @@
-// 비밀값을 ***로 바꾼다(DECISIONS 8-2). 원래 값, URL 인코딩 값, JSON 문자열 안의 값을 찾는다.
+// 비밀값을 ***로 바꾼다. 원래 값, URL 인코딩 값, JSON 문자열 안의 값을 찾는다.
 // Base64 같은 다른 인코딩은 막지 못한다(한계).
 export function createMasker(secretValues: string[]) {
   const needles = [

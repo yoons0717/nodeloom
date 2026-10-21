@@ -96,7 +96,7 @@ export class WorkflowsService {
     return { id: w.id };
   }
 
-  // 덮어쓰기 저장. 버전 비교는 하지 않는다(DECISIONS 2-4). 409는 이름이 겹칠 때만 나온다.
+  // 덮어쓰기 저장. 버전 비교는 하지 않는다. 409는 이름이 겹칠 때만 나온다.
   async update(id: string, body: WorkflowBody) {
     checkDemoGraph(body);
     await this.prisma
@@ -132,7 +132,7 @@ export class WorkflowsService {
     }
   }
 
-  // 실행 중이면 지우지 않는다. 지우면 스케줄은 해제되고 실행 기록도 함께 지워지고, 이 워크플로우를 실패 알림으로 지정한 설정은 비워진다(DECISIONS B-4, 외래 키 규칙).
+  // 실행 중이면 지우지 않는다. 지우면 스케줄은 해제되고 실행 기록도 함께 지워지고, 이 워크플로우를 실패 알림으로 지정한 설정은 비워진다(외래 키 규칙).
   // ponytail: 확인과 삭제 사이에 실행이 시작될 수 있다. 그 실행은 기록이 지워져 실행기가 오류로 멈추고, 다시 시도할 때 기록이 없어 끝난다.
   async remove(id: string) {
     const running = await this.prisma.run.count({

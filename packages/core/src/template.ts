@@ -25,7 +25,7 @@ function closingBraces(input: string, from: number): number {
   return -1;
 }
 
-// 문자열 칸의 `{{ 식 }}` 구간을 나눈다(DECISIONS 3-2). 닫히지 않은 `{{`는 글자로 둔다.
+// 문자열 칸의 `{{ 식 }}` 구간을 나눈다. 닫히지 않은 `{{`는 글자로 둔다.
 export function parseTemplate(input: string): TemplatePart[] {
   const parts: TemplatePart[] = [];
   let last = 0;

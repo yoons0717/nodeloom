@@ -1,4 +1,4 @@
-// 데모 서버의 상한(DECISIONS 8-3, M3 작은 결정 ②). 자동 초기화가 없어서(6-5) 쌓이는 양을 막는 유일한 방어선이다.
+// 데모 서버의 상한. 자동 초기화가 없어서 쌓이는 양을 막는 유일한 방어선이다.
 export const DEMO_LIMITS = {
   workflows: 20,
   nodesPerGraph: 100,

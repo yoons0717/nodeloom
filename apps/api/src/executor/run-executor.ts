@@ -27,7 +27,7 @@ import {
   type RunJob,
 } from './queue.js';
 
-// 동시에 실행하는 흐름 수. 같은 흐름은 인덱스가 하나로 막는다(DECISIONS 7-5).
+// 동시에 실행하는 흐름 수. 같은 흐름은 인덱스가 하나로 막는다.
 const CONCURRENT_RUNS = 5;
 
 export type RunError = { code: string; message: string; nodeKey?: string };
@@ -45,9 +45,9 @@ const STALE_ATTEMPT = {
 @Injectable()
 export class RunExecutor implements OnApplicationBootstrap {
   private readonly logger = new Logger(RunExecutor.name);
-  // 재시도 대기의 첫 간격(1·2·4초…, DECISIONS 7-3). 테스트에서 줄인다.
+  // 재시도 대기의 첫 간격(1·2·4초…). 테스트에서 줄인다.
   retryBaseMs = 1000;
-  // HTTP 노드가 보낼 수 있는 곳(DECISIONS 8-1). 테스트에서 연습용 응답 주소를 바꾼다.
+  // HTTP 노드가 보낼 수 있는 곳. 테스트에서 연습용 응답 주소를 바꾼다.
   httpGuard = createHttpGuard({
     mockBase: env.MOCK_BASE_URL,
     demo: env.DEMO_MODE,
@@ -74,7 +74,7 @@ export class RunExecutor implements OnApplicationBootstrap {
   }
 
   // 실행 엔진이 시도 횟수를 다 쓰도록 죽었다(DB 오류 등). 끝나지 않은 실행을 FAILED로 끝내야
-  // 동시 실행 제한이 풀려 다음 실행과 스케줄이 막히지 않는다(M5 작은 결정 ⑤).
+  // 동시 실행 제한이 풀려 다음 실행과 스케줄이 막히지 않는다.
   async abort(runId: string) {
     const { count } = await this.prisma.run.updateMany({
       where: { id: runId, status: { in: ['PENDING', 'RUNNING'] } },
@@ -92,7 +92,7 @@ export class RunExecutor implements OnApplicationBootstrap {
     if (run) await this.alertIfFailed(run);
   }
 
-  // 실행 하나를 끝까지 돌린다. 서버가 죽었다 다시 불려도 이어서 실행한다(DECISIONS 7-1).
+  // 실행 하나를 끝까지 돌린다. 서버가 죽었다 다시 불려도 이어서 실행한다.
   // 여기서 던지는 오류(DB 끊김 등)는 pg-boss가 job을 다시 시도하게 한다.
   async execute(runId: string) {
     const run = await this.prisma.run.findUnique({
@@ -111,13 +111,13 @@ export class RunExecutor implements OnApplicationBootstrap {
       data: { status: 'RUNNING', startedAt },
     });
 
-    // 실행과 재개는 저장된 워크플로우가 아니라 스냅샷만 읽는다(DECISIONS B-9).
+    // 실행과 재개는 저장된 워크플로우가 아니라 스냅샷만 읽는다.
     const graph = graphSchema.parse(run.graph);
     const states: Record<string, NodeRunState> = {};
     const outputs: Record<string, unknown> = {};
     const nextAttempt: Record<string, number> = {};
     // 재개: 이미 성공·건너뜀으로 끝난 노드는 다시 실행하지 않고 저장된 결과를 쓴다.
-    // 끝나지 않은 노드는 다음 시도 번호로 처음부터 다시 실행한다("최소 한 번 실행", DECISIONS B-2).
+    // 끝나지 않은 노드는 다음 시도 번호로 처음부터 다시 실행한다("최소 한 번 실행").
     for (const r of run.nodeRuns) {
       nextAttempt[r.nodeId] = r.attempt + 1;
       if (r.status === 'SUCCESS') {
@@ -133,7 +133,7 @@ export class RunExecutor implements OnApplicationBootstrap {
       return a;
     };
 
-    // 실행 기록에는 비밀값을 가려서 저장한다(DECISIONS 8-2).
+    // 실행 기록에는 비밀값을 가려서 저장한다.
     const store = (value: unknown) => toJson(this.masker.value(value));
     const runInfo = {
       id: run.id,
@@ -148,7 +148,7 @@ export class RunExecutor implements OnApplicationBootstrap {
           .map((n) => [n.key, outputs[n.id]]),
       );
 
-    // 실행 전체 시간 제한(DECISIONS 7-3). 재개해도 처음 시작한 시각부터 잰다.
+    // 실행 전체 시간 제한. 재개해도 처음 시작한 시각부터 잰다.
     const deadline = new AbortController();
     const remaining = startedAt.getTime() + env.RUN_TIMEOUT * 1000 - Date.now();
     if (remaining <= 0) deadline.abort();
@@ -288,7 +288,7 @@ export class RunExecutor implements OnApplicationBootstrap {
       `run ${error ? `failed code=${error.code}` : 'succeeded'} runId=${runId}`,
     );
 
-    // 실패 알림 실행이 실패하면 다시 알리지 않는다(DECISIONS 7-4).
+    // 실패 알림 실행이 실패하면 다시 알리지 않는다.
     if (error && run.kind !== 'FAILURE') await this.startFailureRun(run, error);
   }
 
@@ -299,20 +299,20 @@ export class RunExecutor implements OnApplicationBootstrap {
     });
   }
 
-  // 실패한 실행의 실패 알림을 만든다. 실패 알림 실행이 실패하면 다시 알리지 않는다(DECISIONS 7-4).
+  // 실패한 실행의 실패 알림을 만든다. 실패 알림 실행이 실패하면 다시 알리지 않는다.
   private async alertIfFailed(run: Run) {
     if (run.status === 'FAILED' && run.kind !== 'FAILURE' && run.error)
       await this.startFailureRun(run, run.error as RunError);
   }
 
-  // 1·2·4초…(최대 30초) + 흔들림(DECISIONS 7-3)
+  // 1·2·4초…(최대 30초) + 흔들림
   private backoffMs(tries: number) {
     const base = Math.min(this.retryBaseMs * 2 ** (tries - 1), 30_000);
     return base * (0.75 + Math.random() * 0.5);
   }
 
-  // 워크플로우에 지정된 실패 알림 워크플로우를 실행한다(DECISIONS 7-4, B-10).
-  // 그 워크플로우가 검사에 걸리면 실행하지 않고 FAILED 기록만 남긴다(DECISIONS 7-5).
+  // 워크플로우에 지정된 실패 알림 워크플로우를 실행한다.
+  // 그 워크플로우가 검사에 걸리면 실행하지 않고 FAILED 기록만 남긴다.
   async startFailureRun(run: Run, error: RunError) {
     const workflow = await this.prisma.workflow.findUnique({
       where: { id: run.workflowId },

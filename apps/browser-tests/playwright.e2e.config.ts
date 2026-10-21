@@ -3,7 +3,7 @@ import { API_PORT, WEB_PORT } from './e2e/config.ts';
 
 const demo = process.env.E2E_MODE === 'demo';
 
-// 핵심 사용자 흐름 e2e(DECISIONS H-1). 프로덕션 빌드를 띄워 실제 배포와 같은 조건에서 확인한다.
+// 핵심 사용자 흐름 e2e. 프로덕션 빌드를 띄워 실제 배포와 같은 조건에서 확인한다.
 // 관리자 모드와 데모 모드는 api 설정이 달라서 E2E_MODE로 나눠 두 번 실행한다(`pnpm e2e`).
 export default defineConfig({
   testDir: 'e2e',

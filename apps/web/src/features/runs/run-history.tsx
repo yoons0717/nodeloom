@@ -17,7 +17,7 @@ import {
   type StatusTone,
 } from './status-dot';
 
-// API가 돌려주는 최대 개수(M5 작은 결정 ③)
+// API가 돌려주는 최대 개수
 const LIMIT = 50;
 
 // 거르기 칩의 점. "전체"에는 점이 없다.

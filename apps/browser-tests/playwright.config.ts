@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 const PORT = 3100;
 
-// 성능 벤치(DECISIONS 5-3). 개발 모드는 React가 검사용으로 렌더를 두 번 하는 등 수치가 부풀어서, 프로덕션 빌드를 띄워 잰다.
+// 성능 벤치. 개발 모드는 React가 검사용으로 렌더를 두 번 하는 등 수치가 부풀어서, 프로덕션 빌드를 띄워 잰다.
 // CI에서는 돌리지 않는다. 같은 기기에서 개선 전후를 비교하는 용도다.
 export default defineConfig({
   testDir: 'bench',

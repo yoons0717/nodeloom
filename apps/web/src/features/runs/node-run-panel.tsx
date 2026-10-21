@@ -18,7 +18,7 @@ const SMALL_BUTTON =
   'flex h-7 shrink-0 items-center rounded-md px-2.5 text-xs text-label hover:bg-raised-hover pointer-coarse:h-11';
 const TAB_ON = 'bg-raised-hover font-medium text-foreground';
 
-// 고른 노드의 시도별 입력·출력·오류. 입출력은 크기가 커서 폴링에 넣지 않고 고를 때 받는다(DECISIONS B-1).
+// 고른 노드의 시도별 입력·출력·오류. 입출력은 크기가 커서 폴링에 넣지 않고 고를 때 받는다.
 export function NodeRunPanel({
   runId,
   node,
@@ -139,7 +139,7 @@ export function NodeRunPanel({
           />
         )}
       </div>
-      {/* 고른 값을 다른 노드의 식에서 읽는 방법(M6 작은 결정 ⑤). 출력일 때만 의미가 있다. */}
+      {/* 고른 값을 다른 노드의 식에서 읽는 방법. 출력일 때만 의미가 있다. */}
       {/* 길면 줄을 바꿔 끝까지 보여 준다(M6 6-f). */}
       {tab === 'output' && (
         <div className="flex items-start gap-2">

@@ -4,8 +4,8 @@ import type { z } from 'zod';
 
 const API_URL = process.env.API_URL ?? 'http://localhost:4000';
 
-// 서버 컴포넌트에서 NestJS를 직접 부른다. 브라우저 쿠키를 그대로 실어 보내야 인증된다(DECISIONS 6-4).
-// 실제 인증 검사는 NestJS Guard가 하고, 여기서는 결과에 따라 이동만 한다(M3 작은 결정 ⑥).
+// 서버 컴포넌트에서 NestJS를 직접 부른다. 브라우저 쿠키를 그대로 실어 보내야 인증된다.
+// 실제 인증 검사는 NestJS Guard가 하고, 여기서는 결과에 따라 이동만 한다.
 export async function serverApi<T extends z.ZodType>(
   path: string,
   schema: T,

@@ -19,7 +19,7 @@ export type RunNodeOptions = {
 };
 
 // 노드 하나를 한 번 실행한다. 재시도와 기록은 실행 엔진이 한다.
-// Trigger의 입력(ctx.input)은 실행 엔진이 실행 종류에 따라 넣는다(DECISIONS B-10).
+// Trigger의 입력(ctx.input)은 실행 엔진이 실행 종류에 따라 넣는다.
 export async function runNode(
   node: GraphNode,
   ctx: EvalContext,
@@ -36,7 +36,7 @@ export async function runNode(
       case 'condition': {
         const { expression } = NODE_SPECS.condition.config.parse(node.config);
         const result = await evaluate(expression, ctx);
-        // 정확히 true·false가 아니면 조용히 거짓으로 보내지 않고 실패(DECISIONS A-2)
+        // 정확히 true·false가 아니면 조용히 거짓으로 보내지 않고 실패
         if (typeof result !== 'boolean') {
           const shown = JSON.stringify(result) ?? 'undefined';
           throw new NodeError(

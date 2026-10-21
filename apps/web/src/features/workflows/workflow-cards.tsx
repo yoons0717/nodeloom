@@ -138,7 +138,7 @@ export function WorkflowCards({
   );
 }
 
-// 스케줄이 있으면 반복과 다음 실행 시각을 보여 준다. 데모에서는 스케줄이 돌지 않아 다음 실행은 뺀다(DECISIONS D-3).
+// 스케줄이 있으면 반복과 다음 실행 시각을 보여 준다. 데모에서는 스케줄이 돌지 않아 다음 실행은 뺀다.
 // 서버가 그린 뒤 다음 실행 시각이 지나가면 브라우저 값이 달라질 수 있어 hydration 경고를 끈다.
 function ScheduleText({ cron, demo }: { cron: string | null; demo: boolean }) {
   if (cron === null) return <span>스케줄 없음</span>;

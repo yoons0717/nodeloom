@@ -15,7 +15,7 @@ type Saved = Body & { json: string };
 const LEAVE_MESSAGE =
   '저장하지 않은 변경 사항이 있습니다. 이 페이지를 나갈까요?';
 
-// 이름 편집, 저장 상태 칩, ⌘S(M3 작은 결정 ③④). 저장은 덮어쓰기다(DECISIONS 2-4).
+// 이름 편집, 저장 상태 칩, ⌘S. 저장은 덮어쓰기다.
 // 상단 바 한 줄을 이룬다: 왼쪽(이름 · 저장 상태 칩), 오른쪽(actions · after).
 // 저장 버튼은 따로 두지 않고, 바뀐 것이 있을 때 상태 칩 안에 나타난다(M6 6-h, 시안 1b).
 // actions: 오른쪽 앞 요소(문제 배지). after: 실행 버튼. 실행 전에 저장하도록 ensureSaved를 넘긴다.
@@ -159,7 +159,7 @@ export function SaveControls({
   return (
     <>
       <MobileNavButton />
-      {/* 글자처럼 보이다가 누르면 편집한다(M6 작은 결정 ⑩). */}
+      {/* 글자처럼 보이다가 누르면 편집한다. */}
       <Input
         ref={nameRef}
         aria-label="워크플로우 이름"

@@ -1,7 +1,7 @@
 import jsonata from 'jsonata';
 import { parseTemplate } from './template.js';
 
-// 식이 볼 수 있는 값(DECISIONS 3-2). 루트는 직전 노드의 출력이다.
+// 식이 볼 수 있는 값. 루트는 직전 노드의 출력이다.
 export type EvalContext = {
   input: unknown;
   nodes: Record<string, unknown>;
@@ -9,7 +9,7 @@ export type EvalContext = {
   secrets: Record<string, string>;
 };
 
-// 가드레일(DECISIONS 7-3): 식 1회 1초, 재귀 깊이, 배열 길이
+// 가드레일: 식 1회 1초, 재귀 깊이, 배열 길이
 export const EXPRESSION_LIMITS = {
   timeout: 1000,
   stack: 200,
@@ -59,7 +59,7 @@ export async function evaluate(
   }
 }
 
-// 문자열 칸의 `{{ }}`를 계산한 값으로 바꾼다(DECISIONS 3-2). 값이 없으면 빈 글자, 객체·배열은 JSON으로.
+// 문자열 칸의 `{{ }}`를 계산한 값으로 바꾼다. 값이 없으면 빈 글자, 객체·배열은 JSON으로.
 export async function fillTemplate(
   template: string,
   ctx: EvalContext,

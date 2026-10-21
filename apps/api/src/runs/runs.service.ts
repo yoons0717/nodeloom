@@ -26,7 +26,7 @@ export class RunsService {
     private readonly queue: QueueService,
   ) {}
 
-  // 저장된 그래프로 실행한다(M4 작은 결정 ⑦). 검사 오류가 있으면 422, 이미 실행 중이면 409(DECISIONS 7-5).
+  // 저장된 그래프로 실행한다. 검사 오류가 있으면 422, 이미 실행 중이면 409.
   async start(workflowId: string) {
     const workflow = await this.prisma.workflow.findUnique({
       where: { id: workflowId },
@@ -41,7 +41,7 @@ export class RunsService {
       });
     }
     const { graph } = checked;
-    // 검사를 통과했으면 Trigger는 정확히 하나다(DECISIONS A-4). 수동 실행의 입력은 테스트 입력(B-10).
+    // 검사를 통과했으면 Trigger는 정확히 하나다. 수동 실행의 입력은 테스트 입력.
     const trigger = graph.nodes.find((n) => n.type === 'trigger')!;
     const { testInput } = NODE_SPECS.trigger.config.parse(trigger.config);
     const runId = await this.queue.enqueueRun({
@@ -53,7 +53,7 @@ export class RunsService {
     return { runId };
   }
 
-  // 목록은 최근 50개(M5 작은 결정 ③). 상태로 거르면 그 상태의 최근 50개.
+  // 목록은 최근 50개. 상태로 거르면 그 상태의 최근 50개.
   async list(workflowId: string, filter?: string) {
     const workflow = await this.prisma.workflow.findUnique({
       where: { id: workflowId },
@@ -111,7 +111,7 @@ export class RunsService {
     return { failedLast24h, running };
   }
 
-  // 상세 화면은 실행 당시 그래프(스냅샷)를 그린다(DECISIONS B-9). 입출력은 노드를 고를 때 따로 받는다(B-1).
+  // 상세 화면은 실행 당시 그래프(스냅샷)를 그린다. 입출력은 노드를 고를 때 따로 받는다.
   async detail(runId: string) {
     const [run, status] = await Promise.all([
       this.prisma.run.findUnique({
@@ -144,7 +144,7 @@ export class RunsService {
     return attempts;
   }
 
-  // 1초마다 조회하므로 상태와 시간만 돌려준다. 노드 입출력은 돌려주지 않는다(DECISIONS B-1).
+  // 1초마다 조회하므로 상태와 시간만 돌려준다. 노드 입출력은 돌려주지 않는다.
   async status(runId: string) {
     const run = await this.prisma.run.findUnique({
       where: { id: runId },
@@ -156,7 +156,7 @@ export class RunsService {
         startedAt: true,
         finishedAt: true,
         nodeRuns: {
-          // 노드 카드에 걸린 시간을 보여 주려고 시작·끝 시각도 함께(M6 작은 결정 ④).
+          // 노드 카드에 걸린 시간을 보여 주려고 시작·끝 시각도 함께.
           select: {
             nodeId: true,
             nodeKey: true,

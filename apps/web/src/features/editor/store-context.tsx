@@ -14,7 +14,7 @@ export function EditorStoreProvider({
   children: ReactNode;
   initial?: Graph;
 }) {
-  // 에디터가 처음 그려질 때 한 번만 만든다(DECISIONS B-12).
+  // 에디터가 처음 그려질 때 한 번만 만든다.
   const [store] = useState(() => createEditorStore(initial));
   return (
     <EditorStoreContext.Provider value={store}>

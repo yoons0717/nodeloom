@@ -2,7 +2,7 @@ import type { GraphNode, NodeType } from '@nodeloom/core';
 import { describeSchedule, parseSchedule } from './settings/schedule';
 
 type NodeMeta = {
-  // 종류 이름은 영문으로 고정한다. 사용자 제목은 한글로 쓴다(M6 작은 결정 ⑨).
+  // 종류 이름은 영문으로 고정한다. 사용자 제목은 한글로 쓴다.
   label: string;
   // 새 노드의 제목 기본값. 종류 이름과 겹치지 않게 한글로 쓴다.
   defaultTitle: string;

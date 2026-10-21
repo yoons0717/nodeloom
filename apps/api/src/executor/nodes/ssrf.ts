@@ -3,7 +3,7 @@ import { BlockList, isIP } from 'node:net';
 import { Agent } from 'undici';
 import { NodeError } from './node-error.js';
 
-// HTTP 노드가 보낼 수 있는 곳(DECISIONS 8-1, B-7, 1-3)
+// HTTP 노드가 보낼 수 있는 곳
 export type HttpPolicy = {
   // 연습용 응답 주소(예: http://localhost:4000/mock). 이 아래 주소는 검사 없이 허용한다.
   mockBase: string;
@@ -21,7 +21,7 @@ metadata.addAddress('169.254.169.254');
 metadata.addAddress('100.100.100.200');
 metadata.addAddress('fd00:ec2::254', 'ipv6');
 
-// 내부 주소: loopback, 사설, 링크 로컬(DECISIONS 8-1)
+// 내부 주소: loopback, 사설, 링크 로컬
 // IPv4를 IPv6로 감싼 형태(::ffff:127.0.0.1)는 BlockList가 IPv4 규칙으로 함께 검사한다.
 // 반대로 ::ffff:0:0/96 같은 IPv6 규칙을 넣으면 BlockList가 모든 IPv4를 그 규칙에 맞춰 봐서 바깥 주소까지 막힌다.
 const internal = new BlockList();

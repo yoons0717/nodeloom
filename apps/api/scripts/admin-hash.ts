@@ -1,4 +1,4 @@
-// 관리자 비밀번호를 bcrypt 해시로 바꿔 `.env`에 붙여 넣을 한 줄을 출력한다(DECISIONS D-4, K-1).
+// 관리자 비밀번호를 bcrypt 해시로 바꿔 `.env`에 붙여 넣을 한 줄을 출력한다.
 // 비밀번호를 명령 인자로 받지 않는다. 셸 기록에 남기 때문이다. 입력하는 글자는 화면에 보이지 않는다.
 import bcrypt from 'bcryptjs';
 
@@ -46,7 +46,7 @@ if (!password || password !== again) {
 }
 
 const hash = await bcrypt.hash(password, 12);
-// 해시에 들어 있는 `$`가 변수로 해석되지 않도록 작은따옴표로 감싼다(K-1).
+// 해시에 들어 있는 `$`가 변수로 해석되지 않도록 작은따옴표로 감싼다.
 console.log(
   `\n.env에 아래 한 줄을 붙여 넣으세요.\n\nADMIN_PASSWORD_HASH='${hash}'\n`,
 );

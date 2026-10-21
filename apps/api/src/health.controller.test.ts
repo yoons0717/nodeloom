@@ -4,7 +4,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { startTestApp } from './test-app.test-util.js';
 
-// 실제 Postgres 18 컨테이너로 /health가 DB 연결까지 확인하는지 검증한다(DECISIONS 10-2).
+// 실제 Postgres 18 컨테이너로 /health가 DB 연결까지 확인하는지 검증한다.
 describe('GET /health', () => {
   let container: StartedPostgreSqlContainer;
   let app: INestApplication<App>;

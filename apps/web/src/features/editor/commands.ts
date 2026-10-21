@@ -8,7 +8,7 @@ import {
 } from '@nodeloom/core';
 import { NODE_META } from './node-meta';
 
-// 그래프 변경 하나. apply로 바꾸고 revert로 정확히 되돌린다(DECISIONS 4-4).
+// 그래프 변경 하나. apply로 바꾸고 revert로 정확히 되돌린다.
 // 되돌리는 데 필요한 값(지운 노드, 이전 값 등)은 커맨드를 만들 때 미리 담아 둔다.
 export type Command = {
   label: string;

@@ -12,8 +12,8 @@ import {
 import type { Request, Response } from 'express';
 import { Public } from '../auth/public.decorator.js';
 
-// 연습용 응답(M4 작은 결정 ⑤). 예시 흐름과 실행기 테스트가 외부 서비스 없이 HTTP 요청을 보낸다.
-// 로그인 없이 열려 있고, 데모 서버에서는 전체 속도 제한을 받는다(DECISIONS 8-3).
+// 연습용 응답. 예시 흐름과 실행기 테스트가 외부 서비스 없이 HTTP 요청을 보낸다.
+// 로그인 없이 열려 있고, 데모 서버에서는 전체 속도 제한을 받는다.
 @Public()
 @Controller('mock')
 export class MockController {
@@ -39,7 +39,7 @@ export class MockController {
     res.status(Math.min(Math.max(code, 200), 599)).json({ status: code });
   }
 
-  // 리다이렉트를 따라가지 않는지 시험용(DECISIONS 8-1)
+  // 리다이렉트를 따라가지 않는지 시험용
   @Get('redirect')
   redirect(@Query('to') to: string, @Res() res: Response) {
     res.redirect(302, to);

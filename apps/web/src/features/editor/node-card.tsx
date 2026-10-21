@@ -24,7 +24,7 @@ export type CanvasNode = Node<{
   run?: NodeRunView;
 }>;
 
-// 카드 크기는 고정이다(M6 작은 결정 ⑦). 포트 위치도 이 높이에 맞춘다.
+// 카드 크기는 고정이다. 포트 위치도 이 높이에 맞춘다.
 const HEIGHT = { default: 84, condition: 108 };
 // Condition의 참·거짓 포트는 카드 안 라벨 줄의 가운데에 둔다(데모 기준).
 const CONDITION_PORT_TOP = { true: 63, false: 85 };
@@ -50,7 +50,7 @@ export function NodeCard({ data, selected }: NodeProps<CanvasNode>) {
           : 'border-border hover:border-border-control hover:bg-raised-hover';
 
   return (
-    // 벤치 모드에서 노드 카드가 몇 번 다시 그려지는지 센다(DECISIONS 5-3). 일반 프로덕션 빌드에서는 아무 일도 하지 않는다.
+    // 벤치 모드에서 노드 카드가 몇 번 다시 그려지는지 센다. 일반 프로덕션 빌드에서는 아무 일도 하지 않는다.
     <Profiler id="node" onRender={onNodeRender}>
       <div
         data-key={node.key}

@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: '벤치 · Nodeloom' };
 
 const SIZES = [20, 200, 1000];
 
-// 개발 환경과 벤치용 빌드(NEXT_PUBLIC_BENCH=1)에서만 연다(M2 작은 결정 ③).
+// 개발 환경과 벤치용 빌드(NEXT_PUBLIC_BENCH=1)에서만 연다.
 export default async function BenchPage({ searchParams }: PageProps<'/bench'>) {
   if (
     process.env.NODE_ENV !== 'development' &&

@@ -7,7 +7,7 @@ export class ApiError extends Error {
   }
 }
 
-// 브라우저에서 Next의 /api/*를 부른다(DECISIONS 6-4). 실패하면 서버가 준 한국어 메시지를 담아 던진다.
+// 브라우저에서 Next의 /api/*를 부른다. 실패하면 서버가 준 한국어 메시지를 담아 던진다.
 export async function clientApi(
   path: string,
   init?: RequestInit,
