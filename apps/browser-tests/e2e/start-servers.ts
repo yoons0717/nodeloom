@@ -1,4 +1,4 @@
-// e2e용 서버를 모두 띄운다: Postgres 컨테이너 → 마이그레이션 → api(4100) → web(3100).
+// e2e용 서버를 모두 띄운다: Postgres 컨테이너 → 마이그레이션 → api(4300) → web(3300).
 // 개발 서버(3000/4000)와 개발 DB는 건드리지 않는다. Playwright가 이 프로세스를 끝내면 모두 정리한다.
 // E2E_MODE=demo면 api를 데모 모드로 띄운다. api는 시작할 때 모드를 한 번 읽으므로 모드마다 따로 띄운다.
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process';
